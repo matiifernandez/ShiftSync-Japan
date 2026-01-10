@@ -41,11 +41,7 @@ export default function LoginScreen() {
       if (error) Alert.alert("Error", error.message);
       else {
         // If everything is ok, navigate to Home screen
-        // router.replace('/home');
-        Alert.alert(
-          "Welcome",
-          "You have successfully logged in (here we would go to Home)"
-        );
+        router.replace('/(tabs)');
       }
     }
     setLoading(false);
@@ -64,7 +60,7 @@ export default function LoginScreen() {
         <Text className="text-2xl font-bold text-brand-dark">
           ShiftSync Japan
         </Text>
-        <Text className="text-gray-500 mt-1">/ チーム — 大阪プロジェクト</Text>
+        <Text className="text-gray-500 mt-1">Simplify Your Work Life</Text>
       </View>
 
       {/* FORM */}

@@ -15,6 +15,7 @@ export default function Layout() {
         "index" refers to app/index.tsx (the Login).
       */}
       <Stack.Screen name="index" />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
     </Stack>
   );
 }
