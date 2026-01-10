@@ -24,24 +24,40 @@ export default function LoginScreen() {
 
     // 1. If we are in "Register" mode
     if (isRegistering) {
-      const { error } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-      });
-      if (error) Alert.alert("Error", error.message);
-      else
-        Alert.alert("Success", "Account created! Check your email to confirm.");
-
-      // 2. If we are in "Log In" mode
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error, data } = await supabase.auth.signUp({
         email: email,
         password: password,
       });
       if (error) Alert.alert("Error", error.message);
       else {
-        // If everything is ok, navigate to Home screen
-        router.replace('/(tabs)');
+        // Successful Sign Up -> Go to Complete Profile
+        router.replace("/complete-profile");
+      }
+
+      // 2. If we are in "Log In" mode
+    } else {
+      const { error, data } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+      if (error) Alert.alert("Error", error.message);
+      else {
+        // Check if profile exists
+        if (data.user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", data.user.id)
+            .single();
+
+          if (profile && profile.organization_id) {
+            // Profile complete -> Go Home
+            router.replace("/(tabs)");
+          } else {
+            // Profile missing or incomplete -> Go Setup
+            router.replace("/complete-profile");
+          }
+        }
       }
     }
     setLoading(false);

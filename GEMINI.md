@@ -4,6 +4,7 @@
 **Estado:** Configuración completada. Dependencias alineadas (React 19, Expo 54).
 
 ## 1. Descripción del Proyecto
+
 App de gestión logística para equipos de viaje en Japón.
 **Usuarios:** Staff y Admins.
 **Core:** Chat (traducción auto), Itinerarios, Tickets y Gastos.
@@ -43,3 +44,17 @@ El sistema se basa en **Organizaciones**. La regla de oro (RLS) es que un usuari
 2.  **Expo Router:** Usar navegación basada en archivos. `router.push()`, `router.replace()`.
 3.  **Tailwind:** Usar clases utilitarias para todo el estilo.
 4.  **Componentes:** Extraer UI reutilizable a `components/`.
+
+## 6. Flujo de Usuarios (User Flow)
+
+### Registro y Onboarding
+
+1.  **Sign Up Inicial:** Email y Password (Supabase Auth).
+2.  **Complete Profile:** Pantalla obligatoria post-registro.
+    - **Nombre Completo:** Requerido.
+    - **Idioma:** Preferencia (EN/JP).
+    - **Organización:** Ingreso de ID o Código.
+    - **Avatar:** Subida de foto.
+      - _Requerimiento Futuro:_ Validación de rostro mediante IA/Librería para asegurar que la foto sea válida.
+
+IMPORTANTE: no olvidar que el objetivo principal del usuario es aprender mientras se desarrolla esta app por lo tanto es escencial aclarar que files se modifican, por que, diferencias o similitudes con Rails, sintaxis especifica de react native y typescript.
