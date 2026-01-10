@@ -62,7 +62,7 @@ export default function LoginScreen() {
           <Text className="text-white text-4xl font-bold">🗻</Text>
         </View>
         <Text className="text-2xl font-bold text-brand-dark">
-          Team — Osaka Project
+          ShiftSync Japan
         </Text>
         <Text className="text-gray-500 mt-1">/ チーム — 大阪プロジェクト</Text>
       </View>
