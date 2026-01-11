@@ -20,9 +20,37 @@ export default function CompleteProfileScreen() {
 
   // Form State
   const [fullName, setFullName] = useState("");
-  const [organizationId, setOrganizationId] = useState("00000000-0000-0000-0000-000000000000"); // TEST HACK
+  const [organizationId, setOrganizationId] = useState("00000000-0000-0000-0000-000000000000"); // Default/Hack for new users
   const [language, setLanguage] = useState<"en" | "ja">("en");
   const [image, setImage] = useState<string | null>(null);
+
+  // Load existing profile on mount
+  React.useEffect(() => {
+    async function loadProfile() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (profile) {
+          setFullName(profile.full_name || "");
+          // Only overwrite org ID if it exists in DB, otherwise keep the default/hack for easier onboarding testing
+          if (profile.organization_id) setOrganizationId(profile.organization_id);
+          if (profile.preferred_language) setLanguage(profile.preferred_language as "en" | "ja");
+          if (profile.avatar_url) setImage(profile.avatar_url);
+        }
+      } catch (error) {
+        console.log("Error loading profile:", error);
+      }
+    }
+
+    loadProfile();
+  }, []);
 
   // 1. Function to pick an image from gallery
   const pickImage = async () => {
@@ -45,7 +73,41 @@ export default function CompleteProfileScreen() {
     }
   };
 
-  // 2. Function to save profile to Supabase
+  // 2. Function to upload image to Supabase Storage
+  const uploadImage = async (uri: string, userId: string) => {
+    try {
+      // 1. Convert local file URI to ArrayBuffer (Binary)
+      const response = await fetch(uri);
+      const blob = await response.arrayBuffer();
+
+      // 2. Define file path: avatars/USER_ID.jpg
+      // Using time to avoid cache issues on updates
+      const fileName = `${userId}_${new Date().getTime()}.jpg`;
+      const filePath = `${fileName}`;
+
+      // 3. Upload to Supabase
+      const { data, error } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, blob, {
+          contentType: "image/jpeg",
+          upsert: true,
+        });
+
+      if (error) throw error;
+
+      // 4. Get Public URL
+      const { data: publicUrlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      return publicUrlData.publicUrl;
+    } catch (error) {
+      console.error("Upload error:", error);
+      throw error;
+    }
+  };
+
+  // 3. Function to save profile to Supabase
   const handleSaveProfile = async () => {
     if (!fullName || !organizationId) {
       Alert.alert("Missing Info", "Please fill in all fields.");
@@ -62,16 +124,19 @@ export default function CompleteProfileScreen() {
 
       if (!user) throw new Error("No user found");
 
-      // TODO: Here we would upload the image to Supabase Storage and get the URL.
-      // For now, we'll skip the actual file upload to keep this step simple 
-      // and just assume a placeholder if no image is uploaded.
+      let avatarUrl = null;
+
+      // If user selected an image, upload it first
+      if (image) {
+        avatarUrl = await uploadImage(image, user.id);
+      }
 
       const updates = {
         id: user.id,
         full_name: fullName,
-        organization_id: organizationId, // In production, validate this ID exists!
+        organization_id: organizationId,
         preferred_language: language,
-        avatar_url: image ? "uploaded_image_url_placeholder" : null, // We'll fix this later
+        avatar_url: avatarUrl, // Now saving the real URL!
         updated_at: new Date(),
       };
 
