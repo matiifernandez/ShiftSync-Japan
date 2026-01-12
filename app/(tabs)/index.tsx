@@ -13,17 +13,21 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       async function loadProfile() {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (user) {
           const { data: profile } = await supabase
             .from("profiles")
             .select("full_name, avatar_url")
             .eq("id", user.id)
             .single();
-          
+
           if (profile) {
             // Get first name only for the greeting
-            const firstName = profile.full_name ? profile.full_name.split(" ")[0] : "User";
+            const firstName = profile.full_name
+              ? profile.full_name.split(" ")[0]
+              : "User";
             setUserName(firstName);
             setAvatarUrl(profile.avatar_url);
           }
@@ -51,9 +55,9 @@ export default function HomeScreen() {
             {/* Real Avatar or Placeholder */}
             <View className="w-12 h-12 bg-gray-300 rounded-full items-center justify-center overflow-hidden">
               {avatarUrl ? (
-                <Image 
-                  source={{ uri: avatarUrl }} 
-                  className="w-full h-full" 
+                <Image
+                  source={{ uri: avatarUrl }}
+                  className="w-full h-full"
                   resizeMode="cover"
                 />
               ) : (
@@ -86,7 +90,7 @@ export default function HomeScreen() {
               <FontAwesome5 name="clock" size={14} color="white" />
               <Text className="text-white ml-2 font-medium">14:00</Text>
             </View>
-            <View className="flex-row items-center bg-white/10 px-4 py-2 rounded-xl">
+            <View className="flex-row items-center ml-2 bg-white/10 px-4 py-2 rounded-xl">
               <FontAwesome5 name="users" size={14} color="white" />
               <Text className="text-white ml-2 font-medium">Team A</Text>
             </View>
