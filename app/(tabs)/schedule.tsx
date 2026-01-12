@@ -1,45 +1,18 @@
 import React, { useState, useMemo } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Calendar, DateData } from "react-native-calendars";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
-
-// Mock Data matching the ScheduleItem concept
-// In a real app, this would come from Supabase
-const SCHEDULE_DATA = [
-  {
-    id: "1",
-    date: "2025-11-02",
-    type: "work_shift",
-    title: "Morning Shift - Tokyo Station",
-    time: "08:00 - 16:00",
-    location: "Tokyo Station, Platform 10",
-    description: "Coordinate luggage transfer for Group A.",
-  },
-  {
-    id: "3",
-    date: "2025-11-05",
-    type: "travel_day",
-    title: "Transit to Kyoto",
-    time: "10:00 - 13:00",
-    location: "Shinkansen Hikari 505",
-    description: "Travel with the equipment team.",
-  },
-  {
-    id: "4",
-    date: "2025-11-10",
-    type: "off_day",
-    title: "Day Off",
-    description: "Rest day.",
-  },
-];
+import { useSchedule } from "../../hooks/useSchedule";
+import { ScheduleItem } from "../../types";
 
 const THEME_COLOR = "#D9381E";
 
 export default function ScheduleScreen() {
+  const { schedule, loading } = useSchedule();
   const [selectedDate, setSelectedDate] = useState(
-    format(new Date("2025-11-02"), "yyyy-MM-dd") // Default to mock date for demo
+    format(new Date(), "yyyy-MM-dd")
   );
 
   // Generate marked dates for the calendar
@@ -47,7 +20,7 @@ export default function ScheduleScreen() {
     const marks: any = {};
     
     // Mark dates with events
-    SCHEDULE_DATA.forEach((item) => {
+    schedule.forEach((item) => {
       if (!marks[item.date]) {
         marks[item.date] = { marked: true, dotColor: THEME_COLOR };
       }
@@ -62,14 +35,14 @@ export default function ScheduleScreen() {
     };
 
     return marks;
-  }, [selectedDate]);
+  }, [selectedDate, schedule]);
 
   // Filter events for the selected date
   const selectedEvents = useMemo(() => {
-    return SCHEDULE_DATA.filter((item) => item.date === selectedDate);
-  }, [selectedDate]);
+    return schedule.filter((item) => item.date === selectedDate);
+  }, [selectedDate, schedule]);
 
-  // Helper to determine icon color for the prop
+  // Helper to determine icon color
   const getIconColor = (type: string) => {
      switch (type) {
       case "work_shift": return "#1A1A1A";
@@ -78,6 +51,33 @@ export default function ScheduleScreen() {
       default: return "#6B7280";
     }
   };
+
+  // Helper to format title based on type
+  const getEventTitle = (item: ScheduleItem) => {
+    switch (item.type) {
+        case "work_shift": return "Work Shift";
+        case "travel_day": return "Travel / Transit";
+        case "off_day": return "Day Off";
+        default: return "Event";
+    }
+  };
+
+  // Helper to format time range
+  const formatTimeRange = (start?: string, end?: string) => {
+      if (!start) return null;
+      // Assume time is stored as HH:mm:ss or HH:mm, we just want HH:mm
+      const formatTime = (t: string) => t.substring(0, 5);
+      if (end) return `${formatTime(start)} - ${formatTime(end)}`;
+      return formatTime(start);
+  };
+
+  if (loading) {
+      return (
+          <SafeAreaView className="flex-1 bg-white justify-center items-center">
+              <ActivityIndicator size="large" color={THEME_COLOR} />
+          </SafeAreaView>
+      )
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -88,6 +88,8 @@ export default function ScheduleScreen() {
         <Calendar
           onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
           markedDates={markedDates}
+          // Enable horizontal paging for better UX
+          enableSwipeDb={true}
           theme={{
             todayTextColor: THEME_COLOR,
             selectedDayBackgroundColor: THEME_COLOR,
@@ -107,10 +109,11 @@ export default function ScheduleScreen() {
         <ScrollView showsVerticalScrollIndicator={false}>
           {selectedEvents.length > 0 ? (
             selectedEvents.map((event) => {
-               // Fix the icon rendering
                let iconName = "calendar";
                let bgColor = "bg-gray-100";
                const color = getIconColor(event.type);
+               const title = getEventTitle(event);
+               const timeString = formatTimeRange(event.start_time, event.end_time);
 
                switch (event.type) {
                 case "work_shift": iconName = "briefcase"; bgColor = "bg-gray-200"; break;
@@ -127,10 +130,10 @@ export default function ScheduleScreen() {
                        <FontAwesome5 name={iconName} size={20} color={color} />
                     </View>
                     <View className="flex-1">
-                      <Text className="text-lg font-bold text-brand-dark">{event.title}</Text>
-                      {event.time && <Text className="text-gray-500 font-medium text-sm my-1">{event.time}</Text>}
-                      {event.location && <Text className="text-gray-400 text-xs mb-1">{event.location}</Text>}
-                      <Text className="text-gray-600 text-sm leading-5">{event.description}</Text>
+                      <Text className="text-lg font-bold text-brand-dark">{title}</Text>
+                      {timeString && <Text className="text-gray-500 font-medium text-sm my-1">{timeString}</Text>}
+                      {event.location_name && <Text className="text-gray-400 text-xs mb-1">{event.location_name}</Text>}
+                      {event.notes && <Text className="text-gray-600 text-sm leading-5 mt-1">{event.notes}</Text>}
                     </View>
                  </View>
                )
