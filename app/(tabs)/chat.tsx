@@ -6,57 +6,26 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-
-// Mock data for the conversation list
-const CONVERSATIONS = [
-  {
-    id: "general-group",
-    name: "General Staff JP/EN",
-    lastMessage: "Konnichiwa! The Tottori shift is updated.",
-    time: "10:30 AM",
-    unread: 3,
-    type: "group",
-    avatar: null,
-  },
-  {
-    id: "1",
-    name: "Kenji Tanaka",
-    lastMessage: "Do you have the tickets for the Shinkansen?",
-    time: "9:15 AM",
-    unread: 0,
-    type: "direct",
-    avatar: "https://i.pravatar.cc/150?u=kenji",
-  },
-  {
-    id: "2",
-    name: "Sarah Jenkins",
-    lastMessage: "Perfect, see you at the hotel lobby.",
-    time: "Yesterday",
-    unread: 0,
-    type: "direct",
-    avatar: "https://i.pravatar.cc/150?u=sarah",
-  },
-  {
-    id: "logistics-team",
-    name: "Logistics Team",
-    lastMessage: "Truck is arriving at Tokyo Station now.",
-    time: "Yesterday",
-    unread: 1,
-    type: "group",
-    avatar: null,
-  },
-];
+import { useConversations, Conversation } from "../../hooks/useConversations";
 
 export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [search, setSearch] = useState("");
+  const { conversations, loading, refreshConversations } = useConversations();
 
-  const renderChatItem = ({ item }: { item: typeof CONVERSATIONS[0] }) => {
+  const renderChatItem = ({ item }: { item: Conversation }) => {
+    // Format time roughly
+    const timeDisplay = item.last_message_time 
+      ? new Date(item.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : "";
+
     return (
       <TouchableOpacity
         className="flex-row items-center px-6 py-4 border-b border-gray-50 active:bg-gray-50"
@@ -67,8 +36,8 @@ export default function ChatScreen() {
       >
         <View className="relative">
           <View className="w-14 h-14 bg-gray-200 rounded-full items-center justify-center overflow-hidden border border-gray-100">
-            {item.avatar ? (
-              <Image source={{ uri: item.avatar }} className="w-full h-full" />
+            {item.avatar_url ? (
+              <Image source={{ uri: item.avatar_url }} className="w-full h-full" />
             ) : (
               <FontAwesome5
                 name={item.type === "group" ? "users" : "user"}
@@ -77,10 +46,11 @@ export default function ChatScreen() {
               />
             )}
           </View>
-          {item.unread > 0 && (
+          {/* Unread badge placeholder - SQL function doesn't return count yet */}
+          {item.unread_count && item.unread_count > 0 && (
             <View className="absolute -top-1 -right-1 bg-brand-red w-5 h-5 rounded-full items-center justify-center border-2 border-white">
               <Text className="text-white text-[10px] font-bold">
-                {item.unread}
+                {item.unread_count}
               </Text>
             </View>
           )}
@@ -91,10 +61,10 @@ export default function ChatScreen() {
             <Text className="text-brand-dark font-bold text-lg" numberOfLines={1}>
               {item.name}
             </Text>
-            <Text className="text-gray-400 text-xs">{item.time}</Text>
+            <Text className="text-gray-400 text-xs">{timeDisplay}</Text>
           </View>
           <Text className="text-gray-500 text-sm" numberOfLines={1}>
-            {item.lastMessage}
+            {item.last_message || "No messages yet"}
           </Text>
         </View>
 
@@ -119,18 +89,27 @@ export default function ChatScreen() {
         </View>
       </View>
 
-      <FlatList
-        data={CONVERSATIONS.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))}
-        renderItem={renderChatItem}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View className="flex-1 items-center justify-center mt-20">
-            <Ionicons name="chatbubbles-outline" size={64} color="#E5E7EB" />
-            <Text className="text-gray-400 mt-4 text-lg">No conversations found</Text>
-          </View>
-        }
-      />
+      {loading && conversations.length === 0 ? (
+        <View className="flex-1 justify-center items-center">
+            <ActivityIndicator size="large" color="#D9381E" />
+        </View>
+      ) : (
+        <FlatList
+            data={conversations.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))}
+            renderItem={renderChatItem}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+                <RefreshControl refreshing={loading} onRefresh={refreshConversations} tintColor="#D9381E" />
+            }
+            ListEmptyComponent={
+            <View className="flex-1 items-center justify-center mt-20">
+                <Ionicons name="chatbubbles-outline" size={64} color="#E5E7EB" />
+                <Text className="text-gray-400 mt-4 text-lg">No conversations found</Text>
+            </View>
+            }
+        />
+      )}
     </View>
   );
 }
