@@ -31,15 +31,16 @@ export default function Layout() {
 
     // Navigation Logic
     // "app/(tabs)/..." -> segments = ["(tabs)", ...]
-    // "app/index.tsx" -> segments = [] (or ["index"] depending on router version)
+    // "app/chat/[id].tsx" -> segments = ["chat", "[id]"]
+    // "app/index.tsx" -> segments = [] (root)
     
-    const inAuthGroup = segments[0] === "(tabs)";
+    const isAtLogin = segments.length === 0;
 
-    if (session && !inAuthGroup) {
+    if (session && isAtLogin) {
       // Logged in but viewing login screen -> Go to Tabs
       router.replace("/(tabs)");
-    } else if (!session && inAuthGroup) {
-      // Not logged in but viewing tabs -> Go to Login
+    } else if (!session && !isAtLogin) {
+      // Not logged in but viewing internal screens -> Go to Login
       router.replace("/");
     }
   }, [session, initialized, segments]);

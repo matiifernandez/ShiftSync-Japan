@@ -69,17 +69,25 @@ export function useChat(conversationId: string) {
           filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-           const newMessage = payload.new as Message;
+           console.log("New message received!", payload);
+           const newMessage = payload.new as any;
            
-           // Fetch sender profile info for the new message
+           // Fetch sender profile info for the new message to display name correctly
+           // Optimization: If sender is ME, I already know my name, but fetching is safer for consistency
             const { data: profile } = await supabase
                 .from("profiles")
                 .select("full_name, avatar_url")
                 .eq("id", newMessage.sender_id)
                 .single();
 
-            const msgWithProfile = {
-                ...newMessage,
+            const msgWithProfile: Message = {
+                id: newMessage.id,
+                conversation_id: newMessage.conversation_id,
+                sender_id: newMessage.sender_id,
+                content_original: newMessage.content_original,
+                content_translated: newMessage.content_translated,
+                original_language: newMessage.original_language,
+                created_at: newMessage.created_at,
                 sender_name: profile?.full_name || "Unknown",
                 avatar_url: profile?.avatar_url
             };
