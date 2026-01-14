@@ -71,16 +71,18 @@ export function useNotifications() {
         setPermissionStatus(status);
     }
 
+    const trigger = seconds > 0 ? {
+      seconds,
+      channelId: 'default',
+    } : null;
+
     await Notifications.scheduleNotificationAsync({
       content: {
         title,
         body,
         sound: true,
       },
-      trigger: {
-        seconds: seconds, // En cuántos segundos disparar
-        repeats: false,
-      } as any, // Type assertion needed for some Expo versions with seconds trigger
+      trigger,
     });
     
     Alert.alert("Reminder Set", `You will be reminded in ${seconds} seconds (demo mode).`);
