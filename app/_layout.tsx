@@ -5,11 +5,16 @@ import { View, ActivityIndicator } from "react-native";
 import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
 
+import { useGlobalRealtime } from "../hooks/useGlobalRealtime";
+
 export default function Layout() {
   const [session, setSession] = useState<Session | null>(null);
   const [initialized, setInitialized] = useState(false);
   const segments = useSegments();
   const router = useRouter();
+
+  // Activate global listeners for notifications
+  useGlobalRealtime();
 
   useEffect(() => {
     // 1. Check initial session
