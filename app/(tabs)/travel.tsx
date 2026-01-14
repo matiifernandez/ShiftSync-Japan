@@ -7,20 +7,36 @@ import {
   Switch,
   Linking,
   ActivityIndicator,
+  Alert
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useTravel } from "../../hooks/useTravel";
+import { useNotifications } from "../../hooks/useNotifications";
 
 export default function TravelScreen() {
   const insets = useSafeAreaInsets();
   const { trip, loading } = useTravel();
+  const { scheduleNotification } = useNotifications();
   const [remindMe, setRemindMe] = useState(false);
 
   const handleOpenMaps = (url?: string) => {
     if (url) {
       Linking.openURL(url);
+    }
+  };
+
+  const handleToggleReminder = async (value: boolean) => {
+    setRemindMe(value);
+    if (value) {
+        // En una app real, calcularíamos la diferencia de tiempo hasta la salida (ticket.departure_time - 2 horas)
+        // Para demo, usaremos 5 segundos para probar que funciona
+        await scheduleNotification(
+            "Trip Reminder 🚄", 
+            "Your trip to Osaka starts soon! Don't forget your tickets.", 
+            5
+        );
     }
   };
 
@@ -136,7 +152,7 @@ export default function TravelScreen() {
           </View>
           <Switch
             value={remindMe}
-            onValueChange={setRemindMe}
+            onValueChange={handleToggleReminder}
             trackColor={{ false: "#E5E7EB", true: "#D9381E" }}
             thumbColor={"#FFFFFF"}
           />
