@@ -48,18 +48,6 @@ export default function TravelScreen() {
         className="flex-1 px-6 pt-6"
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER */}
-        <View className="items-center mb-8">
-          <View className="bg-brand-red w-16 h-16 rounded-full items-center justify-center mb-4 shadow-sm">
-            <Text className="text-3xl">🗻</Text>
-          </View>
-          <Text className="text-2xl font-bold text-brand-dark">ShiftSync</Text>
-          <Text className="text-xl font-bold text-brand-dark">Japan</Text>
-          <Text className="text-gray-500 mt-2 text-sm">
-            Simplify Your Work Life
-          </Text>
-        </View>
-
         {/* TITLE SECTION */}
         <View className="mb-6">
           <Text className="text-lg font-bold text-brand-dark">
