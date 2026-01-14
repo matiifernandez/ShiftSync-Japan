@@ -84,4 +84,16 @@ Si aparece el error `Cannot find module 'react-native-worklets/plugin'` o confli
 Si la lista de chats se queda cargando infinitamente al volver atrás:
 - Revisar `hooks/useConversations.ts`: `fetchConversations` no debe activar `setLoading(true)` si es una actualización en segundo plano (foco). Usar flag `isBackground`.
 
+## 8. Roadmap a Producción (App Store)
+
+### 🔴 CRÍTICO: Notificaciones Push Reales
+La implementación actual de notificaciones globales (`hooks/useGlobalRealtime.ts`) funciona mediante **Client-Side Listeners** (Supabase Realtime).
+- **Limitación:** Solo funcionan cuando la app está **ABIERTA (Foreground)**. Si el usuario cierra la app o bloquea el teléfono, el WebSocket se desconecta y no llegan avisos.
+- **Solución para Producción:** Migrar a **Server-Side Push Notifications**.
+    1.  **Backend:** Crear Supabase Edge Functions (Triggers en DB) que detecten `INSERT` en `messages` o `schedule_items`.
+    2.  **Servicio:** Esas funciones deben llamar a la **Expo Push API** usando los tokens guardados de los usuarios.
+    3.  **Frontend:** El cliente solo se encarga de enviar/renovar el Push Token, no de escuchar eventos en vivo para notificar.
+
+*Nota: Las notificaciones locales ("Remind me" en Travel) YA son production-ready, pues usan el scheduler nativo del OS.*
+
 IMPORTANTE: El objetivo principal es el aprendizaje. Explicar siempre los cambios, archivos modificados y comparaciones con el flujo de Rails para facilitar la comprensión.
