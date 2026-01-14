@@ -123,15 +123,15 @@ export default function HomeScreen() {
             <Text className="text-brand-dark font-bold text-lg">Chat</Text>
           </TouchableOpacity>
 
-          {/* TICKETS */}
+          {/* TRAVEL */}
           <TouchableOpacity
             className="w-[48%] aspect-square bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm active:bg-gray-100"
-            onPress={() => router.push("/(tabs)/tickets")}
+            onPress={() => router.push("/(tabs)/travel")}
           >
             <View className="bg-green-100 w-12 h-12 rounded-full items-center justify-center">
-              <FontAwesome5 name="ticket-alt" size={24} color="#059669" />
+              <FontAwesome5 name="plane" size={24} color="#059669" />
             </View>
-            <Text className="text-brand-dark font-bold text-lg">Tickets</Text>
+            <Text className="text-brand-dark font-bold text-lg">Travel</Text>
           </TouchableOpacity>
 
           {/* SCHEDULE */}
