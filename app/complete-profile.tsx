@@ -10,11 +10,12 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function CompleteProfileScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -156,7 +157,16 @@ export default function CompleteProfileScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <View 
+      style={{ 
+        flex: 1, 
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+        paddingLeft: insets.left,
+        paddingRight: insets.right
+      }} 
+      className="bg-white"
+    >
       <ScrollView className="px-6 py-4">
         <Text className="text-3xl font-bold text-brand-dark mb-2">
           Setup Profile
@@ -268,6 +278,6 @@ export default function CompleteProfileScreen() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

@@ -1,7 +1,6 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React, { useState, useMemo } from "react";
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Calendar, DateData } from "react-native-calendars";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
@@ -83,9 +82,12 @@ export default function ScheduleScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+      <View 
+        style={{ paddingTop: insets.top }} 
+        className="flex-1 bg-white justify-center items-center"
+      >
         <ActivityIndicator size="large" color={THEME_COLOR} />
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -102,7 +104,7 @@ export default function ScheduleScreen() {
           onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
           markedDates={markedDates}
           // Enable horizontal paging for better UX
-          enableSwipeDb={true}
+          enableSwipeMonths={true}
           theme={{
             todayTextColor: THEME_COLOR,
             selectedDayBackgroundColor: THEME_COLOR,

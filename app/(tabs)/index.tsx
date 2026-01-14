@@ -1,11 +1,12 @@
 import React, { useState, useCallback } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useRouter, useFocusEffect } from "expo-router";
 import { supabase } from "../../lib/supabase";
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [userName, setUserName] = useState("User");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -38,7 +39,16 @@ export default function HomeScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <View 
+      style={{ 
+        flex: 1, 
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+        paddingLeft: insets.left,
+        paddingRight: insets.right
+      }} 
+      className="bg-white"
+    >
       <ScrollView className="flex-1 px-6 pt-4">
         {/* HEADER */}
         <View className="flex-row justify-between items-center mb-8">
@@ -147,6 +157,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

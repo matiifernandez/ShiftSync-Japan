@@ -34,7 +34,7 @@ export default function Layout() {
     // "app/chat/[id].tsx" -> segments = ["chat", "[id]"]
     // "app/index.tsx" -> segments = [] (root)
     
-    const isAtLogin = segments.length === 0;
+    const isAtLogin = !segments[0];
 
     if (session && isAtLogin) {
       // Logged in but viewing login screen -> Go to Tabs
@@ -47,7 +47,7 @@ export default function Layout() {
 
   if (!initialized) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", items: "center" }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#D9381E" />
       </View>
     );

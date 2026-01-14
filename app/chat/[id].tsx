@@ -20,7 +20,11 @@ export default function ChatDetailScreen() {
   const { id, name } = params;
 
   // Use the custom hook connected to Supabase
-  const { messages, sendMessage: sendToSupabase, currentUserId } = useChat(id as string);
+  const {
+    messages,
+    sendMessage: sendToSupabase,
+    currentUserId,
+  } = useChat(id as string);
   const [inputText, setInputText] = useState("");
 
   const handleSend = () => {
@@ -31,7 +35,10 @@ export default function ChatDetailScreen() {
 
   const renderMessage = ({ item }: { item: Message }) => {
     const isMe = item.sender_id === currentUserId;
-    const timeString = new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const timeString = new Date(item.created_at).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
     return (
       <View
@@ -39,13 +46,17 @@ export default function ChatDetailScreen() {
       >
         {!isMe && (
           <View className="w-8 h-8 bg-gray-300 rounded-full mr-2 items-center justify-center overflow-hidden">
-             <Text className="text-gray-600 text-xs font-bold">{item.sender_name ? item.sender_name[0] : "?"}</Text>
+            <Text className="text-gray-600 text-xs font-bold">
+              {item.sender_name ? item.sender_name[0] : "?"}
+            </Text>
           </View>
         )}
-        
+
         <View
           className={`max-w-[75%] rounded-2xl px-4 py-3 ${
-            isMe ? "bg-brand-red rounded-tr-none" : "bg-gray-100 rounded-tl-none"
+            isMe
+              ? "bg-brand-red rounded-tr-none"
+              : "bg-gray-100 rounded-tl-none"
           }`}
         >
           {!isMe && item.sender_name && (
@@ -54,23 +65,47 @@ export default function ChatDetailScreen() {
             </Text>
           )}
 
-          <Text className={`${isMe ? "text-white" : "text-brand-dark"} text-base`}>
+          <Text
+            className={`${isMe ? "text-white" : "text-brand-dark"} text-base`}
+          >
             {item.content_original}
           </Text>
 
           {item.content_translated && (
-            <View className={`mt-2 pt-2 border-t ${isMe ? "border-white/20" : "border-gray-200"}`}>
-               <View className="flex-row items-center mb-1">
-                   <Ionicons name="language" size={12} color={isMe ? "rgba(255,255,255,0.7)" : "#9CA3AF"} />
-                   <Text className={`text-[10px] ml-1 ${isMe ? "text-white/70" : "text-gray-400"}`}>TRANSLATED</Text>
-               </View>
-               <Text className={`${isMe ? "text-white/90" : "text-gray-600"} text-sm italic`}>
-                 {item.content_translated}
-               </Text>
+            <View
+              className={`mt-2 pt-2 border-t ${
+                isMe ? "border-white/20" : "border-gray-200"
+              }`}
+            >
+              <View className="flex-row items-center mb-1">
+                <Ionicons
+                  name="language"
+                  size={12}
+                  color={isMe ? "rgba(255,255,255,0.7)" : "#9CA3AF"}
+                />
+                <Text
+                  className={`text-[10px] ml-1 ${
+                    isMe ? "text-white/70" : "text-gray-400"
+                  }`}
+                >
+                  TRANSLATED
+                </Text>
+              </View>
+              <Text
+                className={`${
+                  isMe ? "text-white/90" : "text-gray-600"
+                } text-sm italic`}
+              >
+                {item.content_translated}
+              </Text>
             </View>
           )}
 
-          <Text className={`text-[10px] mt-1 text-right ${isMe ? "text-white/60" : "text-gray-400"}`}>
+          <Text
+            className={`text-[10px] mt-1 text-right ${
+              isMe ? "text-white/60" : "text-gray-400"
+            }`}
+          >
             {timeString}
           </Text>
         </View>
@@ -79,18 +114,18 @@ export default function ChatDetailScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
+    <View style={{ flex: 1, backgroundColor: "white" }}>
       <Stack.Screen options={{ headerShown: false }} />
-      
+
       {/* HEADER */}
-      <View 
+      <View
         style={{ paddingTop: insets.top }}
         className="flex-row items-center px-4 py-3 border-b border-gray-100 bg-white"
       >
         <TouchableOpacity onPress={() => router.back()} className="mr-4 p-2">
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
-        
+
         <View className="flex-1">
           <Text className="text-xl font-bold text-brand-dark" numberOfLines={1}>
             {name || "Chat"}
@@ -119,27 +154,30 @@ export default function ChatDetailScreen() {
 
         {/* INPUT AREA */}
         <View className="px-4 py-3 bg-white border-t border-gray-100 flex-row items-center pb-8">
-            <TouchableOpacity className="mr-3">
-                <Ionicons name="add-circle-outline" size={28} color="#9CA3AF" />
-            </TouchableOpacity>
+          <TouchableOpacity className="mr-3">
+            <Ionicons name="add-circle-outline" size={28} color="#9CA3AF" />
+          </TouchableOpacity>
 
-            <View className="flex-1 bg-gray-100 rounded-full px-4 py-2 flex-row items-center min-h-[44px]">
-                <TextInput 
-                    className="flex-1 text-base text-brand-dark max-h-24 pt-2"
-                    placeholder="Type a message..."
-                    multiline
-                    value={inputText}
-                    onChangeText={setInputText}
-                />
-            </View>
+          <View className="flex-1 bg-gray-100 rounded-full px-4 py-2 flex-row items-center min-h-[44px]">
+            <TextInput
+              className="flex-1 text-base text-brand-dark max-h-24"
+              placeholder="Type a message..."
+              multiline
+              value={inputText}
+              onChangeText={setInputText}
+              style={{ textAlignVertical: "center" }}
+            />
+          </View>
 
-            <TouchableOpacity 
-                onPress={handleSend}
-                className={`ml-3 w-10 h-10 rounded-full items-center justify-center ${inputText.trim() ? "bg-brand-red" : "bg-gray-200"}`}
-                disabled={!inputText.trim()}
-            >
-                <Ionicons name="send" size={20} color="white" />
-            </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleSend}
+            className={`ml-3 w-10 h-10 rounded-full items-center justify-center ${
+              inputText.trim() ? "bg-brand-red" : "bg-gray-200"
+            }`}
+            disabled={!inputText.trim()}
+          >
+            <Ionicons name="send" size={20} color="white" />
+          </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
     </View>
