@@ -67,6 +67,8 @@ export interface LogisticsTicket {
   project_id: string;
   user_id?: string;
   transport_name: string | null; // "Shinkansen..."
+  departure_station?: string;
+  arrival_station?: string;
   seat_number: string | null;
   departure_time: string; // ISO Date string
   arrival_time?: string;
