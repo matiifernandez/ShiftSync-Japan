@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { format } from "date-fns";
 import { useTravel } from "../../hooks/useTravel";
 
 export default function TravelScreen() {
@@ -79,6 +80,9 @@ export default function TravelScreen() {
           >
             <View className="w-10 items-center justify-center mr-4">
               <FontAwesome5 name="train" size={24} color="#D9381E" />
+              <Text className="text-brand-dark font-bold text-xs mt-1">
+                {format(new Date(ticket.departure_time), "HH:mm")}
+              </Text>
             </View>
                         <View className="flex-1">
                           <Text className="text-base font-bold text-brand-dark mb-1">
