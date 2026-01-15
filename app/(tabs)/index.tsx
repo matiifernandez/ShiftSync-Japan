@@ -38,6 +38,13 @@ export default function HomeScreen() {
     }, [])
   );
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Ohayou gozaimasu";
+    if (hour < 18) return "Konnichiwa";
+    return "Konbanwa";
+  };
+
   return (
     <View 
       style={{ 
@@ -53,8 +60,8 @@ export default function HomeScreen() {
         {/* HEADER */}
         <View className="flex-row justify-between items-center mb-8">
           <View>
-            <Text className="text-gray-500 text-lg">Konbanwa,</Text>
-            <Text className="text-3xl font-bold text-brand-dark">
+            <Text className="text-gray-500 text-lg">{getGreeting()},</Text>
+            <Text className="text-3xl font-bold text-brand-red">
               {userName}-san
             </Text>
           </View>

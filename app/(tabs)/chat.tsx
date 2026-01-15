@@ -78,7 +78,7 @@ export default function ChatScreen() {
       <View className="px-6 py-4">
         <Text className="text-3xl font-bold text-brand-dark mb-4">Messages</Text>
         <View className="bg-gray-100 flex-row items-center px-4 py-3 rounded-2xl">
-          <Ionicons name="search" size={20} color="#9CA3AF" />
+          <Ionicons name="search" size={20} color="#D9381E" />
           <TextInput
             className="flex-1 ml-3 text-brand-dark text-base"
             placeholder="Search conversations..."
@@ -110,6 +110,28 @@ export default function ChatScreen() {
             }
         />
       )}
+      {/* NEW CHAT FAB */}
+      <TouchableOpacity
+        onPress={() => console.log("New Chat")}
+        style={{
+          position: "absolute",
+          bottom: 20,
+          right: 20,
+          backgroundColor: "#D9381E",
+          width: 56,
+          height: 56,
+          borderRadius: 28,
+          alignItems: "center",
+          justifyContent: "center",
+          shadowColor: "#D9381E",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 5,
+        }}
+      >
+        <Ionicons name="create-outline" size={28} color="white" />
+      </TouchableOpacity>
     </View>
   );
 }
