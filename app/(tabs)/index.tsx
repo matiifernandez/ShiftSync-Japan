@@ -148,7 +148,7 @@ export default function HomeScreen() {
           {/* EXPENSES */}
           <TouchableOpacity
             className="w-[48%] aspect-square bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm active:bg-gray-100"
-            onPress={() => console.log("Expenses")}
+            onPress={() => router.push("/expenses")}
           >
             <View className="bg-orange-100 w-12 h-12 rounded-full items-center justify-center">
               <FontAwesome5 name="yen-sign" size={24} color="#EA580C" />

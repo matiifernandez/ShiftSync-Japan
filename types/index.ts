@@ -87,12 +87,16 @@ export interface Accommodation {
 
 export interface Expense {
   id: string;
+  organization_id: string;
   project_id?: string;
   user_id: string;
   amount: number;
   currency: string;
   description?: string;
   receipt_url?: string;
+  category: "transport" | "accommodation" | "fuel" | "parking" | "meals" | "other";
   paid_by: "employee" | "company";
-  status: "pending" | "approved" | "reimbursed";
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+  profiles?: { full_name: string; avatar_url: string }; // For joins
 }
