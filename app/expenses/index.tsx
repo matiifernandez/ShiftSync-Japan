@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-import { useRouter, Stack } from "expo-router";
+import { useRouter, Stack, useFocusEffect } from "expo-router";
 import { useExpenses } from "../../hooks/useExpenses";
 import { Expense } from "../../types";
 
@@ -18,6 +18,12 @@ export default function ExpensesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { expenses, loading, refreshExpenses, userRole, updateExpenseStatus } = useExpenses();
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshExpenses();
+    }, [])
+  );
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -52,7 +58,11 @@ export default function ExpensesScreen() {
     const isAdmin = userRole === "admin";
 
     return (
-      <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-gray-100">
+      <TouchableOpacity 
+        activeOpacity={0.9}
+        onPress={() => router.push({ pathname: "/expenses/[id]", params: { id: item.id } })}
+        className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-gray-100"
+      >
         <View className="flex-row justify-between items-start mb-3">
           <View className="flex-row items-center">
             <View className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center mr-3">
@@ -116,7 +126,7 @@ export default function ExpensesScreen() {
             </TouchableOpacity>
           </View>
         )}
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -126,6 +136,7 @@ export default function ExpensesScreen() {
         options={{
           headerShown: true,
           title: "Expenses / 経費",
+          headerBackTitle: "Home",
           headerTitleStyle: { fontWeight: "bold" },
           headerShadowVisible: false,
           headerStyle: { backgroundColor: "#F9FAFB" },
