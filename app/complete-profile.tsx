@@ -18,6 +18,7 @@ export default function CompleteProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false); // To distinguish between Onboarding vs Editing
 
   // Form State
   const [fullName, setFullName] = useState("");
@@ -39,6 +40,7 @@ export default function CompleteProfileScreen() {
           .single();
 
         if (profile) {
+          setIsEditing(true); // If profile exists, we are in Edit Mode
           setFullName(profile.full_name || "");
           // Only overwrite org ID if it exists in DB, otherwise keep the default/hack for easier onboarding testing
           if (profile.organization_id) setOrganizationId(profile.organization_id);
@@ -125,10 +127,11 @@ export default function CompleteProfileScreen() {
 
       if (!user) throw new Error("No user found");
 
-      let avatarUrl = null;
+      let avatarUrl = image;
 
-      // If user selected an image, upload it first
-      if (image) {
+      // If user selected an image (local URI), upload it first
+      // If it's already a remote URL, we keep it as is
+      if (image && !image.startsWith("http")) {
         avatarUrl = await uploadImage(image, user.id);
       }
 
@@ -156,6 +159,20 @@ export default function CompleteProfileScreen() {
     }
   };
 
+  const handleLogout = async () => {
+    Alert.alert("Log Out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Log Out",
+        style: "destructive",
+        onPress: async () => {
+          await supabase.auth.signOut();
+          router.replace("/");
+        },
+      },
+    ]);
+  };
+
   return (
     <View 
       style={{ 
@@ -168,12 +185,23 @@ export default function CompleteProfileScreen() {
       className="bg-white"
     >
       <ScrollView className="px-6 py-4">
-        <Text className="text-3xl font-bold text-brand-dark mb-2">
-          Setup Profile
-        </Text>
-        <Text className="text-gray-500 mb-8">
-          Let's verify your identity and get you set up.
-        </Text>
+        {/* HEADER */}
+        <View className="flex-row justify-between items-center mb-6">
+            <View>
+                <Text className="text-3xl font-bold text-brand-dark">
+                    {isEditing ? "Edit Profile" : "Setup Profile"}
+                </Text>
+                <Text className="text-gray-500">
+                    {isEditing ? "Update your personal details" : "Let's verify your identity and get you set up."}
+                </Text>
+            </View>
+            {isEditing && (
+                <TouchableOpacity onPress={() => router.back()} className="bg-gray-100 p-2 rounded-full">
+                    <Ionicons name="close" size={24} color="#4B5563" />
+                </TouchableOpacity>
+            )}
+        </View>
+
 
         {/* PHOTO PICKER */}
         <View className="items-center mb-8">
@@ -220,6 +248,8 @@ export default function CompleteProfileScreen() {
               value={organizationId}
               onChangeText={setOrganizationId}
               autoCapitalize="none"
+              // If editing, maybe we should disable organization change? Usually staff can't change orgs freely.
+              // For MVP flexibility we keep it enabled, but you might want to consider `editable={!isEditing}` later.
             />
           </View>
 
@@ -265,7 +295,7 @@ export default function CompleteProfileScreen() {
           </View>
         </View>
 
-        {/* SUBMIT BUTTON */}
+        {/* ACTIONS */}
         <TouchableOpacity
           onPress={handleSaveProfile}
           disabled={loading}
@@ -274,9 +304,21 @@ export default function CompleteProfileScreen() {
           }`}
         >
           <Text className="text-white font-bold text-lg">
-            {loading ? "Saving..." : "Complete Setup"}
+            {loading ? "Saving..." : isEditing ? "Save Changes" : "Complete Setup"}
           </Text>
         </TouchableOpacity>
+        
+        {isEditing && (
+            <TouchableOpacity
+              onPress={handleLogout}
+              className="mt-4 w-full p-4 rounded-xl items-center border border-red-200 bg-white"
+            >
+              <Text className="text-red-600 font-bold text-lg">Log Out</Text>
+            </TouchableOpacity>
+        )}
+
+        <View className="h-10"/>
+
       </ScrollView>
     </View>
   );
