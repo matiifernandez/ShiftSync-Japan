@@ -13,10 +13,12 @@ import * as ImagePicker from "expo-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../hooks/useTranslation";
 
 export default function CompleteProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { changeLanguage, t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false); // To distinguish between Onboarding vs Editing
 
@@ -149,6 +151,9 @@ export default function CompleteProfileScreen() {
 
       if (error) throw error;
 
+      // Update app language globally
+      changeLanguage(language);
+
       Alert.alert("Success", "Profile updated!", [
         { text: "OK", onPress: () => router.replace("/(tabs)") },
       ]);
@@ -189,7 +194,7 @@ export default function CompleteProfileScreen() {
         <View className="flex-row justify-between items-center mb-6">
             <View>
                 <Text className="text-3xl font-bold text-brand-dark">
-                    {isEditing ? "Edit Profile" : "Setup Profile"}
+                    {isEditing ? t('edit_profile') : t('setup_profile')}
                 </Text>
                 <Text className="text-gray-500">
                     {isEditing ? "Update your personal details" : "Let's verify your identity and get you set up."}
@@ -216,20 +221,20 @@ export default function CompleteProfileScreen() {
               ) : (
                 <View className="items-center">
                   <Ionicons name="camera" size={32} color="#9CA3AF" />
-                  <Text className="text-gray-400 text-xs mt-1">Upload Photo</Text>
+                  <Text className="text-gray-400 text-xs mt-1">{t('upload_photo')}</Text>
                 </View>
               )}
             </View>
           </TouchableOpacity>
           <Text className="text-xs text-gray-400 mt-2">
-            Face clearly visible required
+            {t('photo_required')}
           </Text>
         </View>
 
         {/* FORM FIELDS */}
         <View className="space-y-4">
           <View>
-            <Text className="text-gray-700 font-medium mb-1">Full Name</Text>
+            <Text className="text-gray-700 font-medium mb-1">{t('full_name')}</Text>
             <TextInput
               className="bg-gray-50 p-4 rounded-xl border border-gray-200"
               placeholder="e.g. Ken Watanabe"
@@ -240,7 +245,7 @@ export default function CompleteProfileScreen() {
 
           <View>
             <Text className="text-gray-700 font-medium mb-1">
-              Organization ID
+              {t('org_id')}
             </Text>
             <TextInput
               className="bg-gray-50 p-4 rounded-xl border border-gray-200"
@@ -255,7 +260,7 @@ export default function CompleteProfileScreen() {
 
           <View>
             <Text className="text-gray-700 font-medium mb-2">
-              Preferred Language
+              {t('pref_language')}
             </Text>
             <View className="flex-row gap-4">
               <TouchableOpacity
@@ -304,7 +309,7 @@ export default function CompleteProfileScreen() {
           }`}
         >
           <Text className="text-white font-bold text-lg">
-            {loading ? "Saving..." : isEditing ? "Save Changes" : "Complete Setup"}
+            {loading ? "Saving..." : isEditing ? t('save_changes') : t('complete_setup')}
           </Text>
         </TouchableOpacity>
         
@@ -313,7 +318,7 @@ export default function CompleteProfileScreen() {
               onPress={handleLogout}
               className="mt-4 w-full p-4 rounded-xl items-center border border-red-200 bg-white"
             >
-              <Text className="text-red-600 font-bold text-lg">Log Out</Text>
+              <Text className="text-red-600 font-bold text-lg">{t('log_out')}</Text>
             </TouchableOpacity>
         )}
 

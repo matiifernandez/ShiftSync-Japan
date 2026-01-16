@@ -15,20 +15,22 @@ import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../../lib/supabase";
 import { Expense } from "../../types";
+import { useTranslation } from "../../hooks/useTranslation";
 
 const CATEGORIES = [
-  { id: "transport", label: "Transport", icon: "train" },
-  { id: "accommodation", label: "Hotel", icon: "hotel" },
-  { id: "fuel", label: "Fuel", icon: "gas-pump" },
-  { id: "parking", label: "Parking", icon: "parking" },
-  { id: "meals", label: "Meals", icon: "utensils" },
-  { id: "other", label: "Other", icon: "receipt" },
+  { id: "transport", icon: "train" },
+  { id: "accommodation", icon: "hotel" },
+  { id: "fuel", icon: "gas-pump" },
+  { id: "parking", icon: "parking" },
+  { id: "meals", icon: "utensils" },
+  { id: "other", icon: "receipt" },
 ];
 
 export default function ExpenseDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const { t } = useTranslation();
   
   const [expense, setExpense] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);
@@ -130,7 +132,7 @@ export default function ExpenseDetailScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: isEditing ? "Edit Expense" : "Expense Details",
+          title: isEditing ? t('edit_expense') : t('expense_details'),
           headerRight: () => (
             isPending && !isEditing ? (
               <TouchableOpacity onPress={() => setIsEditing(true)}>
@@ -164,7 +166,7 @@ export default function ExpenseDetailScreen() {
 
         {/* AMOUNT */}
         <View className="mb-6 items-center">
-          <Text className="text-gray-500 mb-1">Total Amount</Text>
+          <Text className="text-gray-500 mb-1">{t('total_amount')}</Text>
           {isEditing ? (
              <View className="flex-row items-center border-b border-gray-300 pb-1">
                 <Text className="text-3xl font-bold text-gray-400 mr-2">¥</Text>
@@ -183,7 +185,7 @@ export default function ExpenseDetailScreen() {
         {/* DETAILS GRID */}
         <View className="space-y-6">
             <View>
-                <Text className="text-gray-500 font-bold mb-2 uppercase text-xs">Category</Text>
+                <Text className="text-gray-500 font-bold mb-2 uppercase text-xs">{t('category')}</Text>
                 {isEditing ? (
                     <View className="flex-row flex-wrap gap-2">
                         {CATEGORIES.map(cat => (
@@ -192,20 +194,20 @@ export default function ExpenseDetailScreen() {
                                 onPress={() => setCategory(cat.id)}
                                 className={`px-3 py-2 rounded-lg border ${category === cat.id ? 'bg-red-50 border-brand-red' : 'bg-white border-gray-200'}`}
                             >
-                                <Text className={category === cat.id ? 'text-brand-red font-bold' : 'text-gray-600'}>{cat.label}</Text>
+                                <Text className={category === cat.id ? 'text-brand-red font-bold' : 'text-gray-600'}>{t(('cat_' + cat.id) as any)}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
                 ) : (
                     <View className="flex-row items-center bg-gray-50 p-3 rounded-xl self-start">
                         <FontAwesome5 name={CATEGORIES.find(c => c.id === expense.category)?.icon || 'receipt'} size={16} color="#4B5563" />
-                        <Text className="ml-2 text-brand-dark font-medium capitalize">{expense.category}</Text>
+                        <Text className="ml-2 text-brand-dark font-medium capitalize">{t(('cat_' + expense.category) as any)}</Text>
                     </View>
                 )}
             </View>
 
             <View>
-                <Text className="text-gray-500 font-bold mb-2 uppercase text-xs">Description</Text>
+                <Text className="text-gray-500 font-bold mb-2 uppercase text-xs">{t('description')}</Text>
                 {isEditing ? (
                     <TextInput 
                         className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-brand-dark"
@@ -219,7 +221,7 @@ export default function ExpenseDetailScreen() {
             </View>
 
             <View>
-                <Text className="text-gray-500 font-bold mb-2 uppercase text-xs">Receipt</Text>
+                <Text className="text-gray-500 font-bold mb-2 uppercase text-xs">{t('receipt')}</Text>
                 {image ? (
                     <TouchableOpacity onPress={() => {/* TODO: Fullscreen view */}} activeOpacity={0.9}>
                         <Image 
@@ -244,7 +246,7 @@ export default function ExpenseDetailScreen() {
                     disabled={saving}
                     className="bg-brand-red p-4 rounded-xl items-center"
                 >
-                    {saving ? <ActivityIndicator color="white" /> : <Text className="text-white font-bold text-lg">Save Changes</Text>}
+                    {saving ? <ActivityIndicator color="white" /> : <Text className="text-white font-bold text-lg">{t('save_changes')}</Text>}
                 </TouchableOpacity>
 
                 <TouchableOpacity 
@@ -263,7 +265,7 @@ export default function ExpenseDetailScreen() {
                 onPress={handleDelete}
                 className="mt-10 mb-10 bg-white border border-red-200 p-4 rounded-xl items-center"
             >
-                <Text className="text-red-600 font-bold">Delete Expense</Text>
+                <Text className="text-red-600 font-bold">{t('delete_expense')}</Text>
             </TouchableOpacity>
         )}
 

@@ -6,11 +6,13 @@ import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useSchedule } from "../../hooks/useSchedule";
 import { ScheduleItem } from "../../types";
+import { useTranslation } from "../../hooks/useTranslation";
 
 const THEME_COLOR = "#D9381E";
 
 export default function ScheduleScreen() {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const { schedule, loading } = useSchedule();
   const [selectedDate, setSelectedDate] = useState(
     format(new Date(), "yyyy-MM-dd")
@@ -61,11 +63,11 @@ export default function ScheduleScreen() {
   const getEventTitle = (item: ScheduleItem) => {
     switch (item.type) {
       case "work_shift":
-        return "Work Shift";
+        return t('work_shift');
       case "travel_day":
-        return "Travel / Transit";
+        return t('travel_day');
       case "off_day":
-        return "Day Off";
+        return t('off_day');
       default:
         return "Event";
     }
@@ -98,7 +100,7 @@ export default function ScheduleScreen() {
         className="bg-white pb-4 rounded-b-3xl shadow-sm z-10"
       >
         <Text className="text-2xl font-bold text-center text-brand-dark my-4">
-          Schedule
+          {t('schedule_title')}
         </Text>
         <Calendar
           onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
@@ -185,7 +187,7 @@ export default function ScheduleScreen() {
             <View className="items-center justify-center mt-10">
               <Ionicons name="calendar-outline" size={48} color="#D1D5DB" />
               <Text className="text-gray-400 mt-2 font-medium">
-                No events scheduled
+                {t('no_events')}
               </Text>
             </View>
           )}

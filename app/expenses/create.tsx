@@ -14,19 +14,21 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter, Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useExpenses } from "../../hooks/useExpenses";
+import { useTranslation } from "../../hooks/useTranslation";
 
 const CATEGORIES = [
-  { id: "transport", label: "Transport", icon: "train", jp: "交通費" },
-  { id: "accommodation", label: "Hotel", icon: "hotel", jp: "宿泊費" },
-  { id: "fuel", label: "Fuel", icon: "gas-pump", jp: "ガソリン代" },
-  { id: "parking", label: "Parking", icon: "parking", jp: "駐車場" },
-  { id: "meals", label: "Meals", icon: "utensils", jp: "食事代" },
-  { id: "other", label: "Other", icon: "receipt", jp: "その他" },
+  { id: "transport", icon: "train" },
+  { id: "accommodation", icon: "hotel" },
+  { id: "fuel", icon: "gas-pump" },
+  { id: "parking", icon: "parking" },
+  { id: "meals", icon: "utensils" },
+  { id: "other", icon: "receipt" },
 ];
 
 export default function CreateExpenseScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const { createExpense } = useExpenses();
 
   const [amount, setAmount] = useState("");
@@ -87,15 +89,15 @@ export default function CreateExpenseScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: "New Expense",
-          headerBackTitle: "Back",
+          title: t('new_expense'),
+          headerBackTitle: t('expenses_title'),
         }}
       />
 
       <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
         {/* AMOUNT INPUT */}
         <View className="mb-8 items-center">
-          <Text className="text-gray-500 mb-2 font-medium">Amount (¥)</Text>
+          <Text className="text-gray-500 mb-2 font-medium">{t('total_amount')} (¥)</Text>
           <View className="flex-row items-center">
             <Text className="text-4xl font-bold text-brand-dark mr-2">¥</Text>
             <TextInput
@@ -110,7 +112,7 @@ export default function CreateExpenseScreen() {
         </View>
 
         {/* CATEGORY SELECTOR */}
-        <Text className="text-brand-dark font-bold mb-4">Category / カテゴリー</Text>
+        <Text className="text-brand-dark font-bold mb-4">{t('category')}</Text>
         <View className="flex-row flex-wrap gap-3 mb-8">
           {CATEGORIES.map((cat) => (
             <TouchableOpacity
@@ -132,7 +134,7 @@ export default function CreateExpenseScreen() {
                   category === cat.id ? "text-brand-red" : "text-gray-500"
                 }`}
               >
-                {cat.label}
+                {t(('cat_' + cat.id) as any)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -140,10 +142,10 @@ export default function CreateExpenseScreen() {
 
         {/* DESCRIPTION */}
         <View className="mb-8">
-          <Text className="text-brand-dark font-bold mb-2">Description / 備考</Text>
+          <Text className="text-brand-dark font-bold mb-2">{t('description')}</Text>
           <TextInput
             className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-brand-dark"
-            placeholder={category === 'other' ? "Required for 'Other'..." : "Additional notes..."}
+            placeholder={category === 'other' ? "Required..." : "Notes..."}
             multiline
             numberOfLines={3}
             value={description}
@@ -154,7 +156,7 @@ export default function CreateExpenseScreen() {
 
         {/* RECEIPT ATTACHMENT */}
         <View className="mb-10">
-          <Text className="text-brand-dark font-bold mb-4">Receipt / レシート</Text>
+          <Text className="text-brand-dark font-bold mb-4">{t('receipt')}</Text>
           <TouchableOpacity
             onPress={pickImage}
             className="w-full aspect-video bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 items-center justify-center overflow-hidden"
@@ -164,7 +166,7 @@ export default function CreateExpenseScreen() {
             ) : (
               <View className="items-center">
                 <Ionicons name="camera" size={40} color="#D1D5DB" />
-                <Text className="text-gray-400 mt-2">Attach Receipt Photo</Text>
+                <Text className="text-gray-400 mt-2">{t('upload_photo')}</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -181,7 +183,7 @@ export default function CreateExpenseScreen() {
           {submitting ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-white font-bold text-lg">Submit Expense</Text>
+            <Text className="text-white font-bold text-lg">{t('submit')}</Text>
           )}
         </TouchableOpacity>
       </ScrollView>

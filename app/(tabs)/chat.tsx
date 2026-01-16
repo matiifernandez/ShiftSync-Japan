@@ -13,10 +13,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useConversations, Conversation } from "../../hooks/useConversations";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const { conversations, loading, refreshConversations } = useConversations();
 
@@ -76,12 +78,12 @@ export default function ChatScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: 'white', paddingTop: insets.top }}>
       <View className="px-6 py-4">
-        <Text className="text-3xl font-bold text-brand-dark mb-4">Messages</Text>
+        <Text className="text-3xl font-bold text-brand-dark mb-4">{t('messages_title')}</Text>
         <View className="bg-gray-100 flex-row items-center px-4 py-3 rounded-2xl">
           <Ionicons name="search" size={20} color="#D9381E" />
           <TextInput
             className="flex-1 ml-3 text-brand-dark text-base"
-            placeholder="Search conversations..."
+            placeholder={t('search_placeholder')}
             value={search}
             onChangeText={setSearch}
             placeholderTextColor="#9CA3AF"
@@ -105,11 +107,12 @@ export default function ChatScreen() {
             ListEmptyComponent={
             <View className="flex-1 items-center justify-center mt-20">
                 <Ionicons name="chatbubbles-outline" size={64} color="#E5E7EB" />
-                <Text className="text-gray-400 mt-4 text-lg">No conversations found</Text>
+                <Text className="text-gray-400 mt-4 text-lg">{t('no_conversations')}</Text>
             </View>
             }
         />
       )}
+
       {/* NEW CHAT FAB */}
       <TouchableOpacity
         onPress={() => console.log("New Chat")}

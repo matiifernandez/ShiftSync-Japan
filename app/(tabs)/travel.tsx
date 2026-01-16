@@ -14,9 +14,11 @@ import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useTravel } from "../../hooks/useTravel";
 import { useNotifications } from "../../hooks/useNotifications";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export default function TravelScreen() {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const { trip, loading } = useTravel();
   const { scheduleNotification } = useNotifications();
   const [remindMe, setRemindMe] = useState(false);
@@ -67,7 +69,7 @@ export default function TravelScreen() {
         {/* TITLE SECTION */}
         <View className="mb-6">
           <Text className="text-lg font-bold text-brand-dark">
-            Travel Logistics / 出張ロジスティクス
+            {t('travel_logistics')}
           </Text>
           {trip && (
             <Text className="text-base text-gray-600 mt-1">
@@ -90,7 +92,7 @@ export default function TravelScreen() {
             </View>
                         <View className="flex-1">
                           <Text className="text-base font-bold text-brand-dark mb-1">
-                            Transport: {ticket.transport_name}
+                            {t('cat_transport')}: {ticket.transport_name}
                           </Text>
                           {(ticket.departure_station || ticket.arrival_station) && (
                             <Text className="text-brand-red font-medium text-sm mb-1">
@@ -118,10 +120,7 @@ export default function TravelScreen() {
               </View>
               <View className="flex-1">
                 <Text className="text-base font-bold text-brand-dark mb-1">
-                  Hotel: {hotel.name}
-                </Text>
-                <Text className="text-gray-400 text-xs">
-                  移動 (Accommodation)
+                  {t('cat_hotel')}: {hotel.name}
                 </Text>
               </View>
             </View>
@@ -134,7 +133,7 @@ export default function TravelScreen() {
             >
               <FontAwesome5 name="map-marked-alt" size={16} color="white" />
               <Text className="text-white font-bold ml-2">
-                Open in Google Maps / 地図で開く
+                {t('open_maps')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -144,10 +143,7 @@ export default function TravelScreen() {
         <View className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex-row items-center justify-between mb-10">
           <View className="flex-1 mr-4">
             <Text className="text-brand-dark font-medium mb-1">
-              Remind me to leave on time
-            </Text>
-            <Text className="text-gray-400 text-xs">
-              時間通り出発するようリインダー
+              {t('remind_me')}
             </Text>
           </View>
           <Switch

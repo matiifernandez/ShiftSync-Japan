@@ -1,8 +1,11 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export default function TabLayout() {
+  const { t } = useTranslation();
+
   return (
     <Tabs
       screenOptions={{
@@ -26,7 +29,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: t('tab_home'),
           tabBarIcon: ({ color }) => (
             <FontAwesome name="home" size={24} color={color} />
           ),
@@ -35,7 +38,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="chat"
         options={{
-          title: "Chat",
+          title: t('tab_chat'),
           tabBarIcon: ({ color }) => (
             <Ionicons name="chatbubbles" size={24} color={color} />
           ),
@@ -44,7 +47,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="travel"
         options={{
-          title: "Travel",
+          title: t('tab_travel'),
           tabBarIcon: ({ color }) => (
             <FontAwesome name="plane" size={24} color={color} />
           ),
@@ -53,7 +56,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="schedule"
         options={{
-          title: "Schedule",
+          title: t('tab_schedule'),
           tabBarIcon: ({ color }) => (
             <FontAwesome name="calendar" size={24} color={color} />
           ),

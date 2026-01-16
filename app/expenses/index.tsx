@@ -13,10 +13,12 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter, Stack, useFocusEffect } from "expo-router";
 import { useExpenses } from "../../hooks/useExpenses";
 import { Expense } from "../../types";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export default function ExpensesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const { expenses, loading, refreshExpenses, userRole, updateExpenseStatus } = useExpenses();
 
   useFocusEffect(
@@ -77,7 +79,7 @@ export default function ExpensesScreen() {
                 ¥{item.amount.toLocaleString()}
               </Text>
               <Text className="text-gray-500 text-xs capitalize">
-                {item.category} • {new Date(item.created_at).toLocaleDateString()}
+                {t(('cat_' + item.category) as any)} • {new Date(item.created_at).toLocaleDateString()}
               </Text>
             </View>
           </View>
@@ -105,7 +107,7 @@ export default function ExpensesScreen() {
                 <Ionicons name="person" size={12} color="#9CA3AF" />
               )}
             </View>
-            <Text className="text-gray-500 text-xs">Submitted by: {item.profiles.full_name}</Text>
+            <Text className="text-gray-500 text-xs">{item.profiles.full_name}</Text>
           </View>
         )}
 
@@ -116,13 +118,13 @@ export default function ExpensesScreen() {
               onPress={() => updateExpenseStatus(item.id, "rejected")}
               className="flex-1 bg-gray-100 py-3 rounded-xl items-center"
             >
-              <Text className="text-gray-600 font-bold">Reject</Text>
+              <Text className="text-gray-600 font-bold">{t('reject')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => updateExpenseStatus(item.id, "approved")}
               className="flex-1 bg-green-600 py-3 rounded-xl items-center"
             >
-              <Text className="text-white font-bold">Approve</Text>
+              <Text className="text-white font-bold">{t('approve')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -135,8 +137,8 @@ export default function ExpensesScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: "Expenses / 経費",
-          headerBackTitle: "Home",
+          title: t('expenses_title'),
+          headerBackTitle: t('tab_home'),
           headerTitleStyle: { fontWeight: "bold" },
           headerShadowVisible: false,
           headerStyle: { backgroundColor: "#F9FAFB" },

@@ -4,10 +4,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useRouter, useFocusEffect } from "expo-router";
 import { supabase } from "../../lib/supabase";
+import { useTranslation } from "../../hooks/useTranslation";
+import { TranslationKey } from "../../lib/translations";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
   const [userName, setUserName] = useState("User");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
@@ -38,11 +41,11 @@ export default function HomeScreen() {
     }, [])
   );
 
-  const getGreeting = () => {
+  const getGreeting = (): TranslationKey => {
     const hour = new Date().getHours();
-    if (hour < 12) return "Ohayou gozaimasu";
-    if (hour < 18) return "Konnichiwa";
-    return "Konbanwa";
+    if (hour < 12) return "greeting_morning";
+    if (hour < 18) return "greeting_afternoon";
+    return "greeting_evening";
   };
 
   return (
@@ -60,7 +63,7 @@ export default function HomeScreen() {
         {/* HEADER */}
         <View className="flex-row justify-between items-center mb-8">
           <View>
-            <Text className="text-gray-500 text-lg">{getGreeting()},</Text>
+            <Text className="text-gray-500 text-lg">{t(getGreeting())},</Text>
             <Text className="text-3xl font-bold text-brand-red">
               {userName}-san
             </Text>
@@ -89,7 +92,7 @@ export default function HomeScreen() {
           <View className="flex-row justify-between items-start mb-4">
             <View className="bg-white/20 px-3 py-1 rounded-full">
               <Text className="text-white text-xs font-bold">
-                NEXT ACTIVITY
+                {t('next_activity')}
               </Text>
             </View>
             <Text className="text-brand-red font-bold text-lg">2h 15m</Text>
@@ -116,7 +119,7 @@ export default function HomeScreen() {
 
         {/* ACTION GRID */}
         <Text className="text-brand-dark text-xl font-bold mb-4">
-          Quick Actions
+          {t('quick_actions')}
         </Text>
         <View className="flex-row flex-wrap justify-between gap-y-4">
           {/* CHAT */}
@@ -127,7 +130,7 @@ export default function HomeScreen() {
             <View className="bg-blue-100 w-12 h-12 rounded-full items-center justify-center">
               <Ionicons name="chatbubble-ellipses" size={24} color="#2563EB" />
             </View>
-            <Text className="text-brand-dark font-bold text-lg">Chat</Text>
+            <Text className="text-brand-dark font-bold text-lg">{t('tab_chat')}</Text>
           </TouchableOpacity>
 
           {/* TRAVEL */}
@@ -138,7 +141,7 @@ export default function HomeScreen() {
             <View className="bg-green-100 w-12 h-12 rounded-full items-center justify-center">
               <FontAwesome5 name="plane" size={24} color="#059669" />
             </View>
-            <Text className="text-brand-dark font-bold text-lg">Travel</Text>
+            <Text className="text-brand-dark font-bold text-lg">{t('tab_travel')}</Text>
           </TouchableOpacity>
 
           {/* SCHEDULE */}
@@ -149,7 +152,7 @@ export default function HomeScreen() {
             <View className="bg-purple-100 w-12 h-12 rounded-full items-center justify-center">
               <FontAwesome5 name="calendar-alt" size={24} color="#7C3AED" />
             </View>
-            <Text className="text-brand-dark font-bold text-lg">Schedule</Text>
+            <Text className="text-brand-dark font-bold text-lg">{t('tab_schedule')}</Text>
           </TouchableOpacity>
 
           {/* EXPENSES */}
@@ -160,7 +163,7 @@ export default function HomeScreen() {
             <View className="bg-orange-100 w-12 h-12 rounded-full items-center justify-center">
               <FontAwesome5 name="yen-sign" size={24} color="#EA580C" />
             </View>
-            <Text className="text-brand-dark font-bold text-lg">Expenses</Text>
+            <Text className="text-brand-dark font-bold text-lg">{t('expenses')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
