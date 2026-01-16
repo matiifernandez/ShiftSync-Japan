@@ -65,6 +65,16 @@ export const translations = {
     log_out: "Log Out",
     upload_photo: "Upload Photo",
     photo_required: "Face clearly visible required",
+    
+    // Schedule Admin
+    start_date: "Start Date",
+    end_date: "End Date",
+    start_time: "Start Time",
+    end_time: "End Time",
+    location: "Location",
+    select_staff: "Select Staff",
+    create_shifts: "Create Shifts",
+    select_all: "Select All",
   },
   ja: {
     // Tabs
@@ -132,6 +142,16 @@ export const translations = {
     log_out: "ログアウト",
     upload_photo: "写真をアップロード",
     photo_required: "顔がはっきり見える写真",
+
+    // Schedule Admin
+    start_date: "開始日",
+    end_date: "終了日",
+    start_time: "開始時間",
+    end_time: "終了時間",
+    location: "場所",
+    select_staff: "スタッフを選択",
+    create_shifts: "シフトを作成",
+    select_all: "全員選択",
   }
 };
 

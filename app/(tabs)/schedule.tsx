@@ -1,22 +1,43 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import React, { useState, useMemo } from "react";
-import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useSchedule } from "../../hooks/useSchedule";
 import { ScheduleItem } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useRouter, useFocusEffect } from "expo-router";
+import { supabase } from "../../lib/supabase";
 
 const THEME_COLOR = "#D9381E";
 
 export default function ScheduleScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { t } = useTranslation();
-  const { schedule, loading } = useSchedule();
+  const { schedule, loading, refreshSchedule } = useSchedule();
   const [selectedDate, setSelectedDate] = useState(
     format(new Date(), "yyyy-MM-dd")
   );
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshSchedule();
+    }, [])
+  );
+
+  useEffect(() => {
+    async function getRole() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        setUserRole(data?.role || 'staff');
+      }
+    }
+    getRole();
+  }, []);
 
   // Generate marked dates for the calendar
   const markedDates = useMemo(() => {
@@ -185,6 +206,31 @@ export default function ScheduleScreen() {
           <View className="h-10" />
         </ScrollView>
       </View>
+
+      {/* ADMIN ADD BUTTON */}
+      {userRole === 'admin' && (
+        <TouchableOpacity
+          onPress={() => router.push("/schedule/create")}
+          style={{
+            position: "absolute",
+            bottom: 20,
+            right: 20,
+            backgroundColor: THEME_COLOR,
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            alignItems: "center",
+            justifyContent: "center",
+            shadowColor: THEME_COLOR,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 5,
+          }}
+        >
+          <Ionicons name="add" size={32} color="white" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
