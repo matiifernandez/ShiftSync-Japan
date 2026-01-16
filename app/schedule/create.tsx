@@ -95,6 +95,15 @@ export default function CreateBulkShiftScreen() {
     }
   };
 
+  const validateTime = (val: string, setter: (v: string) => void) => {
+    const clean = val.replace(/[^0-9]/g, '');
+    if (clean.length === 4) {
+      setter(`${clean.slice(0, 2)}:${clean.slice(2)}`);
+    } else if (clean.length < 4 && clean.length > 0) {
+        // Pad with leading zero if needed logic could go here, or just leave as is
+    }
+  };
+
   const handleCreate = async () => {
     if (!startDate || !endDate) {
       Alert.alert("Error", "Please select a date range.");
@@ -175,16 +184,16 @@ export default function CreateBulkShiftScreen() {
           </View>
         </View>
 
-        <View className="px-6 space-y-6">
+        <View className="px-6 space-y-8">
           {/* TYPE SELECTOR */}
           <View>
             <Text className="text-brand-dark font-bold mb-3">{t('category')}</Text>
-            <View className="flex-row gap-2">
+            <View className="flex-row gap-3">
               {SHIFT_TYPES.map((type) => (
                 <TouchableOpacity
                   key={type.id}
                   onPress={() => setShiftType(type.id)}
-                  className={`flex-1 flex-row items-center justify-center p-3 rounded-xl border ${
+                  className={`flex-1 flex-row items-center justify-center p-4 rounded-xl border ${
                     shiftType === type.id
                       ? "bg-red-50 border-brand-red"
                       : "bg-white border-gray-200"
@@ -192,11 +201,11 @@ export default function CreateBulkShiftScreen() {
                 >
                   <FontAwesome5
                     name={type.icon}
-                    size={14}
+                    size={16}
                     color={shiftType === type.id ? THEME_COLOR : "#9CA3AF"}
                   />
                   <Text
-                    className={`ml-2 text-xs font-bold ${
+                    className={`ml-2 text-sm font-bold ${
                       shiftType === type.id ? "text-brand-red" : "text-gray-500"
                     }`}
                   >
@@ -208,79 +217,89 @@ export default function CreateBulkShiftScreen() {
           </View>
 
           {/* TIME & LOCATION */}
-          <View className="flex-row gap-4">
-            <View className="flex-1">
-              <Text className="text-brand-dark font-bold mb-2">{t('start_time')}</Text>
-              <TextInput
-                className="bg-gray-50 p-4 rounded-xl border border-gray-100"
-                value={startTime}
-                onChangeText={setStartTime}
-                placeholder="09:00"
-              />
-            </View>
-            <View className="flex-1">
-              <Text className="text-brand-dark font-bold mb-2">{t('end_time')}</Text>
-              <TextInput
-                className="bg-gray-50 p-4 rounded-xl border border-gray-100"
-                value={endTime}
-                onChangeText={setEndTime}
-                placeholder="18:00"
-              />
-            </View>
-          </View>
-
           <View>
-            <Text className="text-brand-dark font-bold mb-2">{t('location')}</Text>
-            <TextInput
-              className="bg-gray-50 p-4 rounded-xl border border-gray-100"
-              value={locationName}
-              onChangeText={setLocationName}
-              placeholder="e.g. Kobe Office"
-            />
+            <View className="flex-row gap-4 mb-4">
+                <View className="flex-1">
+                <Text className="text-brand-dark font-bold mb-2">{t('start_time')}</Text>
+                <TextInput
+                    className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
+                    value={startTime}
+                    onChangeText={setStartTime}
+                    onBlur={() => validateTime(startTime, setStartTime)}
+                    keyboardType="numbers-and-punctuation"
+                    placeholder="09:00"
+                />
+                </View>
+                <View className="flex-1">
+                <Text className="text-brand-dark font-bold mb-2">{t('end_time')}</Text>
+                <TextInput
+                    className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
+                    value={endTime}
+                    onChangeText={setEndTime}
+                    onBlur={() => validateTime(endTime, setEndTime)}
+                    keyboardType="numbers-and-punctuation"
+                    placeholder="18:00"
+                />
+                </View>
+            </View>
+
+            <View>
+                <Text className="text-brand-dark font-bold mb-2">{t('location')}</Text>
+                <TextInput
+                className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
+                value={locationName}
+                onChangeText={setLocationName}
+                placeholder="e.g. Kobe Office"
+                />
+            </View>
           </View>
 
           {/* STAFF SELECTION */}
           <View className="mb-10">
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-brand-dark font-bold">{t('select_staff')}</Text>
-              <TouchableOpacity onPress={selectAllStaff}>
-                <Text className="text-brand-red font-bold text-xs">{t('select_all')}</Text>
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-brand-dark font-bold text-lg">{t('select_staff')}</Text>
+              <TouchableOpacity onPress={selectAllStaff} className="bg-gray-100 px-3 py-1 rounded-full">
+                <Text className="text-brand-dark font-bold text-xs">{t('select_all')}</Text>
               </TouchableOpacity>
             </View>
 
             {loadingStaff ? (
               <ActivityIndicator color={THEME_COLOR} />
             ) : (
-              <View className="flex-row flex-wrap gap-2">
+              <View className="gap-3">
                 {staff.map((member) => {
                   const isSelected = selectedStaff.includes(member.id);
                   return (
                     <TouchableOpacity
                       key={member.id}
                       onPress={() => toggleStaff(member.id)}
-                      className={`flex-row items-center px-4 py-2 rounded-full border ${
+                      className={`flex-row items-center justify-between px-4 py-4 rounded-xl border w-full ${
                         isSelected
                           ? "bg-brand-red border-brand-red"
                           : "bg-white border-gray-200"
                       }`}
                     >
-                      {member.avatar_url ? (
-                        <Image source={{ uri: member.avatar_url }} className="w-5 h-5 rounded-full mr-2" />
-                      ) : (
-                        <Ionicons 
-                            name="person-circle" 
-                            size={20} 
-                            color={isSelected ? "white" : "#9CA3AF"} 
-                            className="mr-2"
-                        />
-                      )}
-                      <Text
-                        className={`font-medium text-xs ${
-                          isSelected ? "text-white" : "text-gray-600"
-                        }`}
-                      >
-                        {member.full_name}
-                      </Text>
+                      <View className="flex-row items-center">
+                        {member.avatar_url ? (
+                            <Image source={{ uri: member.avatar_url }} className="w-8 h-8 rounded-full mr-3" />
+                        ) : (
+                            <Ionicons 
+                                name="person-circle" 
+                                size={32} 
+                                color={isSelected ? "white" : "#9CA3AF"} 
+                                className="mr-3"
+                            />
+                        )}
+                        <Text
+                            className={`font-medium text-base ${
+                            isSelected ? "text-white" : "text-gray-700"
+                            }`}
+                        >
+                            {member.full_name}
+                        </Text>
+                      </View>
+                      
+                      {isSelected && <Ionicons name="checkmark-circle" size={24} color="white" />}
                     </TouchableOpacity>
                   );
                 })}
