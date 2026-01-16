@@ -47,16 +47,7 @@ export default function ScheduleScreen() {
 
   // Helper to determine icon color
   const getIconColor = (type: string) => {
-    switch (type) {
-      case "work_shift":
-        return "#1A1A1A";
-      case "travel_day":
-        return "#2563EB";
-      case "off_day":
-        return "#059669";
-      default:
-        return "#6B7280";
-    }
+    return THEME_COLOR;
   };
 
   // Helper to format title based on type
@@ -99,7 +90,7 @@ export default function ScheduleScreen() {
         style={{ paddingTop: insets.top }}
         className="bg-white pb-4 rounded-b-3xl shadow-sm z-10"
       >
-        <Text className="text-2xl font-bold text-center text-brand-dark my-4">
+        <Text className="text-3xl font-bold text-left text-brand-dark px-6 mb-4 pt-2">
           {t('schedule_title')}
         </Text>
         <Calendar

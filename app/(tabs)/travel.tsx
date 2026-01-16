@@ -68,11 +68,11 @@ export default function TravelScreen() {
       >
         {/* TITLE SECTION */}
         <View className="mb-6">
-          <Text className="text-lg font-bold text-brand-dark">
+          <Text className="text-3xl font-bold text-brand-dark mb-2">
             {t('travel_logistics')}
           </Text>
           {trip && (
-            <Text className="text-base text-gray-600 mt-1">
+            <Text className="text-base text-gray-600">
               {trip.name} — {trip.dates}
             </Text>
           )}

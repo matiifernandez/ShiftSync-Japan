@@ -61,7 +61,7 @@ export default function HomeScreen() {
     >
       <ScrollView className="flex-1 px-6 pt-4">
         {/* HEADER */}
-        <View className="flex-row justify-between items-center mb-8">
+        <View className="flex-row justify-between items-center mb-6">
           <View>
             <Text className="text-gray-500 text-lg">{t(getGreeting())},</Text>
             <Text className="text-3xl font-bold text-brand-red">
@@ -88,7 +88,7 @@ export default function HomeScreen() {
         </View>
 
         {/* HERO CARD - NEXT ACTIVITY */}
-        <View className="bg-brand-dark rounded-3xl p-6 mb-8 shadow-lg">
+        <View className="bg-brand-dark rounded-3xl p-5 mb-6 shadow-lg">
           <View className="flex-row justify-between items-start mb-4">
             <View className="bg-white/20 px-3 py-1 rounded-full">
               <Text className="text-white text-xs font-bold">
@@ -121,10 +121,10 @@ export default function HomeScreen() {
         <Text className="text-brand-dark text-xl font-bold mb-4">
           {t('quick_actions')}
         </Text>
-        <View className="flex-row flex-wrap justify-between gap-y-4">
+        <View className="flex-row flex-wrap justify-between gap-y-3">
           {/* CHAT */}
           <TouchableOpacity
-            className="w-[48%] aspect-square bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm active:bg-gray-100"
+            className="w-[48%] h-36 bg-gray-50 rounded-2xl p-3 justify-between border border-gray-100 shadow-sm active:bg-gray-100"
             onPress={() => router.push("/(tabs)/chat")}
           >
             <View className="bg-blue-100 w-12 h-12 rounded-full items-center justify-center">
@@ -135,7 +135,7 @@ export default function HomeScreen() {
 
           {/* TRAVEL */}
           <TouchableOpacity
-            className="w-[48%] aspect-square bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm active:bg-gray-100"
+            className="w-[48%] h-36 bg-gray-50 rounded-2xl p-3 justify-between border border-gray-100 shadow-sm active:bg-gray-100"
             onPress={() => router.push("/(tabs)/travel")}
           >
             <View className="bg-green-100 w-12 h-12 rounded-full items-center justify-center">
@@ -146,7 +146,7 @@ export default function HomeScreen() {
 
           {/* SCHEDULE */}
           <TouchableOpacity
-            className="w-[48%] aspect-square bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm active:bg-gray-100"
+            className="w-[48%] h-36 bg-gray-50 rounded-2xl p-3 justify-between border border-gray-100 shadow-sm active:bg-gray-100"
             onPress={() => router.push("/(tabs)/schedule")}
           >
             <View className="bg-purple-100 w-12 h-12 rounded-full items-center justify-center">
@@ -157,7 +157,7 @@ export default function HomeScreen() {
 
           {/* EXPENSES */}
           <TouchableOpacity
-            className="w-[48%] aspect-square bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm active:bg-gray-100"
+            className="w-[48%] h-36 bg-gray-50 rounded-2xl p-3 justify-between border border-gray-100 shadow-sm active:bg-gray-100"
             onPress={() => router.push("/expenses")}
           >
             <View className="bg-orange-100 w-12 h-12 rounded-full items-center justify-center">
