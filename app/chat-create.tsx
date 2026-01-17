@@ -182,15 +182,17 @@ export default function CreateChatScreen() {
       <View className="flex-row p-2 mx-4 mt-4 bg-gray-100 rounded-xl">
         <TouchableOpacity 
           onPress={() => setMode("dm")}
-          className={`flex-1 py-2 items-center rounded-lg ${mode === "dm" ? "bg-white shadow-sm" : "bg-transparent"}`}
+          className="flex-1 py-2 items-center rounded-lg"
+          style={{ backgroundColor: mode === "dm" ? "white" : "transparent" }}
         >
-          <Text className={`font-bold ${mode === "dm" ? "text-brand-dark" : "text-gray-400"}`}>Direct Message</Text>
+          <Text className="font-bold" style={{ color: mode === "dm" ? "#1A1A1A" : "#9CA3AF" }}>Direct Message</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           onPress={() => setMode("group")}
-          className={`flex-1 py-2 items-center rounded-lg ${mode === "group" ? "bg-white shadow-sm" : "bg-transparent"}`}
+          className="flex-1 py-2 items-center rounded-lg"
+          style={{ backgroundColor: mode === "group" ? "white" : "transparent" }}
         >
-          <Text className={`font-bold ${mode === "group" ? "text-brand-dark" : "text-gray-400"}`}>New Group</Text>
+          <Text className="font-bold" style={{ color: mode === "group" ? "#1A1A1A" : "#9CA3AF" }}>New Group</Text>
         </TouchableOpacity>
       </View>
 
