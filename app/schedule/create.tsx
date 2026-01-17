@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   Image,
 } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
-import { useRouter, Stack } from "expo-router";
+import { useRouter, Stack, useNavigation } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { format, eachDayOfInterval, parseISO, isAfter, isBefore, isEqual } from "date-fns";
 import { useStaff } from "../../hooks/useStaff";
@@ -27,6 +27,7 @@ const SHIFT_TYPES = [
 
 export default function CreateBulkShiftScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const { t } = useTranslation();
   const { staff, loading: loadingStaff } = useStaff();
 
@@ -38,6 +39,23 @@ export default function CreateBulkShiftScreen() {
   const [shiftType, setShiftType] = useState("work_shift");
   const [selectedStaff, setSelectedStaff] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+
+  const isDirty = !!startDate || selectedStaff.length > 0;
+
+  const handleBack = () => {
+    if (!isDirty || submitting) {
+      router.back();
+      return;
+    }
+    Alert.alert(
+      t('discard_title'),
+      t('discard_msg'),
+      [
+        { text: t('keep_editing'), style: 'cancel' },
+        { text: t('discard_confirm'), style: 'destructive', onPress: () => router.back() },
+      ]
+    );
+  };
 
   const handleDayPress = (day: DateData) => {
     if (!startDate || (startDate && endDate)) {
@@ -58,16 +76,16 @@ export default function CreateBulkShiftScreen() {
 
   const markedDates = useMemo(() => {
     const marks: any = {};
-    if (startDate) {
+    if (startDate && !endDate) {
+      marks[startDate] = { startingDay: true, endingDay: true, color: THEME_COLOR, textColor: "white", selected: true };
+    } else if (startDate && endDate) {
       marks[startDate] = { startingDay: true, color: THEME_COLOR, textColor: "white", selected: true };
-    }
-    if (endDate) {
       marks[endDate] = { endingDay: true, color: THEME_COLOR, textColor: "white", selected: true };
       
       // Mark days in between
       try {
         const interval = eachDayOfInterval({
-          start: parseISO(startDate!),
+          start: parseISO(startDate),
           end: parseISO(endDate),
         });
         interval.forEach((date) => {
@@ -105,8 +123,8 @@ export default function CreateBulkShiftScreen() {
   };
 
   const handleCreate = async () => {
-    if (!startDate || !endDate) {
-      Alert.alert("Error", "Please select a date range.");
+    if (!startDate) {
+      Alert.alert("Error", "Please select at least one date.");
       return;
     }
     if (selectedStaff.length === 0) {
@@ -118,7 +136,7 @@ export default function CreateBulkShiftScreen() {
     try {
       const dates = eachDayOfInterval({
         start: parseISO(startDate),
-        end: parseISO(endDate),
+        end: parseISO(endDate || startDate),
       });
 
       const shiftItems: any[] = [];
@@ -162,7 +180,17 @@ export default function CreateBulkShiftScreen() {
         options={{
           headerShown: true,
           title: t('create_shifts'),
-          headerBackTitle: t('tab_schedule'),
+          headerBackVisible: false,
+          gestureEnabled: false,
+          headerLeft: () => (
+            <TouchableOpacity 
+              onPress={handleBack} 
+              className="flex-row items-center -ml-2"
+            >
+              <Ionicons name="chevron-back" size={28} color="#D9381E" />
+              <Text className="text-brand-red text-base -ml-1">{t('tab_schedule')}</Text>
+            </TouchableOpacity>
+          ),
         }}
       />
 
@@ -184,9 +212,9 @@ export default function CreateBulkShiftScreen() {
           </View>
         </View>
 
-        <View className="px-6 space-y-8">
+        <View className="px-6">
           {/* TYPE SELECTOR */}
-          <View>
+          <View className="mb-8">
             <Text className="text-brand-dark font-bold mb-3">{t('category')}</Text>
             <View className="flex-row gap-3">
               {SHIFT_TYPES.map((type) => (
@@ -217,7 +245,7 @@ export default function CreateBulkShiftScreen() {
           </View>
 
           {/* TIME & LOCATION */}
-          <View>
+          <View className="mb-8">
             <View className="flex-row gap-4 mb-4">
                 <View className="flex-1">
                 <Text className="text-brand-dark font-bold mb-2">{t('start_time')}</Text>
@@ -308,8 +336,8 @@ export default function CreateBulkShiftScreen() {
           </View>
         </View>
 
-        {/* SUBMIT */}
-        <View className="px-6 mb-10">
+        {/* SUBMIT & CANCEL */}
+        <View className="px-6 mb-10 gap-3">
           <TouchableOpacity
             onPress={handleCreate}
             disabled={submitting}
@@ -322,6 +350,14 @@ export default function CreateBulkShiftScreen() {
             ) : (
               <Text className="text-white font-bold text-lg">{t('create_shifts')}</Text>
             )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleBack}
+            disabled={submitting}
+            className="w-full p-4 rounded-2xl items-center border border-gray-200 bg-white"
+          >
+            <Text className="text-gray-500 font-bold text-lg">{t('keep_editing') === '編集を続ける' ? 'キャンセル' : 'Cancel'}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
