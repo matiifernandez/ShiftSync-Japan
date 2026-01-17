@@ -20,6 +20,13 @@ export const translations = {
     no_conversations: "No conversations found",
     type_message: "Type a message...",
     translated_label: "TRANSLATED",
+    new_chat: "New Chat",
+    create_group: "Create Group",
+    group_name: "Group Name",
+    select_members: "Select Members",
+    delete_chat_title: "Delete Chat",
+    delete_chat_msg: "Are you sure you want to delete this conversation?",
+    delete_confirm: "Delete",
 
     // Travel
     travel_logistics: "Travel Logistics",
@@ -75,6 +82,10 @@ export const translations = {
     select_staff: "Select Staff",
     create_shifts: "Create Shifts",
     select_all: "Select All",
+    discard_title: "Discard Changes?",
+    discard_msg: "Going back will discard your unsaved shift.",
+    discard_confirm: "Discard",
+    keep_editing: "Keep Editing",
   },
   ja: {
     // Tabs
@@ -97,6 +108,13 @@ export const translations = {
     no_conversations: "会話が見つかりません",
     type_message: "メッセージを入力...",
     translated_label: "翻訳済み",
+    new_chat: "新規チャット",
+    create_group: "グループ作成",
+    group_name: "グループ名",
+    select_members: "メンバー選択",
+    delete_chat_title: "チャットを削除",
+    delete_chat_msg: "この会話を削除してもよろしいですか？",
+    delete_confirm: "削除",
 
     // Travel
     travel_logistics: "移動ロジスティクス",
@@ -152,6 +170,10 @@ export const translations = {
     select_staff: "スタッフを選択",
     create_shifts: "シフトを作成",
     select_all: "全員選択",
+    discard_title: "変更を破棄しますか？",
+    discard_msg: "保存されていないシフトは破棄されます。",
+    discard_confirm: "破棄する",
+    keep_editing: "編集を続ける",
   }
 };
 
