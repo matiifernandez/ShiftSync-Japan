@@ -126,15 +126,14 @@ export default function ChatDetailScreen() {
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
 
-        <View className="flex-1">
+        <TouchableOpacity 
+          className="flex-1"
+          onPress={() => router.push({ pathname: "/chat/details", params: { id: id as string } })}
+        >
           <Text className="text-xl font-bold text-brand-dark" numberOfLines={1}>
             {name || "Chat"}
           </Text>
-          <Text className="text-green-600 text-xs font-bold">● Online</Text>
-        </View>
-
-        <TouchableOpacity className="p-2">
-          <Ionicons name="ellipsis-horizontal" size={24} color="#1A1A1A" />
+          <Text className="text-green-600 text-xs font-bold">Tap for info</Text>
         </TouchableOpacity>
       </View>
 
