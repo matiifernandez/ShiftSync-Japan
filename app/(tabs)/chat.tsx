@@ -24,6 +24,43 @@ export default function ChatScreen() {
   const [search, setSearch] = useState("");
   const { conversations, loading, refreshConversations } = useConversations();
 
+  const handleOptions = (item: Conversation) => {
+    Alert.alert(
+      item.name,
+      "Select an option",
+      [
+        {
+          text: item.is_pinned ? "Unpin Chat" : "Pin Chat",
+          onPress: () => handleTogglePin(item.id, !!item.is_pinned),
+        },
+        {
+          text: "Delete Chat",
+          style: "destructive",
+          onPress: () => handleDeleteConversation(item.id),
+        },
+        { text: "Cancel", style: "cancel" },
+      ]
+    );
+  };
+
+  const handleTogglePin = async (conversationId: string, currentStatus: boolean) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('conversation_participants')
+        .update({ is_pinned: !currentStatus })
+        .eq('conversation_id', conversationId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      refreshConversations();
+    } catch (error: any) {
+      Alert.alert("Error", error.message);
+    }
+  };
+
   const handleDeleteConversation = (conversationId: string) => {
     Alert.alert(
       "Delete Chat",
@@ -57,19 +94,18 @@ export default function ChatScreen() {
   };
 
   const renderChatItem = ({ item }: { item: Conversation }) => {
-    // Format time roughly
     const timeDisplay = item.last_message_time 
       ? new Date(item.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       : "";
 
     return (
       <TouchableOpacity
-        className="flex-row items-center px-6 py-4 border-b border-gray-50 active:bg-gray-50"
+        className={`flex-row items-center px-6 py-4 border-b border-gray-50 ${item.is_pinned ? 'bg-red-50/30' : 'active:bg-gray-50'}`}
         onPress={() => router.push({
             pathname: "/chat/[id]",
             params: { id: item.id, name: item.name }
         })}
-        onLongPress={() => handleDeleteConversation(item.id)}
+        onLongPress={() => handleOptions(item)}
       >
         <View className="relative">
           <View className="w-14 h-14 bg-gray-200 rounded-full items-center justify-center overflow-hidden border border-gray-100">
@@ -83,22 +119,24 @@ export default function ChatScreen() {
               />
             )}
           </View>
-          {/* Unread badge placeholder - SQL function doesn't return count yet */}
-          {item.unread_count && item.unread_count > 0 && (
+          {!!item.unread_count && item.unread_count > 0 && (
             <View className="absolute -top-1 -right-1 bg-brand-red w-5 h-5 rounded-full items-center justify-center border-2 border-white">
-              <Text className="text-white text-[10px] font-bold">
-                {item.unread_count}
-              </Text>
+              <Text className="text-white text-[10px] font-bold">{item.unread_count}</Text>
             </View>
           )}
         </View>
 
         <View className="flex-1 ml-4">
           <View className="flex-row justify-between items-center mb-1">
-            <Text className="text-brand-dark font-bold text-lg" numberOfLines={1}>
+            <Text className="text-brand-dark font-bold text-lg flex-1 mr-2" numberOfLines={1}>
               {item.name}
             </Text>
-            <Text className="text-gray-400 text-xs">{timeDisplay}</Text>
+            <View className="flex-row items-center">
+              {item.is_pinned && (
+                <Ionicons name="pin" size={14} color="#D9381E" style={{ marginRight: 6, transform: [{ rotate: '45deg' }] }} />
+              )}
+              <Text className="text-gray-400 text-xs">{timeDisplay}</Text>
+            </View>
           </View>
           <Text className="text-gray-500 text-sm" numberOfLines={1}>
             {item.last_message || "No messages yet"}
@@ -132,7 +170,14 @@ export default function ChatScreen() {
         </View>
       ) : (
         <FlatList
-            data={conversations.filter(c => c.name.toLowerCase().includes(search.toLowerCase()))}
+            data={conversations
+              .filter(c => c.name.toLowerCase().includes(search.toLowerCase()))
+              .sort((a, b) => {
+                if (a.is_pinned && !b.is_pinned) return -1;
+                if (!a.is_pinned && b.is_pinned) return 1;
+                return 0;
+              })
+            }
             renderItem={renderChatItem}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
