@@ -8,12 +8,14 @@ import {
   TextInput,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useConversations, Conversation } from "../../hooks/useConversations";
 import { useTranslation } from "../../hooks/useTranslation";
+import { supabase } from "../../lib/supabase";
 
 export default function ChatScreen() {
   const router = useRouter();
@@ -21,6 +23,38 @@ export default function ChatScreen() {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const { conversations, loading, refreshConversations } = useConversations();
+
+  const handleDeleteConversation = (conversationId: string) => {
+    Alert.alert(
+      "Delete Chat",
+      "Are you sure you want to delete this conversation?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (!user) return;
+              
+              const { error } = await supabase
+                .from('conversation_participants')
+                .delete()
+                .eq('conversation_id', conversationId)
+                .eq('user_id', user.id);
+                
+              if (error) throw error;
+              
+              refreshConversations();
+            } catch (error: any) {
+              Alert.alert("Error", error.message);
+            }
+          }
+        }
+      ]
+    );
+  };
 
   const renderChatItem = ({ item }: { item: Conversation }) => {
     // Format time roughly
@@ -35,6 +69,7 @@ export default function ChatScreen() {
             pathname: "/chat/[id]",
             params: { id: item.id, name: item.name }
         })}
+        onLongPress={() => handleDeleteConversation(item.id)}
       >
         <View className="relative">
           <View className="w-14 h-14 bg-gray-200 rounded-full items-center justify-center overflow-hidden border border-gray-100">
@@ -115,7 +150,7 @@ export default function ChatScreen() {
 
       {/* NEW CHAT FAB */}
       <TouchableOpacity
-        onPress={() => console.log("New Chat")}
+        onPress={() => router.push("/chat/create")}
         style={{
           position: "absolute",
           bottom: 20,
