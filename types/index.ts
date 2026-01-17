@@ -74,6 +74,7 @@ export interface LogisticsTicket {
   departure_time: string; // ISO Date string
   arrival_time?: string;
   ticket_file_url: string | null;
+  profiles?: { full_name: string };
 }
 
 export interface Accommodation {
