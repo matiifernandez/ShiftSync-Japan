@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase";
 import { ScheduleItem } from "../types";
 import { Alert } from "react-native";
 
-export function useSchedule() {
+export function useSchedule({ allUsers = false } = {}) {
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -15,14 +15,39 @@ export function useSchedule() {
 
       if (!user) return;
 
-      // Fetch items assigned to the user OR items for projects they are part of.
-      // For simplicity in this V1, we fetch items directly assigned to the user_id
-      // or items where the user is implied (you might expand this logic later).
-      const { data, error } = await supabase
-        .from("schedule_items")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("date", { ascending: true });
+      let data, error;
+
+      if (allUsers) {
+        // 1. Get my org ID first
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("organization_id")
+          .eq("id", user.id)
+          .single();
+
+        if (profile?.organization_id) {
+          // 2. Fetch all items for users in this org
+          // We join with profiles to filter by org AND get display info
+          // NOTE: We assume schedule_items.user_id references profiles.id (or auth.users which is same)
+          const result = await supabase
+            .from("schedule_items")
+            .select("*, profiles!inner(organization_id, full_name, avatar_url)")
+            .eq("profiles.organization_id", profile.organization_id)
+            .order("date", { ascending: true });
+            
+          data = result.data;
+          error = result.error;
+        }
+      } else {
+        const result = await supabase
+          .from("schedule_items")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("date", { ascending: true });
+          
+        data = result.data;
+        error = result.error;
+      }
 
       if (error) {
         throw error;
@@ -37,7 +62,7 @@ export function useSchedule() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [allUsers]);
 
   useEffect(() => {
     // 1. Initial Fetch

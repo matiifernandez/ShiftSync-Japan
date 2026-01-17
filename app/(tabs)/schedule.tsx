@@ -1,6 +1,6 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Image } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
@@ -16,28 +16,30 @@ export default function ScheduleScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
-  const { schedule, loading, refreshSchedule } = useSchedule();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  // Pass dynamic role to hook
+  const { schedule, loading, refreshSchedule } = useSchedule({ allUsers: userRole === 'admin' });
   const [selectedDate, setSelectedDate] = useState(
     format(new Date(), "yyyy-MM-dd")
   );
-  const [userRole, setUserRole] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
+      // We don't call refreshSchedule() here immediately because the hook might be re-fetching due to prop change.
+      // But to be safe for "focus" updates (returning from another tab), we can call it.
       refreshSchedule();
-    }, [])
-  );
 
-  useEffect(() => {
-    async function getRole() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-        setUserRole(data?.role || 'staff');
+      async function getRole() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+          console.log("Full Profile Data:", data);
+          setUserRole(data?.role || 'staff');
+        }
       }
-    }
-    getRole();
-  }, []);
+      getRole();
+    }, [refreshSchedule])
+  );
 
   // Generate marked dates for the calendar
   const markedDates = useMemo(() => {
@@ -176,6 +178,19 @@ export default function ScheduleScreen() {
                     <Text className="text-lg font-bold text-brand-dark">
                       {title}
                     </Text>
+                    
+                    {/* ADMIN VIEW: SHOW USER INFO */}
+                    {userRole === 'admin' && event.profiles && (
+                         <View className="flex-row items-center mt-1 mb-1">
+                            {event.profiles.avatar_url ? (
+                                <Image source={{ uri: event.profiles.avatar_url }} className="w-5 h-5 rounded-full mr-2" />
+                            ) : (
+                                <Ionicons name="person-circle" size={20} color="#9CA3AF" className="mr-2" />
+                            )}
+                            <Text className="text-brand-red font-bold text-sm">{event.profiles.full_name}</Text>
+                         </View>
+                    )}
+
                     {timeString && (
                       <Text className="text-gray-500 font-medium text-sm my-1">
                         {timeString}

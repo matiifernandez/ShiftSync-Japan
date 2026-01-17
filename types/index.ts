@@ -60,6 +60,7 @@ export interface ScheduleItem {
   end_time?: string;
   location_name?: string;
   notes?: string;
+  profiles?: { full_name: string; avatar_url: string };
 }
 
 export interface LogisticsTicket {
