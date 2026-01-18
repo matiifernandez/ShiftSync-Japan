@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { useFocusEffect } from "expo-router";
 
@@ -10,6 +10,7 @@ export interface Conversation {
   last_message_time?: string;
   avatar_url?: string;
   unread_count?: number;
+  is_pinned?: boolean;
 }
 
 export function useConversations() {
@@ -34,9 +35,14 @@ export function useConversations() {
     }
   }, []);
 
+  // Initial load
+  useEffect(() => {
+    fetchConversations(false);
+  }, [fetchConversations]);
+
   useFocusEffect(
     useCallback(() => {
-      // Fetch in background when focusing (don't show full screen loader)
+      // Fetch in background when focusing (to update without spinner)
       fetchConversations(true);
     }, [fetchConversations])
   );

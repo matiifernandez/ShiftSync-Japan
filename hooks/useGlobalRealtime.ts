@@ -7,9 +7,14 @@ export function useGlobalRealtime() {
     const userIdRef = useRef<string | null>(null);
 
     useEffect(() => {
-        // Get user ID once
+        // Initial fetch
         supabase.auth.getUser().then(({ data: { user } }) => {
             if (user) userIdRef.current = user.id;
+        });
+
+        // Listen for auth changes to avoid stale user ID
+        const { data: { subscription: authListener } } = supabase.auth.onAuthStateChange((_event, session) => {
+            userIdRef.current = session?.user.id || null;
         });
 
         // Setup channel
@@ -64,6 +69,7 @@ export function useGlobalRealtime() {
 
         return () => {
             supabase.removeChannel(channel);
+            authListener.unsubscribe();
         };
     }, []);
 }

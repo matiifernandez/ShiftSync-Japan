@@ -27,6 +27,15 @@ export function useChat(conversationId: string) {
       const { data: { user } } = await supabase.auth.getUser();
       userRef.current = user?.id || null;
 
+      if (user?.id) {
+        // MARK AS READ: Update last_read_at timestamp
+        await supabase
+          .from('conversation_participants')
+          .update({ last_read_at: new Date().toISOString() })
+          .eq('conversation_id', conversationId)
+          .eq('user_id', user.id);
+      }
+
       // Join with profiles to get sender names
       const { data, error } = await supabase
         .from("messages")
@@ -93,6 +102,15 @@ export function useChat(conversationId: string) {
             };
 
            setMessages((prev) => [msgWithProfile, ...prev]);
+
+           // Mark as read if I'm on this screen
+           if (userRef.current) {
+               await supabase
+                .from('conversation_participants')
+                .update({ last_read_at: new Date().toISOString() })
+                .eq('conversation_id', conversationId)
+                .eq('user_id', userRef.current);
+           }
         }
       )
       .subscribe();
