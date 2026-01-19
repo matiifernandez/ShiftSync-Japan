@@ -159,6 +159,7 @@ export default function TravelScreen() {
           </Text>
           {userRole === 'admin' && trip && (
             <TouchableOpacity 
+              onPress={() => router.push({ pathname: "/travel/add-hotel", params: { projectId: trip.id } })}
               className="bg-red-50 px-3 py-1 rounded-full"
             >
               <Text className="text-brand-red font-bold text-[10px]">+ {t('new_expense') === '経費登録' ? 'ホテル追加' : 'ADD HOTEL'}</Text>
