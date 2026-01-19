@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Image } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from "../../hooks/useTranslation";
 import { useStaff } from "../../hooks/useStaff";
 import { supabase } from "../../lib/supabase";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { decode } from "../../lib/utils";
 
 const THEME_COLOR = "#D9381E";
 
@@ -23,6 +25,28 @@ export default function AddTicketScreen() {
   const [deptTime, setDeptTime] = useState("09:00");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null); // Null = Everyone
   const [submitting, setSubmitting] = useState(false);
+  
+  // Image State
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.5, // Compression
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setImageUri(result.assets[0].uri);
+        setImageBase64(result.assets[0].base64 || null);
+      }
+    } catch (error) {
+      Alert.alert("Error picking image", "Could not select image.");
+    }
+  };
 
   const handleCreate = async () => {
     if (!transportName.trim()) {
@@ -36,9 +60,28 @@ export default function AddTicketScreen() {
 
     setSubmitting(true);
     try {
-      // Create simplistic ISO string for today + time (Mocking date selection for MVP speed)
-      // Ideally we pass the trip dates and select a day within range.
-      // For now, let's assume "Tomorrow" at the given time.
+      let publicUrl = null;
+
+      // 1. Upload Image if present
+      if (imageBase64) {
+        const fileName = `ticket_${Date.now()}.jpg`;
+        const { data, error: uploadError } = await supabase.storage
+          .from('receipts')
+          .upload(fileName, decode(imageBase64), {
+            contentType: 'image/jpeg',
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Get Public URL
+        const { data: urlData } = supabase.storage
+          .from('receipts')
+          .getPublicUrl(fileName);
+        
+        publicUrl = urlData.publicUrl;
+      }
+
+      // 2. Create ISO Date (Mocking logic for MVP)
       const today = new Date();
       today.setDate(today.getDate() + 1);
       const [hours, mins] = deptTime.split(':');
@@ -48,18 +91,18 @@ export default function AddTicketScreen() {
         .from('logistics_tickets')
         .insert({
           project_id: projectId,
-          user_id: selectedUserId, // Null for group
+          user_id: selectedUserId,
           transport_name: transportName,
           departure_station: deptStation,
           arrival_station: arrStation,
           seat_number: seat,
           departure_time: today.toISOString(),
-          // ticket_file_url: ... (Upload implementation later)
+          ticket_file_url: publicUrl,
         });
 
       if (error) throw error;
 
-      Alert.alert("Success", "Ticket added!", [
+      Alert.alert("Success", "Ticket added successfully!", [
         { text: "OK", onPress: () => router.back() }
       ]);
 
@@ -135,6 +178,24 @@ export default function AddTicketScreen() {
                 />
             </View>
           </View>
+        </View>
+
+        {/* TICKET IMAGE UPLOAD */}
+        <View className="mb-8">
+            <Text className="text-brand-dark font-bold mb-3">Ticket Photo (Optional)</Text>
+            <TouchableOpacity 
+                onPress={pickImage}
+                className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-6 items-center justify-center"
+            >
+                {imageUri ? (
+                    <Image source={{ uri: imageUri }} className="w-full h-48 rounded-lg" resizeMode="contain" />
+                ) : (
+                    <>
+                        <Ionicons name="camera-outline" size={32} color="#9CA3AF" />
+                        <Text className="text-gray-400 mt-2 font-medium">Tap to upload ticket image</Text>
+                    </>
+                )}
+            </TouchableOpacity>
         </View>
 
         {/* ASSIGNMENT */}
