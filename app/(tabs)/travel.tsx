@@ -22,7 +22,7 @@ export default function TravelScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { trip, loading } = useTravel();
+  const { trip, loading, projects, selectedProjectId, selectProject } = useTravel();
   const { scheduleNotification } = useNotifications();
   const [remindMe, setRemindMe] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -59,7 +59,7 @@ export default function TravelScreen() {
     }
   };
 
-  if (loading) {
+  if (loading && !trip && projects.length === 0) {
     return (
       <View
         style={{ paddingTop: insets.top }}
@@ -83,6 +83,29 @@ export default function TravelScreen() {
         className="flex-1 px-6 pt-6"
         showsVerticalScrollIndicator={false}
       >
+        {/* PROJECT SELECTOR */}
+        {projects.length > 1 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6">
+            {projects.map(p => (
+              <TouchableOpacity
+                key={p.id}
+                onPress={() => selectProject(p.id)}
+                className={`px-4 py-2 rounded-full mr-3 border ${
+                  selectedProjectId === p.id 
+                    ? "bg-brand-red border-brand-red" 
+                    : "bg-white border-gray-200"
+                }`}
+              >
+                <Text className={`font-bold ${
+                  selectedProjectId === p.id ? "text-white" : "text-gray-600"
+                }`}>
+                  {p.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+
         {/* TITLE SECTION */}
         <View className="mb-6">
           <Text className="text-3xl font-bold text-brand-dark mb-2">

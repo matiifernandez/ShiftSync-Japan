@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useFocusEffect } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { LogisticsTicket, Accommodation } from "../types";
@@ -12,8 +12,16 @@ export interface TripDetails {
   accommodations: Accommodation[];
 }
 
+export interface SimpleProject {
+  id: string;
+  name: string;
+  start_date: string;
+}
+
 export function useTravel() {
   const [trip, setTrip] = useState<TripDetails | null>(null);
+  const [projects, setProjects] = useState<SimpleProject[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchTravel = useCallback(async () => {
@@ -22,10 +30,10 @@ export function useTravel() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // 1. Get my org
+      // 1. Get my org & role
       const { data: profile } = await supabase
         .from('profiles')
-        .select('organization_id')
+        .select('organization_id, role')
         .eq('id', user.id)
         .single();
 
@@ -33,6 +41,8 @@ export function useTravel() {
         setLoading(false);
         return;
       }
+      
+      const isAdmin = profile.role === 'admin';
 
       // 2. Get projects where I am a member
       const { data: membership } = await supabase
@@ -44,57 +54,70 @@ export function useTravel() {
 
       let projectsQuery = supabase
         .from('projects')
-        .select('*')
+        .select('id, name, start_date') // Fetch minimal info
         .eq('organization_id', profile.organization_id);
 
       // If not Admin, ONLY show projects where I am a member
       if (!isAdmin) {
         if (myProjectIds.length === 0) {
           setTrip(null);
+          setProjects([]);
+          setLoading(false);
           return;
         }
         projectsQuery = projectsQuery.in('id', myProjectIds);
       }
 
-      const { data: projects, error: projError } = await projectsQuery.order('start_date', { ascending: true });
+      const { data: projectsData, error: projError } = await projectsQuery.order('start_date', { ascending: true });
 
       if (projError) throw projError;
 
-      if (!projects || projects.length === 0) {
+      setProjects(projectsData || []);
+
+      if (!projectsData || projectsData.length === 0) {
         setTrip(null);
+        setLoading(false);
         return;
       }
 
-      // Select the most relevant project
-      const activeProject = projects[0];
+      // Determine active ID
+      const targetId = selectedProjectId && projectsData.find(p => p.id === selectedProjectId) 
+        ? selectedProjectId 
+        : projectsData[0].id;
 
-      // 3. Get Logistics (Tickets & Hotels)
-      const { data: roleData } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-      const isAdmin = roleData?.role === 'admin';
+      if (!selectedProjectId) setSelectedProjectId(targetId);
 
+      // 3. Get Details for Target Project
+      const { data: activeProject } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', targetId)
+        .single();
+
+      // Tickets
       let ticketsQuery = supabase
         .from('logistics_tickets')
         .select('*, profiles:user_id(full_name)')
-        .eq('project_id', activeProject.id);
+        .eq('project_id', targetId);
 
       if (!isAdmin) {
-        // Staff only see their own or group tickets
         ticketsQuery = ticketsQuery.or(`user_id.eq.${user.id},user_id.is.null`);
       }
-
+      
       const { data: tickets } = await ticketsQuery.order('departure_time', { ascending: true });
 
+      // Hotels
       const { data: accommodations } = await supabase
         .from('accommodations')
         .select('*')
-        .eq('project_id', activeProject.id);
+        .eq('project_id', targetId);
 
       // 4. Format for UI
       setTrip({
         id: activeProject.id,
         name: activeProject.name,
         description: activeProject.description,
-        dates: `${activeProject.start_date || '?'} - ${activeProject.end_date || '?'}`,
+        dates: `${activeProject.start_date || '?'} - ${activeProject.end_date || '?'} `,
         tickets: (tickets as LogisticsTicket[]) || [],
         accommodations: (accommodations as Accommodation[]) || [],
       });
@@ -104,13 +127,30 @@ export function useTravel() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedProjectId]); // Re-run if selectedProjectId changes logic internally? 
+  // Wait, if I change selectedProjectId, I want to trigger fetch.
+  // But fetchTravel is also called by focus effect.
+
+  // Better: separate effects?
+  // For simplicity, I'll just call fetchTravel when selectedProjectId changes IF it's not the initial load.
+  // Actually, useEffect on selectedProjectId is enough if we handle initial load.
+  
+  useEffect(() => {
+    fetchTravel();
+  }, [selectedProjectId]);
 
   useFocusEffect(
     useCallback(() => {
       fetchTravel();
-    }, [fetchTravel])
+    }, [])
   );
 
-  return { trip, loading, refreshTravel: fetchTravel };
+  return { 
+      trip, 
+      loading, 
+      projects, 
+      selectedProjectId, 
+      selectProject: setSelectedProjectId,
+      refreshTravel: fetchTravel 
+  };
 }
