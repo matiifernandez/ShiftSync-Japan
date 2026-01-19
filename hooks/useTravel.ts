@@ -21,6 +21,7 @@ export interface SimpleProject {
 export function useTravel() {
   const [trip, setTrip] = useState<TripDetails | null>(null);
   const [projects, setProjects] = useState<SimpleProject[]>([]);
+  const [myProjectIds, setMyProjectIds] = useState<string[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -50,7 +51,8 @@ export function useTravel() {
         .select('project_id')
         .eq('user_id', user.id);
       
-      const myProjectIds = membership?.map(m => m.project_id) || [];
+      const myIds = membership?.map(m => m.project_id) || [];
+      setMyProjectIds(myIds);
 
       let projectsQuery = supabase
         .from('projects')
@@ -59,13 +61,13 @@ export function useTravel() {
 
       // If not Admin, ONLY show projects where I am a member
       if (!isAdmin) {
-        if (myProjectIds.length === 0) {
+        if (myIds.length === 0) {
           setTrip(null);
           setProjects([]);
           setLoading(false);
           return;
         }
-        projectsQuery = projectsQuery.in('id', myProjectIds);
+        projectsQuery = projectsQuery.in('id', myIds);
       }
 
       const { data: projectsData, error: projError } = await projectsQuery.order('start_date', { ascending: true });
@@ -112,12 +114,12 @@ export function useTravel() {
         .select('*')
         .eq('project_id', targetId);
 
-      // 4. Format for UI
+      // Format for UI
       setTrip({
         id: activeProject.id,
         name: activeProject.name,
         description: activeProject.description,
-        dates: `${activeProject.start_date || '?'} - ${activeProject.end_date || '?'} `,
+        dates: `${activeProject.start_date || '?'} - ${activeProject.end_date || '?'}`,
         tickets: (tickets as LogisticsTicket[]) || [],
         accommodations: (accommodations as Accommodation[]) || [],
       });
@@ -127,14 +129,8 @@ export function useTravel() {
     } finally {
       setLoading(false);
     }
-  }, [selectedProjectId]); // Re-run if selectedProjectId changes logic internally? 
-  // Wait, if I change selectedProjectId, I want to trigger fetch.
-  // But fetchTravel is also called by focus effect.
+  }, [selectedProjectId]);
 
-  // Better: separate effects?
-  // For simplicity, I'll just call fetchTravel when selectedProjectId changes IF it's not the initial load.
-  // Actually, useEffect on selectedProjectId is enough if we handle initial load.
-  
   useEffect(() => {
     fetchTravel();
   }, [selectedProjectId]);
@@ -150,6 +146,7 @@ export function useTravel() {
       loading, 
       projects, 
       selectedProjectId, 
+      isMemberOfActiveTrip: selectedProjectId ? myProjectIds.includes(selectedProjectId) : false,
       selectProject: setSelectedProjectId,
       refreshTravel: fetchTravel 
   };

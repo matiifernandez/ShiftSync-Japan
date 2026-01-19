@@ -22,7 +22,14 @@ export default function TravelScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
-  const { trip, loading, projects, selectedProjectId, selectProject } = useTravel();
+  const { 
+    trip, 
+    loading, 
+    projects, 
+    selectedProjectId, 
+    selectProject, 
+    isMemberOfActiveTrip 
+  } = useTravel();
   const { scheduleNotification } = useNotifications();
   const [remindMe, setRemindMe] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -234,7 +241,7 @@ export default function TravelScreen() {
         ))}
 
         {/* REMINDER TOGGLE */}
-        {trip && trip.tickets.length > 0 && (
+        {trip && trip.tickets.length > 0 && isMemberOfActiveTrip && (
           <View className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex-row items-center justify-between mb-10">
             <View className="flex-1 mr-4">
               <Text className="text-brand-dark font-medium mb-1">
