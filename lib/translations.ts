@@ -32,6 +32,10 @@ export const translations = {
     travel_logistics: "Travel Logistics",
     open_maps: "Open in Google Maps",
     remind_me: "Remind me to leave on time",
+    create_itinerary: "Create Itinerary",
+    trip_name: "Trip Name",
+    select_dates: "Select Dates",
+    view_ticket: "View Ticket",
     
     // Schedule
     schedule_title: "Schedule",
@@ -120,6 +124,10 @@ export const translations = {
     travel_logistics: "移動ロジスティクス",
     open_maps: "Googleマップで開く",
     remind_me: "出発時間にリマインド",
+    create_itinerary: "日程を作成",
+    trip_name: "旅行名",
+    select_dates: "日付を選択",
+    view_ticket: "チケットを表示",
 
     // Schedule
     schedule_title: "スケジュール",

@@ -141,6 +141,19 @@ export default function TravelScreen() {
                   <Text className="text-[10px] text-gray-500 font-bold">FOR: {ticket.profiles.full_name}</Text>
                 </View>
               )}
+
+              {/* VIEW TICKET BUTTON */}
+              {ticket.ticket_file_url && (
+                <TouchableOpacity 
+                  onPress={() => ticket.ticket_file_url && Linking.openURL(ticket.ticket_file_url)}
+                  className="mt-3 flex-row items-center border border-brand-red self-start px-3 py-2 rounded-xl"
+                >
+                  <Ionicons name="eye-outline" size={16} color="#D9381E" />
+                  <Text className="text-brand-red font-bold text-xs ml-2">
+                    {t('view_ticket')}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         ))}
