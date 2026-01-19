@@ -34,13 +34,29 @@ export function useTravel() {
         return;
       }
 
-      // 2. Get latest project (Trip)
-      // We prioritize 'active' status, then 'planning'
-      const { data: projects, error: projError } = await supabase
+      // 2. Get projects where I am a member
+      const { data: membership } = await supabase
+        .from('project_members')
+        .select('project_id')
+        .eq('user_id', user.id);
+      
+      const myProjectIds = membership?.map(m => m.project_id) || [];
+
+      let projectsQuery = supabase
         .from('projects')
         .select('*')
-        .eq('organization_id', profile.organization_id)
-        .order('start_date', { ascending: true }); // Get upcoming first? Or latest created?
+        .eq('organization_id', profile.organization_id);
+
+      // If not Admin, ONLY show projects where I am a member
+      if (!isAdmin) {
+        if (myProjectIds.length === 0) {
+          setTrip(null);
+          return;
+        }
+        projectsQuery = projectsQuery.in('id', myProjectIds);
+      }
+
+      const { data: projects, error: projError } = await projectsQuery.order('start_date', { ascending: true });
 
       if (projError) throw projError;
 
@@ -49,8 +65,7 @@ export function useTravel() {
         return;
       }
 
-      // Select the most relevant project (e.g., the first one for now)
-      // Ideally we would filter by date >= today or status='active'
+      // Select the most relevant project
       const activeProject = projects[0];
 
       // 3. Get Logistics (Tickets & Hotels)
