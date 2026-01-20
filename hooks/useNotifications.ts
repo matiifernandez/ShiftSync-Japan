@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
-import * as Notifications from "expo-notifications";
-import * as Device from "expo-device";
-import { Platform, Alert } from "react-native";
+import { useState, useEffect, useRef } from 'react';
+import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
+import * as Device from 'expo-device';
+import Constants from 'expo-constants';
+import { supabase } from '../lib/supabase';
 
-// Configuración básica del handler de notificaciones
+// Configure notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -13,12 +15,10 @@ Notifications.setNotificationHandler({
 });
 
 export function useNotifications() {
-  const [expoPushToken, setExpoPushToken] = useState<string | undefined>("");
-  const [permissionStatus, setPermissionStatus] = useState<Notifications.PermissionStatus | null>(null);
-
-  useEffect(() => {
-    registerForPushNotificationsAsync().then((token) => setExpoPushToken(token));
-  }, []);
+  const [expoPushToken, setExpoPushToken] = useState<string | undefined>(undefined);
+  const [notification, setNotification] = useState<Notifications.Notification | undefined>(undefined);
+  const notificationListener = useRef<any>();
+  const responseListener = useRef<any>();
 
   async function registerForPushNotificationsAsync() {
     let token;
@@ -41,17 +41,36 @@ export function useNotifications() {
         finalStatus = status;
       }
       
-      setPermissionStatus(finalStatus);
-      
       if (finalStatus !== 'granted') {
         console.log('Failed to get push token for push notification!');
         return;
       }
+
+      // Project ID is needed for Expo Go? Usually not if using standard flow, 
+      // but good to have if defined in app.json
+      const projectId = Constants.expoConfig?.extra?.eas?.projectId;
       
       try {
-        token = (await Notifications.getExpoPushTokenAsync()).data;
+        token = (await Notifications.getExpoPushTokenAsync({
+          projectId,
+        })).data;
+        
+        console.log('Expo Push Token:', token);
+        setExpoPushToken(token);
+
+        // Save to Supabase
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && token) {
+           const { error } = await supabase
+            .from('profiles')
+            .update({ expo_push_token: token })
+            .eq('id', user.id);
+            
+           if (error) console.error("Error saving push token:", error);
+        }
+
       } catch (e) {
-        console.error(e);
+        console.error("Error fetching push token:", e);
       }
     } else {
       console.log('Must use physical device for Push Notifications');
@@ -60,37 +79,45 @@ export function useNotifications() {
     return token;
   }
 
-  // Función para agendar una notificación local
-  const scheduleNotification = async (title: string, body: string, seconds: number) => {
-    if (permissionStatus !== 'granted') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert("Permission Required", "Please enable notifications to receive reminders.");
-            return;
-        }
-        setPermissionStatus(status);
-    }
-
-    const trigger = seconds > 0 ? {
-      seconds,
-      channelId: 'default',
-    } : null;
-
+  // Local Notification Scheduler (Kept for Travel Reminders)
+  const scheduleNotification = async (title: string, body: string, seconds: number = 1) => {
     await Notifications.scheduleNotificationAsync({
       content: {
         title,
         body,
         sound: true,
       },
-      trigger,
+      trigger: {
+        seconds,
+      },
     });
-    
-    Alert.alert("Reminder Set", `You will be reminded in ${seconds} seconds (demo mode).`);
   };
 
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Notification tapped:', response);
+    });
+
+    return () => {
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+    };
+  }, []);
+
   return {
+    expoPushToken,
+    notification,
     scheduleNotification,
-    permissionStatus,
-    expoPushToken
+    registerForPushNotificationsAsync
   };
 }

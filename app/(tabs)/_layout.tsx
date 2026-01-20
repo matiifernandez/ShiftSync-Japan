@@ -2,9 +2,11 @@ import React from "react";
 import { Tabs } from "expo-router";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useNotifications } from "../../hooks/useNotifications";
 
 export default function TabLayout() {
   const { t } = useTranslation();
+  useNotifications(); // Initialize push tokens
 
   return (
     <Tabs

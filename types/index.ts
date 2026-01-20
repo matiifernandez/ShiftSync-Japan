@@ -15,6 +15,7 @@ export interface Profile {
   avatar_url: string | null;
   phone: string | null;
   preferred_language?: string;
+  expo_push_token?: string;
 }
 
 export interface Project {
