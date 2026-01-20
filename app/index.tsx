@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,6 +8,7 @@ import { useTranslation } from "../hooks/useTranslation";
 import Logo from "../components/Logo";
 
 export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
   const [email, setEmail] = useState("");
@@ -47,7 +49,10 @@ export default function LoginScreen() {
       className="flex-1 bg-white"
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1 justify-center px-8 bg-brand-red">
+        <View 
+          style={{ paddingTop: insets.top + 40 }}
+          className="flex-1 justify-center px-8 bg-brand-red pb-10"
+        >
           <View className="items-center mb-10">
             <View className="bg-white p-2 rounded-[32px] shadow-2xl mb-4">
                <Logo size={80} />
