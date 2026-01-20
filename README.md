@@ -1,54 +1,65 @@
-# ShiftSync Japan 🗻
+# ShiftSync Japan 🇯🇵
 
-Logistics management and coordination app for travel teams in Japan. Simplifies the lives of staff and managers by unifying chat, itineraries, tickets, and expenses.
+A comprehensive logistics and team management application designed for travel teams in Japan. Built with **React Native (Expo)** and **Supabase**.
 
-## 🚀 Tech Stack
+## 🚀 Features
 
-- **Framework:** React Native (Expo SDK 54)
-- **Navigation:** Expo Router (File-based routing)
-- **Styling:** NativeWind v4 (Tailwind CSS for RN)
-- **Backend/DB:** Supabase (Auth & Postgres)
-- **Language:** TypeScript
+### 1. Travel Logistics (Multi-Project)
+- **Admin:** Create trips, assign staff members, upload transport tickets (Shinkansen/Flight), and manage accommodations.
+- **Staff:** View personalized itineraries based on assignments.
+- **Visuals:** "View Ticket" button for quick access to QR codes/PDFs.
+- **Architecture:** Supports multiple simultaneous trips via Project Selector.
 
-## ✨ Key Features
+### 2. Expense Management
+- **Capture:** Staff can upload receipts via camera/gallery.
+- **Dashboard:** Admin view with "Pending" (Inbox) and "History" (Month-grouped) tabs.
+- **Workflow:** Approval/Rejection flow for managers.
 
-- **Multi-Tenancy:** Support for multiple organizations.
-- **Smart Chat:** Automatic message translation.
-- **Itinerary Management:** Schedule for shifts, travel, and days off.
-- **Logistics:** Storage and visualization of train/flight tickets.
-- **Expenses:** Per diem tracking and approval.
+### 3. Real-time Communication
+- **Chat:** Group and Direct messaging with auto-translation support (EN/JP).
+- **Status:** Unread counters and read receipts.
 
-## 🛠️ Project Setup
+### 4. Localization
+- Full English/Japanese support.
 
-1.  **Install dependencies:**
+## 🛠 Tech Stack
+
+- **Framework:** React Native (Expo Router)
+- **Styling:** NativeWind (TailwindCSS)
+- **Backend:** Supabase (Auth, DB, Storage, Realtime)
+- **State/Hooks:** Custom Modular Hooks (`useTravel`, `useExpenses`, etc.)
+
+## 📦 Setup & Installation
+
+1.  **Install Dependencies:**
     ```bash
     npm install
     ```
 
-2.  **Configure Environment Variables:**
-    Create a `.env` file in the root directory with:
-    ```
-    EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
-    EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-    ```
+2.  **Supabase Setup:**
+    - Create a Supabase project.
+    - Run the SQL schema provided in `GEMINI.md` (or context).
+    - **Crucial Tables:**
+        - `project_members`: For assigning staff to trips.
+        - `profiles`: Needs `expo_push_token` column for notifications.
 
-3.  **Run the App:**
+3.  **Environment Variables:**
+    - Create `.env` file with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+
+4.  **Run:**
     ```bash
-    # Clearing cache (recommended)
-    TMPDIR=/tmp npx expo start -c
+    npx expo start
     ```
 
-## 📂 Directory Structure
+## 📱 Notifications
 
-- `/app`: Screens and navigation (Expo Router).
-- `/components`: Reusable UI components.
-- `/lib`: Service configuration (Supabase, etc.).
-- `/types`: TypeScript definitions.
-- `/assets`: Images and fonts.
+The app is "Push Ready". It automatically registers the user's `ExpoPushToken` to the `profiles` table upon login.
+*To enable real notifications:* You need to configure Supabase Edge Functions to trigger Expo Push API using these tokens.
 
-## 🎨 Style Guide
+## 🗺 Roadmap
 
-- **Primary:** `#D9381E` (Japan Red)
-- **Background:** `#FFFFFF` (White)
-- **Text:** `#1A1A1A` (Dark Gray)
-- **Style:** Minimalist, rounded-xl, soft shadows.
+- [x] Multi-project Travel Logic
+- [x] Expenses Approval Dashboard
+- [x] Push Token Registration
+- [ ] Server-side Push Triggers (Edge Functions)
+- [ ] Offline Mode (TanStack Query)
