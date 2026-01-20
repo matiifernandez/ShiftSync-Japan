@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../hooks/useTranslation";
+import Logo from "../components/Logo";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -48,8 +49,8 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View className="flex-1 justify-center px-8 bg-brand-red">
           <View className="items-center mb-10">
-            <View className="w-24 h-24 bg-white rounded-3xl items-center justify-center shadow-lg mb-4">
-               <Text className="text-brand-red text-5xl">🇯🇵</Text>
+            <View className="bg-white p-2 rounded-[32px] shadow-2xl mb-4">
+               <Logo size={80} />
             </View>
             <Text className="text-white text-4xl font-bold">ShiftSync</Text>
             <Text className="text-white/80 mt-2 font-medium tracking-widest text-sm">JAPAN</Text>
