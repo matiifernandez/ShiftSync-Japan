@@ -191,7 +191,7 @@ export default function TravelScreen() {
         {!trip?.tickets.length && (
           <View className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-8 items-center justify-center mb-6">
             <Ionicons name="train-outline" size={32} color="#D1D5DB" />
-            <Text className="text-gray-400 mt-2 text-sm">No transport added yet</Text>
+            <Text className="text-gray-400 mt-2 text-sm">{t('no_transport')}</Text>
           </View>
         )}
 

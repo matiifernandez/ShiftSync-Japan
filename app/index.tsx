@@ -1,144 +1,111 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  Image,
-} from "react-native";
-import { useRouter } from "expo-router"; // For navigation between screens
-import { supabase } from "../lib/supabase"; // db client
+import React, { useState, useEffect } from "react";
+import { View, Text, TextInput, TouchableOpacity, Image, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
+import { supabase } from "../lib/supabase";
+import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "../hooks/useTranslation";
 
 export default function LoginScreen() {
   const router = useRouter();
-
-  // STATE: The live variables of the screen
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isRegistering, setIsRegistering] = useState(false); // Toggle to know if it's Login or Register
-  // FUNCTION: Handle authentication
-  async function handleAuth() {
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    // Check if user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        router.replace("/(tabs)");
+      }
+      setInitialized(true);
+    });
+  }, []);
+
+  const handleLogin = async () => {
     setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    // 1. If we are in "Register" mode
-    if (isRegistering) {
-      const { error, data } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-      });
-      if (error) Alert.alert("Error", error.message);
-      else {
-        // Successful Sign Up -> Go to Complete Profile
-        router.replace("/complete-profile");
-      }
-
-      // 2. If we are in "Log In" mode
+    if (error) {
+      Alert.alert("Error", error.message);
+      setLoading(false);
     } else {
-      const { error, data } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
-      if (error) Alert.alert("Error", error.message);
-      else {
-        // Check if profile exists
-        if (data.user) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", data.user.id)
-            .single();
-
-          if (profile && profile.organization_id) {
-            // Profile complete -> Go Home
-            router.replace("/(tabs)");
-          } else {
-            // Profile missing or incomplete -> Go Setup
-            router.replace("/complete-profile");
-          }
-        }
-      }
+      router.replace("/(tabs)");
     }
-    setLoading(false);
-  }
+  };
+
+  if (!initialized) return null;
 
   return (
-    // VIEW is like <div>. 'flex-1' means "takes up the whole screen".
-    // 'justify-center' centers the content vertically.
-    <View className="flex-1 bg-white justify-center px-8">
-      {/* HEADER / LOGO */}
-      <View className="items-center mb-10">
-        {/* Simulate the red circular logo of Mount Fuji */}
-        <View className="w-20 h-20 bg-brand-red rounded-full items-center justify-center mb-4 shadow-lg">
-          <Text className="text-white text-4xl font-bold">🗻</Text>
-        </View>
-        <Text className="text-2xl font-bold text-brand-dark">
-          ShiftSync Japan
-        </Text>
-        <Text className="text-gray-500 mt-1">Simplify Your Work Life</Text>
-      </View>
-
-      {/* FORM */}
-      <View className="space-y-4">
-        <View>
-          <Text className="text-gray-600 mb-1 ml-1">Email / メール</Text>
-          <TextInput
-            className="w-full bg-gray-100 p-4 rounded-xl text-brand-dark border border-gray-200"
-            placeholder="name@example.com"
-            placeholderTextColor="#9CA3AF"
-            value={email}
-            onChangeText={setEmail} // Updates the 'email' state as you type
-            autoCapitalize="none"
-          />
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      className="flex-1 bg-white"
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View className="flex-1 justify-center px-8 bg-brand-red">
+          <View className="items-center mb-10">
+            <View className="w-24 h-24 bg-white rounded-3xl items-center justify-center shadow-lg mb-4">
+               <Text className="text-brand-red text-5xl">🇯🇵</Text>
+            </View>
+            <Text className="text-white text-4xl font-bold">ShiftSync</Text>
+            <Text className="text-white/80 mt-2 font-medium tracking-widest text-sm">JAPAN</Text>
+          </View>
         </View>
 
-        <View>
-          <Text className="text-gray-600 mb-1 ml-1">Password / パスワード</Text>
-          <TextInput
-            className="w-full bg-gray-100 p-4 rounded-xl text-brand-dark border border-gray-200"
-            placeholder="••••••••"
-            placeholderTextColor="#9CA3AF"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry // Hides the text (dots instead of characters)
-          />
+        <View className="flex-[1.5] bg-white rounded-t-[40px] -mt-10 px-8 pt-12">
+          <Text className="text-2xl font-bold text-gray-800 mb-2">Welcome Back</Text>
+          <Text className="text-gray-500 mb-8">{t('simplify_work')}</Text>
+
+          <View className="mb-6">
+            <Text className="text-gray-600 mb-2 ml-1 font-medium">{t('email_label')}</Text>
+            <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3.5">
+              <Ionicons name="mail-outline" size={20} color="#9CA3AF" />
+              <TextInput
+                className="flex-1 ml-3 text-gray-800 text-base"
+                placeholder="name@company.com"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+            </View>
+          </View>
+
+          <View className="mb-8">
+            <Text className="text-gray-600 mb-2 ml-1 font-medium">{t('password_label')}</Text>
+            <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3.5">
+              <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" />
+              <TextInput
+                className="flex-1 ml-3 text-gray-800 text-base"
+                placeholder="••••••••"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+            </View>
+          </View>
+
+          <TouchableOpacity
+            onPress={handleLogin}
+            disabled={loading}
+            className={`w-full bg-brand-red py-4 rounded-2xl shadow-lg shadow-red-200 items-center mb-6 ${loading ? 'opacity-70' : ''}`}
+          >
+            {loading ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Text className="text-white font-bold text-lg">Sign In</Text>
+            )}
+          </TouchableOpacity>
+
+          <View className="flex-row justify-center mt-auto mb-10">
+            <Text className="text-xs text-gray-400">ShiftSync Japan v1.0</Text>
+          </View>
         </View>
-
-        {/* ACTION BUTTON */}
-        <TouchableOpacity
-          onPress={handleAuth}
-          disabled={loading}
-          className={`w-full p-4 rounded-xl items-center mt-4 ${
-            loading ? "bg-gray-400" : "bg-brand-red"
-          }`}
-        >
-          <Text className="text-white font-bold text-lg">
-            {loading
-              ? "Processing..."
-              : isRegistering
-              ? "Sign Up / 登録"
-              : "Log In / ログイン"}
-          </Text>
-        </TouchableOpacity>
-
-        {/* TOGGLE LOGIN/REGISTER */}
-        <TouchableOpacity
-          onPress={() => setIsRegistering(!isRegistering)}
-          className="mt-4 items-center"
-        >
-          <Text className="text-gray-500">
-            {isRegistering
-              ? "Already have an account? Log In"
-              : "New to the team? Create Account"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* FOOTER (Optional, to simulate the Admin/Staff from the design) */}
-      <View className="mt-10 items-center">
-        <Text className="text-xs text-gray-400">ShiftSync Japan v1.0</Text>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

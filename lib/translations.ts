@@ -36,6 +36,10 @@ export const translations = {
     trip_name: "Trip Name",
     select_dates: "Select Dates",
     view_ticket: "View Ticket",
+    no_transport: "No transport added yet",
+    simplify_work: "Simplify Your Work Life",
+    email_label: "Email / メール",
+    password_label: "Password / パスワード",
     
     // Schedule
     schedule_title: "Schedule",
@@ -128,6 +132,10 @@ export const translations = {
     trip_name: "旅行名",
     select_dates: "日付を選択",
     view_ticket: "チケットを表示",
+    no_transport: "交通手段がまだ登録されていません",
+    simplify_work: "業務をシンプルに、スマートに",
+    email_label: "メールアドレス",
+    password_label: "パスワード",
 
     // Schedule
     schedule_title: "スケジュール",
