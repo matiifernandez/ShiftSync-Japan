@@ -1,5 +1,4 @@
-import { useState, useCallback } from "react";
-import { useFocusEffect } from "expo-router";
+import { useState, useCallback, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { Project } from "../types";
 
@@ -15,7 +14,12 @@ export function useProjects() {
       setError(null);
 
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
+      if (!user) {
+        console.log("useProjects: No user found, skipping fetch.");
+        setProjects([]);
+        setLoading(false);
+        return;
+      }
 
       // 1. Get my org & role
       const { data: profile, error: profileError } = await supabase
@@ -71,11 +75,9 @@ export function useProjects() {
     }
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchProjects();
-    }, [fetchProjects])
-  );
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   return { 
     projects, 

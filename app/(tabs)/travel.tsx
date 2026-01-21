@@ -34,18 +34,16 @@ export default function TravelScreen() {
   const [remindMe, setRemindMe] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      async function getRole() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-          setUserRole(data?.role || 'staff');
-        }
+  useEffect(() => {
+    async function getRole() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        setUserRole(data?.role || 'staff');
       }
-      getRole();
-    }, [])
-  );
+    }
+    getRole();
+  }, []);
 
   const handleOpenMaps = (url?: string) => {
     if (url) {

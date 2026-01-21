@@ -157,14 +157,20 @@ export default function ChatDetailScreen() {
             <Ionicons name="add-circle-outline" size={28} color="#9CA3AF" />
           </TouchableOpacity>
 
-          <View className="flex-1 bg-gray-100 rounded-full px-4 py-2 flex-row items-center min-h-[44px]">
+          <View className="flex-1 bg-gray-100 rounded-2xl px-4 py-2 flex-row items-center min-h-[44px]">
             <TextInput
-              className="flex-1 text-base text-brand-dark max-h-24"
+              className="flex-1 text-base text-brand-dark"
               placeholder="Type a message..."
               multiline
               value={inputText}
               onChangeText={setInputText}
-              style={{ textAlignVertical: "center" }}
+              style={{ 
+                textAlignVertical: "center",
+                maxHeight: 100,
+                includeFontPadding: false,
+                paddingTop: Platform.OS === 'android' ? 0 : 8,
+                paddingBottom: Platform.OS === 'android' ? 0 : 8,
+              }}
             />
           </View>
 
