@@ -152,15 +152,15 @@ export default function ScheduleScreen() {
               switch (event.type) {
                 case "work_shift":
                   iconName = "briefcase";
-                  bgColor = "bg-gray-200";
+                  bgColor = "bg-gray-100";
                   break;
                 case "travel_day":
                   iconName = "train";
-                  bgColor = "bg-blue-100";
+                  bgColor = "bg-gray-100 border border-gray-200";
                   break;
                 case "off_day":
                   iconName = "coffee";
-                  bgColor = "bg-green-100";
+                  bgColor = "bg-gray-50";
                   break;
               }
 
