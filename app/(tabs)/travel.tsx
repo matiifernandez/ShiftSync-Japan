@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { format } from "date-fns";
-import { useTravel } from "../../hooks/useTravel";
+import { useTravelContext } from "../../context/TravelContext";
 import { useNotifications } from "../../hooks/useNotifications";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useRouter, useFocusEffect } from "expo-router";
@@ -29,7 +29,7 @@ export default function TravelScreen() {
     selectedProjectId, 
     selectProject, 
     isMemberOfActiveTrip 
-  } = useTravel();
+  } = useTravelContext();
   const { scheduleNotification } = useNotifications();
   const [remindMe, setRemindMe] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);

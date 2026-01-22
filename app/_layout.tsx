@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
 
 import { useGlobalRealtime } from "../hooks/useGlobalRealtime";
+import { TravelProvider } from "../context/TravelContext";
 
 export default function Layout() {
   const [session, setSession] = useState<Session | null>(null);
@@ -14,7 +15,7 @@ export default function Layout() {
   const router = useRouter();
 
   // Activate global listeners for notifications
-  useGlobalRealtime();
+  // useGlobalRealtime();
 
   useEffect(() => {
     // 1. Check initial session
@@ -59,15 +60,18 @@ export default function Layout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: "#FFFFFF" },
-      }}
-    >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="complete-profile" options={{ presentation: 'modal' }} />
-    </Stack>
+    <TravelProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: "#FFFFFF" },
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="complete-profile" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="chat-create" options={{ presentation: 'modal', headerShown: false }} />
+      </Stack>
+    </TravelProvider>
   );
 }

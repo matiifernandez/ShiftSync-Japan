@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useTravelContext } from "../../context/TravelContext";
+import { TranslationKey } from "../../lib/translations";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
-  
+  const { trip } = useTravelContext();
   const [userName, setUserName] = useState("User");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
@@ -34,13 +36,52 @@ export default function HomeScreen() {
     loadProfile();
   }, []);
 
+  const getGreeting = (): TranslationKey => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "greeting_morning";
+    if (hour < 18) return "greeting_afternoon";
+    return "greeting_evening";
+  };
+
+  const nextActivity = useMemo(() => {
+    if (!trip) return null;
+    
+    const now = new Date();
+    const tickets = trip.tickets || [];
+    const futureTickets = tickets.filter(t => new Date(t.departure_time) > now);
+    
+    if (futureTickets.length > 0) {
+      const next = futureTickets[0];
+      return {
+        title: next.transport_name || "Next Trip",
+        location: `${next.departure_station || '?'} → ${next.arrival_station || '?'}`,
+        time: next.departure_time ? new Date(next.departure_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null,
+        detail: next.seat_number ? `Seat ${next.seat_number}` : 'Team Activity'
+      };
+    }
+
+    return {
+      title: trip.name,
+      location: trip.dates,
+      time: null,
+      detail: 'Ongoing Project'
+    };
+  }, [trip]);
+
   return (
-    <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: 'white' }}>
+    <View 
+      style={{ 
+        flex: 1, 
+        paddingTop: insets.top,
+        paddingBottom: insets.bottom,
+      }} 
+      className="bg-white"
+    >
       <ScrollView className="flex-1 px-6 pt-4" showsVerticalScrollIndicator={false}>
         {/* HEADER */}
         <View className="flex-row justify-between items-center mb-6">
           <View>
-            <Text className="text-gray-500 text-lg">Good morning,</Text>
+            <Text className="text-gray-500 text-lg">{t(getGreeting())},</Text>
             <Text className="text-3xl font-bold text-brand-red">
               {userName}-san
             </Text>
@@ -56,11 +97,47 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
         
-        {/* STATIC PLACEHOLDER CARD */}
-        <View className="bg-gray-50 border border-dotted border-gray-200 rounded-3xl p-8 mb-6 items-center">
-          <Ionicons name="calendar-outline" size={32} color="#D1D5DB" />
-          <Text className="text-gray-400 font-medium mt-2">No activities planned</Text>
-        </View>
+        {/* HERO CARD - NEXT ACTIVITY */}
+        {nextActivity ? (
+          <TouchableOpacity 
+            onPress={() => router.push("/(tabs)/travel")}
+            className="bg-brand-dark rounded-3xl p-5 mb-6 shadow-lg"
+          >
+            <View className="flex-row justify-between items-start mb-4">
+              <View className="bg-white/20 px-3 py-1 rounded-full">
+                <Text className="text-white text-xs font-bold">
+                  {t('next_activity')}
+                </Text>
+              </View>
+              <Text className="text-brand-red font-bold text-lg">Active</Text>
+            </View>
+
+            <Text className="text-white text-2xl font-bold mb-1">
+              {nextActivity.title}
+            </Text>
+            <Text className="text-gray-400 text-base mb-6">
+              {nextActivity.location}
+            </Text>
+
+            <View className="flex-row items-center">
+              {nextActivity.time && (
+                <View className="flex-row items-center bg-white/10 px-4 py-2 rounded-xl mr-3">
+                  <FontAwesome5 name="clock" size={14} color="white" />
+                  <Text className="text-white ml-2 font-medium">{nextActivity.time}</Text>
+                </View>
+              )}
+              <View className="flex-row items-center bg-white/10 px-4 py-2 rounded-xl">
+                <FontAwesome5 name="info-circle" size={14} color="white" />
+                <Text className="text-white ml-2 font-medium">{nextActivity.detail}</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ) : (
+          <View className="bg-gray-50 border border-dotted border-gray-200 rounded-3xl p-8 mb-6 items-center">
+            <Ionicons name="calendar-outline" size={32} color="#D1D5DB" />
+            <Text className="text-gray-400 font-medium mt-2">No activities planned</Text>
+          </View>
+        )}
 
         {/* ACTION GRID */}
         <Text className="text-brand-dark text-xl font-bold mb-4">{t('quick_actions')}</Text>
