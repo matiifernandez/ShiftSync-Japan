@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { Project, LogisticsTicket, Accommodation } from '../types';
 
@@ -30,104 +31,97 @@ interface TravelContextType {
 const TravelContext = createContext<TravelContextType | undefined>(undefined);
 
 export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [trip, setTrip] = useState<TripDetails | null>(null);
-  const [projects, setProjects] = useState<SimpleProject[]>([]);
-  const [myProjectIds, setMyProjectIds] = useState<string[]>([]);
+  const queryClient = useQueryClient();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  const fetchTravel = useCallback(async () => {
-    try {
-      setLoading(true);
+  // 1. Fetch Projects List
+  const { data: projectsData, isLoading: loadingProjects } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return;
-      }
+      if (!user) return [];
 
-      // 1. Get profile & membership
       const { data: profile } = await supabase.from('profiles').select('organization_id, role').eq('id', user.id).single();
-      if (!profile) {
-        setLoading(false);
-        return;
-      }
+      if (!profile) return [];
 
       const { data: membership } = await supabase.from('project_members').select('project_id').eq('user_id', user.id);
       const myIds = membership?.map(m => m.project_id) || [];
-      setMyProjectIds(myIds);
 
-      // 2. Fetch Projects
-      let projectsQuery = supabase.from('projects').select('id, name, start_date').eq('organization_id', profile.organization_id);
+      let query = supabase.from('projects').select('id, name, start_date').eq('organization_id', profile.organization_id);
       if (profile.role !== 'admin') {
-        if (myIds.length === 0) {
-          setTrip(null);
-          setProjects([]);
-          setLoading(false);
-          return;
-        }
-        projectsQuery = projectsQuery.in('id', myIds);
+        if (myIds.length === 0) return [];
+        query = query.in('id', myIds);
       }
 
-      const { data: projectsData } = await projectsQuery.order('start_date', { ascending: true });
-      setProjects(projectsData || []);
+      const { data } = await query.order('start_date', { ascending: true });
+      return (data || []) as SimpleProject[];
+    }
+  });
 
-      if (!projectsData || projectsData.length === 0) {
-        setTrip(null);
-        setLoading(false);
-        return;
-      }
+  // Auto-select first project
+  useEffect(() => {
+    if (!selectedProjectId && projectsData && projectsData.length > 0) {
+      setSelectedProjectId(projectsData[0].id);
+    }
+  }, [projectsData, selectedProjectId]);
 
-      // 3. Determine target project and fetch details
-      const targetId = selectedProjectId && projectsData.find(p => p.id === selectedProjectId) 
-        ? selectedProjectId 
-        : projectsData[0].id;
+  // 2. Fetch Trip Details (only if selectedProjectId exists)
+  const { data: tripDetails, isLoading: loadingDetails } = useQuery({
+    queryKey: ['trip-details', selectedProjectId],
+    enabled: !!selectedProjectId,
+    queryFn: async () => {
+      if (!selectedProjectId) return null;
 
-      if (!selectedProjectId) setSelectedProjectId(targetId);
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', user?.id).single();
 
       const [projRes, ticketsRes, accRes] = await Promise.all([
-        supabase.from('projects').select('*').eq('id', targetId).single(),
-        supabase.from('logistics_tickets').select('*, profiles:user_id(full_name)').eq('project_id', targetId).order('departure_time', { ascending: true }),
-        supabase.from('accommodations').select('*').eq('id', targetId) // Note: schema says project_id but check if this is correct
+        supabase.from('projects').select('*').eq('id', selectedProjectId).single(),
+        supabase.from('logistics_tickets').select('*, profiles:user_id(full_name)').eq('project_id', selectedProjectId).order('departure_time', { ascending: true }),
+        supabase.from('accommodations').select('*').eq('project_id', selectedProjectId)
       ]);
 
-      // Actually accommodations query should be by project_id
-      const { data: accommodations } = await supabase.from('accommodations').select('*').eq('project_id', targetId);
+      if (!projRes.data) return null;
 
-      if (projRes.data) {
-        let finalTickets = (ticketsRes.data || []) as LogisticsTicket[];
-        if (profile.role !== 'admin') {
-          // Client-side filtering for extra safety if RLS isn't enough
-          finalTickets = finalTickets.filter(t => !t.user_id || t.user_id === user.id);
-        }
-
-        setTrip({
-          id: projRes.data.id,
-          name: projRes.data.name,
-          description: projRes.data.description,
-          dates: `${projRes.data.start_date || '?'} - ${projRes.data.end_date || '?'}`,
-          tickets: finalTickets,
-          accommodations: (accommodations as Accommodation[]) || [],
-        });
+      let tickets = (ticketsRes.data || []) as LogisticsTicket[];
+      if (profile?.role !== 'admin' && user) {
+        tickets = tickets.filter(t => !t.user_id || t.user_id === user.id);
       }
 
-    } catch (error) {
-      console.error("TravelContext: Error fetching travel:", error);
-    } finally {
-      setLoading(false);
+      return {
+        id: projRes.data.id,
+        name: projRes.data.name,
+        description: projRes.data.description,
+        dates: `${projRes.data.start_date || '?'} - ${projRes.data.end_date || '?'}`,
+        tickets,
+        accommodations: (accRes.data || []) as Accommodation[],
+      } as TripDetails;
     }
-  }, [selectedProjectId]);
+  });
 
-  useEffect(() => {
-    fetchTravel();
-  }, [fetchTravel]);
+  // 3. Check Membership (for the current project)
+  const { data: myProjectIds = [] } = useQuery({
+    queryKey: ['my-project-ids'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data } = await supabase.from('project_members').select('project_id').eq('user_id', user.id);
+      return data?.map(m => m.project_id) || [];
+    }
+  });
+
+  const refreshTravel = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['projects'] });
+    await queryClient.invalidateQueries({ queryKey: ['trip-details'] });
+  };
 
   const value = {
-    trip,
-    projects,
+    trip: tripDetails || null,
+    projects: projectsData || [],
     selectedProjectId,
-    loading,
+    loading: loadingProjects || loadingDetails,
     isMemberOfActiveTrip: selectedProjectId ? myProjectIds.includes(selectedProjectId) : false,
-    refreshTravel: fetchTravel,
+    refreshTravel,
     selectProject: setSelectedProjectId
   };
 

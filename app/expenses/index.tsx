@@ -24,11 +24,8 @@ export default function ExpensesScreen() {
   const { expenses, loading, refreshExpenses, userRole, updateExpenseStatus } = useExpenses();
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshExpenses();
-    }, [])
-  );
+  // React Query handles fetching automatically
+
 
   const getStatusColor = (status: string) => {
     switch (status) {

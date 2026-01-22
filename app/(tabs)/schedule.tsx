@@ -23,13 +23,8 @@ export default function ScheduleScreen() {
     format(new Date(), "yyyy-MM-dd")
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      // We don't call refreshSchedule() here immediately because the hook might be re-fetching due to prop change.
-      // But to be safe for "focus" updates (returning from another tab), we can call it.
-      refreshSchedule();
-
-      async function getRole() {
+  useEffect(() => {
+    async function getRole() {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
@@ -38,8 +33,7 @@ export default function ScheduleScreen() {
         }
       }
       getRole();
-    }, [refreshSchedule])
-  );
+    }, [refreshSchedule]);
 
   // Generate marked dates for the calendar
   const markedDates = useMemo(() => {

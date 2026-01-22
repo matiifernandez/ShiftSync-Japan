@@ -1,81 +1,64 @@
-import { useEffect, useState, useCallback } from "react";
-import { supabase } from "../lib/supabase";
-import { Expense } from "../types";
-import { Alert } from "react-native";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+import { Expense } from '../types';
+import { Alert } from 'react-native';
 
 export function useExpenses() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<"admin" | "staff" | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchExpenses = useCallback(async () => {
-    try {
-      setLoading(true);
+  // 1. Fetch User Role (Needed for logic)
+  const { data: userRole } = useQuery({
+    queryKey: ['user-role'],
+    queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // 1. Get my role
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-      
-      setUserRole(profile?.role || "staff");
-
-      // 2. Fetch expenses (Policy handles filtering)
-      const { data, error } = await supabase
-        .from("expenses")
-        .select("*, profiles:user_id(full_name, avatar_url)")
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setExpenses(data || []);
-    } catch (error) {
-      console.error("Error fetching expenses:", error);
-    } finally {
-      setLoading(false);
+      if (!user) return null;
+      const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+      return data?.role || 'staff';
     }
-  }, []);
+  });
 
-  const createExpense = async (expenseData: Partial<Expense>, imageUri?: string) => {
-    try {
+  // 2. Fetch Expenses
+  const { data: expenses = [], isLoading: loading, refetch } = useQuery({
+    queryKey: ['expenses'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('*, profiles:user_id(full_name, avatar_url)')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as Expense[];
+    }
+  });
+
+  // 3. Create Expense Mutation
+  const createMutation = useMutation({
+    mutationFn: async ({ data, imageUri }: { data: Partial<Expense>; imageUri?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Get profile for organization_id
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("organization_id")
-        .eq("id", user.id)
-        .single();
-
+      const { data: profile } = await supabase.from('profiles').select('organization_id').eq('id', user.id).single();
       if (!profile?.organization_id) throw new Error("No organization assigned");
 
       let receiptUrl = null;
 
-      // 1. Upload receipt if exists
       if (imageUri) {
         const response = await fetch(imageUri);
         const blob = await response.arrayBuffer();
         const fileName = `${user.id}/${Date.now()}.jpg`;
         
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from("receipts")
           .upload(fileName, blob, { contentType: "image/jpeg" });
 
         if (uploadError) throw uploadError;
         
-        const { data: publicUrl } = supabase.storage
-          .from("receipts")
-          .getPublicUrl(fileName);
-        
+        const { data: publicUrl } = supabase.storage.from("receipts").getPublicUrl(fileName);
         receiptUrl = publicUrl.publicUrl;
       }
 
-      // 2. Insert expense
       const { error } = await supabase.from("expenses").insert({
-        ...expenseData,
+        ...data,
         user_id: user.id,
         organization_id: profile.organization_id,
         receipt_url: receiptUrl,
@@ -83,38 +66,35 @@ export function useExpenses() {
       });
 
       if (error) throw error;
-      await fetchExpenses();
-      return true;
-    } catch (error: any) {
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    },
+    onError: (error: any) => {
       Alert.alert("Error", error.message);
-      return false;
     }
-  };
+  });
 
-  const updateExpenseStatus = async (id: string, status: "approved" | "rejected") => {
-    try {
-      const { error } = await supabase
-        .from("expenses")
-        .update({ status })
-        .eq("id", id);
-
+  // 4. Update Status Mutation (Approve/Reject)
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
+      const { error } = await supabase.from('expenses').update({ status }).eq('id', id);
       if (error) throw error;
-      await fetchExpenses();
-    } catch (error: any) {
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    },
+    onError: (error: any) => {
       Alert.alert("Error", error.message);
     }
-  };
-
-  useEffect(() => {
-    fetchExpenses();
-  }, [fetchExpenses]);
+  });
 
   return {
     expenses,
     loading,
     userRole,
-    refreshExpenses: fetchExpenses,
-    createExpense,
-    updateExpenseStatus
+    refreshExpenses: refetch,
+    createExpense: (data: Partial<Expense>, imageUri?: string) => createMutation.mutateAsync({ data, imageUri }),
+    updateExpenseStatus: (id: string, status: 'approved' | 'rejected') => updateStatusMutation.mutateAsync({ id, status })
   };
 }
