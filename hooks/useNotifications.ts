@@ -11,6 +11,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -21,8 +23,10 @@ export function useNotifications() {
   const [notification, setNotification] = useState<
     Notifications.Notification | undefined
   >(undefined);
-  const notificationListener = useRef<any>();
-  const responseListener = useRef<any>();
+  
+  // Initialized with null to satisfy strict null checks
+  const notificationListener = useRef<Notifications.Subscription | null>(null);
+  const responseListener = useRef<Notifications.Subscription | null>(null);
 
   async function registerForPushNotificationsAsync() {
     let token;
@@ -53,15 +57,15 @@ export function useNotifications() {
 
       // Project ID is needed for Expo Go? Usually not if using standard flow,
       // but good to have if defined in app.json
-                  const projectId = Constants.expoConfig?.extra?.eas?.projectId || Constants.easConfig?.projectId;
-                  
-                  if (!projectId) {
-                    console.log("Skipping push token registration: No projectId found.");
-                    return;
-                  }
-            
-                  try {
-                    token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+      const projectId = Constants.expoConfig?.extra?.eas?.projectId || Constants.easConfig?.projectId;
+      
+      if (!projectId) {
+        console.log("Skipping push token registration: No projectId found.");
+        return;
+      }
+
+      try {
+        token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
         console.log("Expo Push Token:", token);
         setExpoPushToken(token);
 
@@ -100,7 +104,9 @@ export function useNotifications() {
         sound: true,
       },
       trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
         seconds,
+        repeats: false,
       },
     });
   };
@@ -119,8 +125,13 @@ export function useNotifications() {
       });
 
     return () => {
-      notificationListener.current && notificationListener.current.remove();
-      responseListener.current && responseListener.current.remove();
+      // Clean up subscriptions
+      if (notificationListener.current) {
+        notificationListener.current.remove();
+      }
+      if (responseListener.current) {
+        responseListener.current.remove();
+      }
     };
   }, []);
 

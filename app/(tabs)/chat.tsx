@@ -195,7 +195,7 @@ export default function ChatScreen() {
 
       {/* NEW CHAT FAB */}
       <TouchableOpacity
-        onPress={() => router.push("/chat/create")}
+        onPress={() => router.push("/chat-create")}
         style={{
           position: "absolute",
           bottom: 20,

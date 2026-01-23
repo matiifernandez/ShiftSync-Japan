@@ -6,7 +6,7 @@ import { useNotifications } from "../../hooks/useNotifications";
 
 export default function TabLayout() {
   const { t } = useTranslation();
-  useNotifications(); // Initialize push tokens
+  // useNotifications(); // Initialize push tokens
 
   return (
     <Tabs

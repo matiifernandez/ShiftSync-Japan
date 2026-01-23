@@ -94,7 +94,14 @@ export function useExpenses() {
     loading,
     userRole,
     refreshExpenses: refetch,
-    createExpense: (data: Partial<Expense>, imageUri?: string) => createMutation.mutateAsync({ data, imageUri }),
+    createExpense: async (data: Partial<Expense>, imageUri?: string) => {
+      try {
+        await createMutation.mutateAsync({ data, imageUri });
+        return true;
+      } catch (e) {
+        return false;
+      }
+    },
     updateExpenseStatus: (id: string, status: 'approved' | 'rejected') => updateStatusMutation.mutateAsync({ id, status })
   };
 }
