@@ -93,14 +93,20 @@ export default function ChatDetailsScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
-      <Stack.Screen 
-        options={{ 
-          headerShown: true,
-          title: "Group Info", 
-          headerBackTitle: "Chat",
-          headerTintColor: "#D9381E",
-        }} 
-      />
+      <Stack.Screen options={{ headerShown: false }} />
+      
+      {/* CUSTOM HEADER */}
+      <View 
+        style={{ paddingTop: insets.top }}
+        className="flex-row items-center px-4 py-3 border-b border-gray-100 bg-white"
+      >
+        <TouchableOpacity onPress={() => router.back()} className="p-2 mr-2">
+          <Ionicons name="chevron-back" size={28} color="#D9381E" />
+        </TouchableOpacity>
+        <Text className="text-lg font-bold text-brand-dark flex-1 text-center mr-10">
+          Group Info
+        </Text>
+      </View>
 
       {loading ? (
         <View className="flex-1 justify-center items-center">

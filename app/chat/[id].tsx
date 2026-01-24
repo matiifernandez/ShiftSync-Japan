@@ -12,12 +12,18 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useChat, Message } from "../../hooks/useChat";
+import { useChatContext } from "../../context/ChatContext";
 
 export default function ChatDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const { id, name } = params;
+
+  // Get conversation metadata from context
+  const { conversations } = useChatContext();
+  const conversation = conversations.find(c => c.id === id);
+  const isGroup = conversation?.type === 'group';
 
   // Use the custom hook connected to Supabase
   const {
@@ -128,12 +134,15 @@ export default function ChatDetailScreen() {
 
         <TouchableOpacity 
           className="flex-1"
-          onPress={() => router.push({ pathname: "/chat/details", params: { id: id as string } })}
+          disabled={!isGroup}
+          onPress={() => isGroup && router.push({ pathname: "/chat/details", params: { id: id as string } })}
         >
           <Text className="text-xl font-bold text-brand-dark" numberOfLines={1}>
             {name || "Chat"}
           </Text>
-          <Text className="text-green-600 text-xs font-bold">Tap for info</Text>
+          {isGroup && (
+            <Text className="text-green-600 text-xs font-bold">Tap for info</Text>
+          )}
         </TouchableOpacity>
       </View>
 
