@@ -7,6 +7,7 @@ import { Session } from "@supabase/supabase-js";
 
 import { useGlobalRealtime } from "../hooks/useGlobalRealtime";
 import { TravelProvider } from "../context/TravelContext";
+import { ChatProvider } from "../context/ChatContext";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
@@ -82,17 +83,19 @@ export default function Layout() {
       persistOptions={{ persister: asyncStoragePersister }}
     >
       <TravelProvider>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: "#FFFFFF" },
-          }}
-        >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="complete-profile" options={{ presentation: 'modal' }} />
-          <Stack.Screen name="chat-create" options={{ presentation: 'modal', headerShown: false }} />
-        </Stack>
+        <ChatProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: "#FFFFFF" },
+            }}
+          >
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="complete-profile" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="chat-create" options={{ presentation: 'modal', headerShown: false }} />
+          </Stack>
+        </ChatProvider>
       </TravelProvider>
     </PersistQueryClientProvider>
   );

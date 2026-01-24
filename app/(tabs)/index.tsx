@@ -7,11 +7,13 @@ import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useTravelContext } from "../../context/TravelContext";
 import { TranslationKey } from "../../lib/translations";
+import { useConversations } from "../../hooks/useConversations";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
+  const { totalUnreadCount } = useConversations();
   const { trip } = useTravelContext();
   const [userName, setUserName] = useState("User");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -142,7 +144,15 @@ export default function HomeScreen() {
         {/* ACTION GRID */}
         <Text className="text-brand-dark text-xl font-bold mb-4">{t('quick_actions')}</Text>
         <View className="flex-row flex-wrap justify-between gap-y-3 mb-10">
-          <TouchableOpacity className="w-[48%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm" onPress={() => router.push("/(tabs)/chat")}>
+          <TouchableOpacity 
+            className="w-[48%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
+            onPress={() => router.push("/(tabs)/chat")}
+          >
+            {totalUnreadCount > 0 && (
+              <View className="absolute top-2 right-2 bg-brand-red rounded-full min-w-[20px] h-[20px] px-1 items-center justify-center z-10">
+                <Text className="text-white text-xs font-bold">{totalUnreadCount}</Text>
+              </View>
+            )}
             <View className="bg-blue-100 w-12 h-12 rounded-full items-center justify-center">
               <Ionicons name="chatbubble-ellipses" size={24} color="#2563EB" />
             </View>

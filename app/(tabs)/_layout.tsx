@@ -3,9 +3,11 @@ import { Tabs } from "expo-router";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useNotifications } from "../../hooks/useNotifications";
+import { useConversations } from "../../hooks/useConversations";
 
 export default function TabLayout() {
   const { t } = useTranslation();
+  const { totalUnreadCount } = useConversations();
   // useNotifications(); // Initialize push tokens
 
   return (
@@ -44,6 +46,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <Ionicons name="chatbubbles" size={24} color={color} />
           ),
+          tabBarBadge: totalUnreadCount && totalUnreadCount > 0 ? totalUnreadCount : undefined,
         }}
       />
       <Tabs.Screen
