@@ -121,7 +121,7 @@ export default function ChatDetailScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
-      <Stack.Screen options={{ headerShown: false }} />
+      <Stack.Screen options={{ headerShown: false, gestureEnabled: true }} />
 
       {/* HEADER */}
       <View
