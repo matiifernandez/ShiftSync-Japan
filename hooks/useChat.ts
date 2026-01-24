@@ -72,44 +72,52 @@ export function useChat(conversationId: string) {
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*", // Listen to INSERT and UPDATE
           schema: "public",
           table: "messages",
           filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-           console.log("New message received!", payload);
+           console.log("Realtime event received!", payload.eventType, payload);
            const newMessage = payload.new as any;
-           
-           // Fetch sender profile info for the new message to display name correctly
-           // Optimization: If sender is ME, I already know my name, but fetching is safer for consistency
-            const { data: profile } = await supabase
-                .from("profiles")
-                .select("full_name, avatar_url")
-                .eq("id", newMessage.sender_id)
-                .single();
 
-            const msgWithProfile: Message = {
-                id: newMessage.id,
-                conversation_id: newMessage.conversation_id,
-                sender_id: newMessage.sender_id,
-                content_original: newMessage.content_original,
-                content_translated: newMessage.content_translated,
-                original_language: newMessage.original_language,
-                created_at: newMessage.created_at,
-                sender_name: profile?.full_name || "Unknown",
-                avatar_url: profile?.avatar_url
-            };
+           if (payload.eventType === 'INSERT') {
+              // Fetch sender profile info
+              const { data: profile } = await supabase
+                  .from("profiles")
+                  .select("full_name, avatar_url")
+                  .eq("id", newMessage.sender_id)
+                  .single();
 
-           setMessages((prev) => [msgWithProfile, ...prev]);
+              const msgWithProfile: Message = {
+                  id: newMessage.id,
+                  conversation_id: newMessage.conversation_id,
+                  sender_id: newMessage.sender_id,
+                  content_original: newMessage.content_original,
+                  content_translated: newMessage.content_translated,
+                  original_language: newMessage.original_language,
+                  created_at: newMessage.created_at,
+                  sender_name: profile?.full_name || "Unknown",
+                  avatar_url: profile?.avatar_url
+              };
 
-           // Mark as read if I'm on this screen
-           if (userRef.current) {
-               await supabase
-                .from('conversation_participants')
-                .update({ last_read_at: new Date().toISOString() })
-                .eq('conversation_id', conversationId)
-                .eq('user_id', userRef.current);
+              setMessages((prev) => [msgWithProfile, ...prev]);
+
+              // Mark as read
+              if (userRef.current) {
+                  await supabase
+                    .from('conversation_participants')
+                    .update({ last_read_at: new Date().toISOString() })
+                    .eq('conversation_id', conversationId)
+                    .eq('user_id', userRef.current);
+              }
+           } else if (payload.eventType === 'UPDATE') {
+             // Handle translation update
+             setMessages((prev) => prev.map(msg => 
+               msg.id === newMessage.id 
+                 ? { ...msg, content_translated: newMessage.content_translated }
+                 : msg
+             ));
            }
         }
       )
