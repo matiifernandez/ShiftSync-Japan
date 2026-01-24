@@ -9,6 +9,7 @@ import { useTravelContext } from "../../context/TravelContext";
 import { TranslationKey } from "../../lib/translations";
 import { useConversations } from "../../hooks/useConversations";
 import { useSchedule } from "../../hooks/useSchedule";
+import { useBadgeTracker } from "../../hooks/useBadgeTracker";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -17,6 +18,8 @@ export default function HomeScreen() {
   const { totalUnreadCount } = useConversations();
   const { trip } = useTravelContext();
   const { schedule } = useSchedule();
+  const { hasNewTravel, hasNewSchedule, markTravelVisited, markScheduleVisited } = useBadgeTracker();
+  
   const [userName, setUserName] = useState("User");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
@@ -70,15 +73,7 @@ export default function HomeScreen() {
     // 2. Add Schedule Items
     if (schedule) {
       schedule.forEach(s => {
-        // Schedule items usually have 'date' (YYYY-MM-DD) and sometimes 'start_time'
-        // For simplicity, we assume 'date' combined with 'start_time' or just 'date' at 00:00
-        // Adjust logic based on your exact ScheduleItem type structure
         let itemDate = new Date(s.date);
-        // If the item date is today or future, include it. 
-        // Note: Comparing strict time might filter out today's shifts if they don't have time.
-        // Let's assume end of day check or inclusive check.
-        
-        // Improve: Check if 's' is valid
         if (itemDate >= new Date(now.setHours(0,0,0,0))) {
              candidates.push({
                 type: 'shift',
@@ -117,6 +112,20 @@ export default function HomeScreen() {
     };
 
   }, [trip, schedule]);
+
+  // Badge Logic
+  const showTravelBadge = useMemo(() => hasNewTravel(trip?.tickets || []), [trip, hasNewTravel]);
+  const showScheduleBadge = useMemo(() => hasNewSchedule(schedule), [schedule, hasNewSchedule]);
+
+  const handlePressTravel = () => {
+    markTravelVisited();
+    router.push("/(tabs)/travel");
+  };
+
+  const handlePressSchedule = () => {
+    markScheduleVisited();
+    router.push("/(tabs)/schedule");
+  };
 
   return (
     <View 
@@ -192,6 +201,8 @@ export default function HomeScreen() {
         {/* ACTION GRID */}
         <Text className="text-brand-dark text-xl font-bold mb-4">{t('quick_actions')}</Text>
         <View className="flex-row flex-wrap justify-between gap-y-3 mb-10">
+          
+          {/* CHAT */}
           <TouchableOpacity 
             className="w-[48%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
             onPress={() => router.push("/(tabs)/chat")}
@@ -207,20 +218,35 @@ export default function HomeScreen() {
             <Text className="text-brand-dark font-bold text-lg">{t('tab_chat')}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity className="w-[48%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm" onPress={() => router.push("/(tabs)/travel")}>
+          {/* TRAVEL */}
+          <TouchableOpacity 
+            className="w-[48%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
+            onPress={handlePressTravel}
+          >
+            {showTravelBadge && (
+              <View className="absolute top-2 right-2 bg-brand-red w-3 h-3 rounded-full z-10" />
+            )}
             <View className="bg-green-100 w-12 h-12 rounded-full items-center justify-center">
               <FontAwesome5 name="plane" size={24} color="#059669" />
             </View>
             <Text className="text-brand-dark font-bold text-lg">{t('tab_travel')}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity className="w-[48%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm" onPress={() => router.push("/(tabs)/schedule")}>
+          {/* SCHEDULE */}
+          <TouchableOpacity 
+            className="w-[48%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
+            onPress={handlePressSchedule}
+          >
+             {showScheduleBadge && (
+              <View className="absolute top-2 right-2 bg-brand-red w-3 h-3 rounded-full z-10" />
+            )}
             <View className="bg-purple-100 w-12 h-12 rounded-full items-center justify-center">
               <FontAwesome5 name="calendar-alt" size={24} color="#7C3AED" />
             </View>
             <Text className="text-brand-dark font-bold text-lg">{t('tab_schedule')}</Text>
           </TouchableOpacity>
 
+          {/* EXPENSES */}
           <TouchableOpacity className="w-[48%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm" onPress={() => router.push("/expenses")}>
             <View className="bg-orange-100 w-12 h-12 rounded-full items-center justify-center">
               <FontAwesome5 name="yen-sign" size={24} color="#EA580C" />
