@@ -8,6 +8,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { useTravelContext } from "../../context/TravelContext";
 import { TranslationKey } from "../../lib/translations";
 import { useConversations } from "../../hooks/useConversations";
+import { useSchedule } from "../../hooks/useSchedule";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -15,6 +16,7 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const { totalUnreadCount } = useConversations();
   const { trip } = useTravelContext();
+  const { schedule } = useSchedule();
   const [userName, setUserName] = useState("User");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
@@ -46,29 +48,75 @@ export default function HomeScreen() {
   };
 
   const nextActivity = useMemo(() => {
-    if (!trip) return null;
-    
     const now = new Date();
-    const tickets = trip.tickets || [];
-    const futureTickets = tickets.filter(t => new Date(t.departure_time) > now);
-    
-    if (futureTickets.length > 0) {
-      const next = futureTickets[0];
-      return {
-        title: next.transport_name || "Next Trip",
-        location: `${next.departure_station || '?'} → ${next.arrival_station || '?'}`,
-        time: next.departure_time ? new Date(next.departure_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null,
-        detail: next.seat_number ? `Seat ${next.seat_number}` : 'Team Activity'
-      };
+    const candidates: any[] = [];
+
+    // 1. Add Tickets
+    if (trip && trip.tickets) {
+      trip.tickets.forEach(t => {
+        if (new Date(t.departure_time) > now) {
+          candidates.push({
+            type: 'ticket',
+            date: new Date(t.departure_time),
+            title: t.transport_name || "Travel",
+            location: `${t.departure_station || '?'} → ${t.arrival_station || '?'}`,
+            detail: t.seat_number ? `Seat ${t.seat_number}` : 'Travel',
+            raw: t
+          });
+        }
+      });
     }
 
+    // 2. Add Schedule Items
+    if (schedule) {
+      schedule.forEach(s => {
+        // Schedule items usually have 'date' (YYYY-MM-DD) and sometimes 'start_time'
+        // For simplicity, we assume 'date' combined with 'start_time' or just 'date' at 00:00
+        // Adjust logic based on your exact ScheduleItem type structure
+        let itemDate = new Date(s.date);
+        // If the item date is today or future, include it. 
+        // Note: Comparing strict time might filter out today's shifts if they don't have time.
+        // Let's assume end of day check or inclusive check.
+        
+        // Improve: Check if 's' is valid
+        if (itemDate >= new Date(now.setHours(0,0,0,0))) {
+             candidates.push({
+                type: 'shift',
+                date: itemDate,
+                title: s.type === 'work_shift' ? 'Work Shift' : (s.type === 'off_day' ? 'Off Day' : 'Travel Day'),
+                location: s.notes || 'On Site',
+                detail: s.type === 'work_shift' ? 'Scheduled Duty' : 'Rest',
+                raw: s
+             });
+        }
+      });
+    }
+
+    if (candidates.length === 0) {
+        if (trip) {
+            return {
+                title: trip.name,
+                location: trip.dates,
+                time: null,
+                detail: 'Ongoing Project'
+            };
+        }
+        return null;
+    }
+
+    // Sort by date ascending
+    candidates.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    const next = candidates[0];
     return {
-      title: trip.name,
-      location: trip.dates,
-      time: null,
-      detail: 'Ongoing Project'
+        title: next.title,
+        location: next.location,
+        time: next.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        detail: next.detail,
+        isShift: next.type === 'shift'
     };
-  }, [trip]);
+
+  }, [trip, schedule]);
 
   return (
     <View 
@@ -102,7 +150,7 @@ export default function HomeScreen() {
         {/* HERO CARD - NEXT ACTIVITY */}
         {nextActivity ? (
           <TouchableOpacity 
-            onPress={() => router.push("/(tabs)/travel")}
+            onPress={() => router.push(nextActivity.isShift ? "/(tabs)/schedule" : "/(tabs)/travel")}
             className="bg-brand-dark rounded-3xl p-5 mb-6 shadow-lg"
           >
             <View className="flex-row justify-between items-start mb-4">
@@ -129,7 +177,7 @@ export default function HomeScreen() {
                 </View>
               )}
               <View className="flex-row items-center bg-white/10 px-4 py-2 rounded-xl">
-                <FontAwesome5 name="info-circle" size={14} color="white" />
+                <FontAwesome5 name={nextActivity.isShift ? "briefcase" : "info-circle"} size={14} color="white" />
                 <Text className="text-white ml-2 font-medium">{nextActivity.detail}</Text>
               </View>
             </View>
