@@ -82,14 +82,8 @@ export function useChat(conversationId: string) {
            const newMessage = payload.new as any;
 
            if (payload.eventType === 'INSERT') {
-              // Fetch sender profile info
-              const { data: profile } = await supabase
-                  .from("profiles")
-                  .select("full_name, avatar_url")
-                  .eq("id", newMessage.sender_id)
-                  .single();
-
-              const msgWithProfile: Message = {
+              // 1. Add message IMMEDIATELY to state (to ensure it exists for subsequent UPDATEs)
+              const msgWithPlaceholder: Message = {
                   id: newMessage.id,
                   conversation_id: newMessage.conversation_id,
                   sender_id: newMessage.sender_id,
@@ -97,11 +91,30 @@ export function useChat(conversationId: string) {
                   content_translated: newMessage.content_translated,
                   original_language: newMessage.original_language,
                   created_at: newMessage.created_at,
-                  sender_name: profile?.full_name || "Unknown",
-                  avatar_url: profile?.avatar_url
+                  sender_name: "Loading...", // Temporary
+                  avatar_url: undefined
               };
 
-              setMessages((prev) => [msgWithProfile, ...prev]);
+              setMessages((prev) => {
+                if (prev.some(m => m.id === msgWithPlaceholder.id)) return prev;
+                return [msgWithPlaceholder, ...prev];
+              });
+
+              // 2. Fetch sender profile info asynchronously
+              const { data: profile } = await supabase
+                  .from("profiles")
+                  .select("full_name, avatar_url")
+                  .eq("id", newMessage.sender_id)
+                  .single();
+
+              if (profile) {
+                // Update the message with profile info
+                setMessages((prev) => prev.map(msg => 
+                  msg.id === newMessage.id 
+                    ? { ...msg, sender_name: profile.full_name, avatar_url: profile.avatar_url }
+                    : msg
+                ));
+              }
 
               // Mark as read
               if (userRef.current) {
@@ -112,6 +125,7 @@ export function useChat(conversationId: string) {
                     .eq('user_id', userRef.current);
               }
            } else if (payload.eventType === 'UPDATE') {
+             console.log("Processing UPDATE:", newMessage.id, newMessage.content_translated);
              // Handle translation update
              setMessages((prev) => prev.map(msg => 
                msg.id === newMessage.id 

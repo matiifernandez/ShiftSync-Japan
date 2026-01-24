@@ -145,6 +145,7 @@ export default function ChatDetailScreen() {
       >
         <FlatList
           data={messages}
+          extraData={messages} // Force re-render when data changes
           inverted
           contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
           renderItem={renderMessage}

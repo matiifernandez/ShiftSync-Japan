@@ -47,6 +47,30 @@ export function useConversations() {
     }, [fetchConversations])
   );
 
+  // Realtime Subscription for List Updates
+  useEffect(() => {
+    const channel = supabase
+      .channel("conversations-list-updates")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+        },
+        (payload) => {
+           console.log("New message in list view, refreshing...", payload);
+           // Refresh list quietly (isBackground = true)
+           fetchConversations(true);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchConversations]);
+
   return { 
       conversations, 
       loading, 
