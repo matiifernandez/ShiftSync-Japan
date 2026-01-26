@@ -30,6 +30,13 @@
     "plugins": [
       "expo-router",
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b136e014-0d20-406d-9abc-a03adaa59dca"
+      }
+    },
+    "owner": "matiifernandez"
   }
 }
