@@ -28,7 +28,8 @@ export function useExpenses() {
       
       if (error) throw error;
       return data as Expense[];
-    }
+    },
+    staleTime: 1000 * 60 * 5 // 5 minutes
   });
 
   // 3. Create Expense Mutation
@@ -67,11 +68,40 @@ export function useExpenses() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    onMutate: async ({ data, imageUri }) => {
+      await queryClient.cancelQueries({ queryKey: ['expenses'] });
+      const previousExpenses = queryClient.getQueryData<Expense[]>(['expenses']);
+
+      // Optimistic Update
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+         const newOptimisticExpense: any = {
+           id: `temp-${Date.now()}`,
+           ...data,
+           user_id: user.id,
+           status: 'pending',
+           created_at: new Date().toISOString(),
+           receipt_url: imageUri || null, // Use local URI for display
+           profiles: {
+             full_name: 'Me', 
+             avatar_url: null
+           }
+         };
+
+         queryClient.setQueryData<Expense[]>(['expenses'], (old) => [newOptimisticExpense, ...(old || [])]);
+      }
+
+      return { previousExpenses };
     },
-    onError: (error: any) => {
-      Alert.alert("Error", error.message);
+    onError: (err, variables, context) => {
+      if (context?.previousExpenses) {
+        queryClient.setQueryData(['expenses'], context.previousExpenses);
+      }
+      Alert.alert("Error", err.message);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
     }
   });
 
@@ -81,11 +111,24 @@ export function useExpenses() {
       const { error } = await supabase.from('expenses').update({ status }).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+    onMutate: async ({ id, status }) => {
+      await queryClient.cancelQueries({ queryKey: ['expenses'] });
+      const previousExpenses = queryClient.getQueryData<Expense[]>(['expenses']);
+
+      queryClient.setQueryData<Expense[]>(['expenses'], (old) => 
+        old?.map(e => e.id === id ? { ...e, status } : e)
+      );
+
+      return { previousExpenses };
     },
-    onError: (error: any) => {
-      Alert.alert("Error", error.message);
+    onError: (err, variables, context) => {
+      if (context?.previousExpenses) {
+        queryClient.setQueryData(['expenses'], context.previousExpenses);
+      }
+      Alert.alert("Error", err.message);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
     }
   });
 

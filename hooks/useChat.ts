@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { Alert } from "react-native";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface Message {
   id: string;
@@ -15,15 +16,22 @@ export interface Message {
 }
 
 export function useChat(conversationId: string) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const userRef = useRef<string | null>(null);
 
-  // 1. Fetch initial history
-  const fetchMessages = useCallback(async () => {
-    if (!conversationId) return;
-    
-    try {
+  // 0. Initialize User Ref
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      userRef.current = user?.id || null;
+    });
+  }, []);
+
+  // 1. Fetch Messages (Query)
+  const { data: messages = [], isLoading: loading } = useQuery({
+    queryKey: ['messages', conversationId],
+    queryFn: async () => {
+      if (!conversationId) return [];
+
       const { data: { user } } = await supabase.auth.getUser();
       userRef.current = user?.id || null;
 
@@ -49,72 +57,106 @@ export function useChat(conversationId: string) {
       if (error) throw error;
 
       // Transform data to flat structure
-      const formattedMessages = data.map((msg: any) => ({
+      return data.map((msg: any) => ({
         ...msg,
         sender_name: msg.profiles?.full_name || "Unknown",
         avatar_url: msg.profiles?.avatar_url
-      }));
+      })) as Message[];
+    },
+    enabled: !!conversationId,
+  });
 
-      setMessages(formattedMessages);
-    } catch (err) {
-      console.error("Error fetching messages:", err);
-    } finally {
-      setLoading(false);
+  // 2. Send Message (Mutation)
+  const sendMessageMutation = useMutation({
+    mutationFn: async (text: string) => {
+      if (!text.trim() || !userRef.current) throw new Error("Invalid message");
+
+      const { data, error } = await supabase.from("messages").insert({
+        conversation_id: conversationId,
+        sender_id: userRef.current,
+        content_original: text,
+        original_language: 'en'
+      }).select().single();
+
+      if (error) throw error;
+      return data;
+    },
+    onMutate: async (text) => {
+      // Cancel refetches
+      await queryClient.cancelQueries({ queryKey: ['messages', conversationId] });
+
+      // Snapshot previous value
+      const previousMessages = queryClient.getQueryData<Message[]>(['messages', conversationId]);
+
+      // Optimistic Update
+      if (userRef.current) {
+        const optimisticMessage: Message = {
+          id: `temp-${Date.now()}`,
+          conversation_id: conversationId,
+          sender_id: userRef.current,
+          content_original: text,
+          created_at: new Date().toISOString(),
+          sender_name: "Me", // Will be updated on invalidate
+          avatar_url: undefined, // Optional
+        };
+
+        queryClient.setQueryData<Message[]>(['messages', conversationId], (old) => [optimisticMessage, ...(old || [])]);
+      }
+
+      return { previousMessages };
+    },
+    onError: (err, newTodo, context) => {
+      // Rollback
+      if (context?.previousMessages) {
+        queryClient.setQueryData(['messages', conversationId], context.previousMessages);
+      }
+      Alert.alert("Error", "Could not send message");
+    },
+    onSettled: () => {
+      // Refetch to get real ID and server data
+      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
     }
-  }, [conversationId]);
+  });
 
-  // 2. Realtime Subscription
+  // 3. Realtime Subscription
   useEffect(() => {
-    fetchMessages();
+    if (!conversationId) return;
 
     const channel = supabase
       .channel(`chat:${conversationId}`)
       .on(
         "postgres_changes",
         {
-          event: "*", // Listen to INSERT and UPDATE
+          event: "*", 
           schema: "public",
           table: "messages",
           filter: `conversation_id=eq.${conversationId}`,
         },
         async (payload) => {
-           console.log("Realtime event received!", payload.eventType, payload);
+           console.log("Realtime event received!", payload.eventType);
            const newMessage = payload.new as any;
 
            if (payload.eventType === 'INSERT') {
-              // 1. Add message IMMEDIATELY to state (to ensure it exists for subsequent UPDATEs)
-              const msgWithPlaceholder: Message = {
-                  id: newMessage.id,
-                  conversation_id: newMessage.conversation_id,
-                  sender_id: newMessage.sender_id,
-                  content_original: newMessage.content_original,
-                  content_translated: newMessage.content_translated,
-                  original_language: newMessage.original_language,
-                  created_at: newMessage.created_at,
-                  sender_name: "Loading...", // Temporary
-                  avatar_url: undefined
-              };
-
-              setMessages((prev) => {
-                if (prev.some(m => m.id === msgWithPlaceholder.id)) return prev;
-                return [msgWithPlaceholder, ...prev];
-              });
-
-              // 2. Fetch sender profile info asynchronously
+              // Fetch sender profile info
               const { data: profile } = await supabase
                   .from("profiles")
                   .select("full_name, avatar_url")
                   .eq("id", newMessage.sender_id)
                   .single();
 
-              if (profile) {
-                // Update the message with profile info
-                setMessages((prev) => prev.map(msg => 
-                  msg.id === newMessage.id 
-                    ? { ...msg, sender_name: profile.full_name, avatar_url: profile.avatar_url }
-                    : msg
-                ));
-              }
+              const msgWithProfile: Message = {
+                  ...newMessage,
+                  sender_name: profile?.full_name || "Unknown",
+                  avatar_url: profile?.avatar_url
+              };
+
+              queryClient.setQueryData<Message[]>(['messages', conversationId], (old) => {
+                 // Prevent duplicate if we handled it optimistically or via other means
+                 // (Usually optimistic update uses temp ID, real one has UUID)
+                 // A more robust check might be needed if IDs collide, but UUID vs temp-timestamp is safe.
+                 if (old?.some(m => m.id === msgWithProfile.id)) return old;
+                 return [msgWithProfile, ...(old || [])];
+              });
 
               // Mark as read
               if (userRef.current) {
@@ -124,14 +166,12 @@ export function useChat(conversationId: string) {
                     .eq('conversation_id', conversationId)
                     .eq('user_id', userRef.current);
               }
+
            } else if (payload.eventType === 'UPDATE') {
-             console.log("Processing UPDATE:", newMessage.id, newMessage.content_translated);
              // Handle translation update
-             setMessages((prev) => prev.map(msg => 
-               msg.id === newMessage.id 
-                 ? { ...msg, content_translated: newMessage.content_translated }
-                 : msg
-             ));
+             queryClient.setQueryData<Message[]>(['messages', conversationId], (old) => 
+                old?.map(msg => msg.id === newMessage.id ? { ...msg, ...newMessage } : msg)
+             );
            }
         }
       )
@@ -140,26 +180,10 @@ export function useChat(conversationId: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversationId, fetchMessages]);
+  }, [conversationId, queryClient]);
 
-  // 3. Send Message Function
   const sendMessage = async (text: string) => {
-    if (!text.trim() || !userRef.current) return;
-
-    try {
-      const { error } = await supabase.from("messages").insert({
-        conversation_id: conversationId,
-        sender_id: userRef.current,
-        content_original: text,
-        original_language: 'en' // Defaulting to 'en' for now, later we can auto-detect
-      });
-
-      if (error) throw error;
-      // Realtime will handle the UI update
-    } catch (err) {
-      Alert.alert("Error", "Could not send message");
-      console.error(err);
-    }
+    await sendMessageMutation.mutateAsync(text);
   };
 
   return { 
