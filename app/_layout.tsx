@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
 
 import { useGlobalRealtime } from "../hooks/useGlobalRealtime";
+import { useNotifications } from "../hooks/useNotifications";
 import { TravelProvider } from "../context/TravelContext";
 import { ChatProvider } from "../context/ChatContext";
 import { QueryClient } from "@tanstack/react-query";
@@ -33,6 +34,7 @@ export default function Layout() {
   const router = useRouter();
 
   // Activate global listeners for notifications
+  useNotifications();
   // useGlobalRealtime();
 
   useEffect(() => {

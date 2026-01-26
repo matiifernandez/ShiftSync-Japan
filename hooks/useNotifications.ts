@@ -4,6 +4,7 @@ import { Platform } from "react-native";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
 import { supabase } from "../lib/supabase";
+import { useRouter } from "expo-router";
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -17,6 +18,7 @@ Notifications.setNotificationHandler({
 });
 
 export function useNotifications() {
+  const router = useRouter();
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>(
     undefined
   );
@@ -121,7 +123,12 @@ export function useNotifications() {
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
-        console.log("Notification tapped:", response);
+        const data = response.notification.request.content.data;
+        console.log("Notification tapped with data:", data);
+
+        if (data?.conversationId) {
+          router.push(`/chat/${data.conversationId}`);
+        }
       });
 
     return () => {
