@@ -41,6 +41,7 @@ export default function ChatDetailScreen() {
 
   const renderMessage = ({ item }: { item: Message }) => {
     const isMe = item.sender_id === currentUserId;
+    const isOptimistic = item.id.startsWith("temp-");
     const timeString = new Date(item.created_at).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
@@ -48,7 +49,7 @@ export default function ChatDetailScreen() {
 
     return (
       <View
-        className={`flex-row mb-4 ${isMe ? "justify-end" : "justify-start"}`}
+        className={`flex-row mb-4 ${isMe ? "justify-end" : "justify-start"} ${isOptimistic ? "opacity-70" : "opacity-100"}`}
       >
         {!isMe && (
           <View className="w-8 h-8 bg-gray-300 rounded-full mr-2 items-center justify-center overflow-hidden">
@@ -107,13 +108,19 @@ export default function ChatDetailScreen() {
             </View>
           )}
 
-          <Text
-            className={`text-[10px] mt-1 text-right ${
-              isMe ? "text-white/60" : "text-gray-400"
-            }`}
-          >
-            {timeString}
-          </Text>
+          <View className="flex-row justify-end items-center mt-1">
+            {isOptimistic ? (
+               <Ionicons name="time-outline" size={10} color={isMe ? "rgba(255,255,255,0.7)" : "#9CA3AF"} />
+            ) : (
+               <Text
+                className={`text-[10px] text-right ${
+                  isMe ? "text-white/60" : "text-gray-400"
+                }`}
+              >
+                {timeString}
+              </Text>
+            )}
+          </View>
         </View>
       </View>
     );

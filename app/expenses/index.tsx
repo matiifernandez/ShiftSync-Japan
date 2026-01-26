@@ -74,21 +74,27 @@ export default function ExpensesScreen() {
   const renderExpenseItem = ({ item }: { item: Expense }) => {
     const isPending = item.status === "pending";
     const isAdmin = userRole === "admin";
-    // ... existing render logic ...
+    const isOptimistic = item.id.startsWith("temp-");
+
     return (
       <TouchableOpacity 
         activeOpacity={0.9}
         onPress={() => router.push({ pathname: "/expenses/[id]", params: { id: item.id } })}
-        className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100"
+        disabled={isOptimistic} // Disable interaction while syncing
+        className={`bg-white rounded-2xl p-4 mb-3 shadow-sm border ${isOptimistic ? 'border-yellow-300 opacity-70' : 'border-gray-100'}`}
       >
         <View className="flex-row justify-between items-start mb-3">
           <View className="flex-row items-center">
-            <View className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center mr-3">
-              <FontAwesome5
-                name={getCategoryIcon(item.category)}
-                size={18}
-                color="#4B5563"
-              />
+            <View className={`w-10 h-10 ${isOptimistic ? 'bg-yellow-50' : 'bg-gray-100'} rounded-full items-center justify-center mr-3`}>
+              {isOptimistic ? (
+                <Ionicons name="cloud-upload-outline" size={18} color="#D97706" />
+              ) : (
+                <FontAwesome5
+                  name={getCategoryIcon(item.category)}
+                  size={18}
+                  color="#4B5563"
+                />
+              )}
             </View>
             <View>
               <Text className="text-brand-dark font-bold text-lg">
@@ -100,10 +106,10 @@ export default function ExpensesScreen() {
             </View>
           </View>
           <View
-            className={`px-3 py-1 rounded-full border ${getStatusColor(item.status)}`}
+            className={`px-3 py-1 rounded-full border ${isOptimistic ? 'bg-yellow-100 border-yellow-200' : getStatusColor(item.status)}`}
           >
-            <Text className="text-[10px] font-bold uppercase">
-              {item.status}
+            <Text className={`text-[10px] font-bold uppercase ${isOptimistic ? 'text-yellow-700' : ''}`}>
+              {isOptimistic ? 'Syncing...' : item.status}
             </Text>
           </View>
         </View>
