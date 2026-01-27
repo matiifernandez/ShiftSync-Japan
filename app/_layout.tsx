@@ -1,5 +1,5 @@
 import "../global.css";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, useRouter, useSegments, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { supabase } from "../lib/supabase";
@@ -32,10 +32,19 @@ export default function Layout() {
   const [initialized, setInitialized] = useState(false);
   const segments = useSegments();
   const router = useRouter();
+  const params = useLocalSearchParams();
 
   // Activate global listeners for notifications
   useNotifications();
   // useGlobalRealtime();
+
+  // Capture pending orgId from deep links
+  useEffect(() => {
+    if (params.orgId) {
+      AsyncStorage.setItem("@pending_org_id", params.orgId as string);
+      console.log("Captured pending Org ID:", params.orgId);
+    }
+  }, [params.orgId]);
 
   useEffect(() => {
     // 1. Check initial session

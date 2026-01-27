@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../hooks/useTranslation";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function CompleteProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -55,10 +56,27 @@ export default function CompleteProfileScreen() {
         if (profile) {
           setIsEditing(true); // If profile exists, we are in Edit Mode
           setFullName(profile.full_name || "");
-          // Only overwrite org ID if it exists in DB, otherwise keep the default/hack for easier onboarding testing
-          if (profile.organization_id) setOrganizationId(profile.organization_id);
+          // Only overwrite org ID if it exists in DB, otherwise keep the current state (params or default)
+          if (profile.organization_id) {
+             setOrganizationId(profile.organization_id);
+          } else {
+             // If profile has no orgId, check for pending invite in storage
+             const pendingOrgId = await AsyncStorage.getItem("@pending_org_id");
+             if (pendingOrgId) {
+                setOrganizationId(pendingOrgId);
+                await AsyncStorage.removeItem("@pending_org_id");
+             }
+          }
+          
           if (profile.preferred_language) setLanguage(profile.preferred_language as "en" | "ja");
           if (profile.avatar_url) setImage(profile.avatar_url);
+        } else {
+            // New user, no profile yet. Check storage for pending invite
+            const pendingOrgId = await AsyncStorage.getItem("@pending_org_id");
+            if (pendingOrgId) {
+                setOrganizationId(pendingOrgId);
+                await AsyncStorage.removeItem("@pending_org_id");
+            }
         }
       } catch (error) {
         console.log("Error loading profile:", error);
