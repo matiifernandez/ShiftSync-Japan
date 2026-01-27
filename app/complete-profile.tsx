@@ -8,7 +8,7 @@ import {
   Image,
   ScrollView,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabase";
@@ -18,15 +18,26 @@ import { useTranslation } from "../hooks/useTranslation";
 export default function CompleteProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { changeLanguage, t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false); // To distinguish between Onboarding vs Editing
 
   // Form State
   const [fullName, setFullName] = useState("");
-  const [organizationId, setOrganizationId] = useState("00000000-0000-0000-0000-000000000000"); // Default/Hack for new users
+  // Default to param if exists, otherwise default/hack
+  const [organizationId, setOrganizationId] = useState(
+    (params.orgId as string) || "00000000-0000-0000-0000-000000000000"
+  ); 
   const [language, setLanguage] = useState<"en" | "ja">("en");
   const [image, setImage] = useState<string | null>(null);
+
+  // Effect to update orgId if params change (e.g. late deep link)
+  React.useEffect(() => {
+    if (params.orgId) {
+      setOrganizationId(params.orgId as string);
+    }
+  }, [params.orgId]);
 
   // Load existing profile on mount
   React.useEffect(() => {

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Image } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Image, Share, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -22,6 +22,7 @@ export default function HomeScreen() {
   
   const [userName, setUserName] = useState("User");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [orgId, setOrgId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -29,7 +30,7 @@ export default function HomeScreen() {
       if (user) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("full_name, avatar_url")
+          .select("full_name, avatar_url, organization_id")
           .eq("id", user.id)
           .single();
 
@@ -37,11 +38,30 @@ export default function HomeScreen() {
           const firstName = profile.full_name ? profile.full_name.split(" ")[0] : "User";
           setUserName(firstName);
           setAvatarUrl(profile.avatar_url);
+          setOrgId(profile.organization_id);
         }
       }
     }
     loadProfile();
   }, []);
+
+  const handleInvite = async () => {
+    if (!orgId) return;
+
+    // Deep Link format
+    const url = `shiftsync://complete-profile?orgId=${orgId}`;
+    const message = `Join my team on ShiftSync Japan! Setup your profile here: ${url}`;
+
+    try {
+      await Share.share({
+        message,
+        url, // iOS often uses this for AirDrop/Copy Link
+        title: "Join ShiftSync Team"
+      });
+    } catch (error) {
+      Alert.alert("Error", "Could not share invite.");
+    }
+  };
 
   const getGreeting = (): TranslationKey => {
     const hour = new Date().getHours();
@@ -145,15 +165,24 @@ export default function HomeScreen() {
               {userName}-san
             </Text>
           </View>
-          <TouchableOpacity onPress={() => router.push("/complete-profile")} className="bg-gray-100 p-1 rounded-full border border-gray-200">
-            <View className="w-12 h-12 bg-gray-300 rounded-full items-center justify-center overflow-hidden">
-              {avatarUrl ? (
-                <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
-              ) : (
-                <Ionicons name="person" size={24} color="#6B7280" />
-              )}
-            </View>
-          </TouchableOpacity>
+          
+          <View className="flex-row gap-3">
+             {orgId && (
+                <TouchableOpacity onPress={handleInvite} className="bg-brand-red p-3 rounded-full shadow-sm">
+                   <Ionicons name="person-add" size={20} color="white" />
+                </TouchableOpacity>
+             )}
+
+            <TouchableOpacity onPress={() => router.push("/complete-profile")} className="bg-gray-100 p-1 rounded-full border border-gray-200">
+                <View className="w-12 h-12 bg-gray-300 rounded-full items-center justify-center overflow-hidden">
+                {avatarUrl ? (
+                    <Image source={{ uri: avatarUrl }} className="w-full h-full" resizeMode="cover" />
+                ) : (
+                    <Ionicons name="person" size={24} color="#6B7280" />
+                )}
+                </View>
+            </TouchableOpacity>
+          </View>
         </View>
         
         {/* HERO CARD - NEXT ACTIVITY */}
