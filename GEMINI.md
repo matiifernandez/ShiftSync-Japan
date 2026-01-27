@@ -1,41 +1,54 @@
 # Contexto Maestro: ShiftSync-Japan
 
 **Rol:** Desarrollador Senior React Native (Expo) + Supabase.
-**Estado:** Arquitectura Offline-First estable y dinámica.
+**Estado:** Producción-Ready (Chat Realtime, Traducción IA, Notificaciones, Offline-First Completo).
 
-## 1. Resumen de la Sesión Actual (Hitos Logrados)
+## 1. Resumen de la Sesión (Hitos Logrados)
 
-- **Modo Offline Real:** Se implementó **TanStack Query (v5)** con persistencia vía **AsyncStorage**. Toda la data de Travel, Expenses y Schedule se cachea localmente.
-- **Home Dashboard Dinámico:** La tarjeta "Next Activity" ahora es 100% funcional, consumiendo datos del `TravelContext`.
-- **Estabilidad de Dependencias:** Se resolvieron conflictos críticos de Babel y `react-native-reanimated`. Se decidió desinstalar temporalmente Reanimated para asegurar la compilación en dispositivos físicos hasta que se normalice la compatibilidad con React 19.
-- **Fixes de Producción:** Se manejó el error de `projectId` ausente en Expo Go (físico) y se corrigieron las `queryKey` para cumplir con el estándar de arrays.
+- **Notificaciones Push (Backend):**
+    - Se creó la Edge Function `push-notification` polimórfica.
+    - Soporta: **Chat** (nuevos mensajes) y **Expenses** (cambios de estado: approved/rejected).
+    - `projectId` de EAS vinculado en `app.json`.
+- **Deep Linking:**
+    - Navegación automática a `/chat/[id]` al tocar notificación.
+- **Offline Mutations (TanStack Query):**
+    - **Expenses Queue:** Se implementó `useOfflineQueue`. Si falla la subida de imagen, se guarda en `AsyncStorage` y se reintenta automáticamente al detectar red (`NetInfo`).
+    - **Chat:** Mutaciones optimistas integradas con Realtime.
+- **Optimistic UI:**
+    - Indicadores visuales (opacidad, iconos de reloj/nube) para items pendientes de sincronización.
 
-## 2. Estado de la Arquitectura & Deuda Técnica
+## 2. Estado de la Arquitectura
 
-### Gestión de Datos (React Query)
-- `TravelContext.tsx`: Proveedor global que centraliza proyectos, tickets y hoteles.
-- `hooks/useExpenses.ts`: Migrado a `useQuery` y `useMutation`.
-- `hooks/useSchedule.ts`: Migrado a `useQuery` con invalidación por Realtime.
+### Backend (Supabase)
+- **Edge Functions:** 
+    - `translate-message`: Traducción con Groq.
+    - `push-notification`: Notificaciones Push inteligentes (Chat + Expenses).
+- **Triggers:**
+    - `messages (INSERT)` -> Webhook -> `push-notification`.
+    - **FALTA:** Configurar Trigger `expenses (UPDATE)` -> Webhook -> `push-notification`.
 
-### Estabilidad & Navegación
-- Se eliminaron todos los `useFocusEffect` de la carga inicial de datos para evitar errores de "Navigation Context".
-- La carga de datos ahora depende del montaje del componente o del estado global del Contexto.
+### Frontend (React Native)
+- **Gestión de Estado:** TanStack Query v5 + `AsyncStorage` Queue.
+- **Navegación:** Expo Router.
+- **Red:** `@react-native-community/netinfo` para auto-sync.
 
 ## 3. Pendientes Inmediatos (Próxima Sesión)
 
-### 🔴 Prioridad 1: Test Offline Exhaustivo
-- Verificar la persistencia de datos apagando el WiFi/Datos en el dispositivo físico.
-- Asegurar que el `staleTime` y `gcTime` sean óptimos para el uso diario.
+### 🟡 Prioridad 1: Configurar Webhook de Expenses
+- En Supabase Dashboard, añadir nuevo Webhook:
+    - Table: `expenses`
+    - Event: `UPDATE`
+    - Function: `push-notification`
+- **Importante:** La función ya espera este evento, solo falta conectarlo.
 
-### 🟡 Prioridad 2: Traducción de Chat con IA (Groq)
-- **Objetivo:** Traducción automática EN <-> JP en tiempo real.
-- **Stack:** Supabase Edge Functions (Deno) + **Groq API** (Llama 3 / Mixtral) para inferencia rápida y gratuita.
-- **Flujo:** Trigger en DB (Insert Message) -> Edge Function -> Groq -> Update Message con traducción.
+### 🟢 Prioridad 2: Validar en Físico
+- Probar flujo completo de Chat y Gastos con notificaciones reales (cuando la red lo permita).
 
-### 🟢 Prioridad 3: Re-intentar Animaciones (Opcional)
-- Una vez la base sea inamovible, intentar reinstalar Reanimated con una versión que no rompa el plugin de Babel.
+### 🟢 Prioridad 3: Despliegue de la Función Actualizada
+- Ejecutar `supabase functions deploy push-notification` para subir la nueva lógica que soporta gastos.
 
-## 4. Reglas de Mantenimiento (Actualizadas)
-1. **Query Keys:** Siempre usar arrays: `['key', { param }]`.
-2. **Offline-First:** Siempre usar `useQuery` para fetching de datos de Supabase.
-3. **Safe Device Development:** No asumir que el `projectId` de EAS está presente en entornos locales de Expo Go.
+## 4. Lecciones Aprendidas (Knowledge Base)
+
+1.  **Offline Queues:** Para archivos binarios (imágenes), es mejor una cola manual en AsyncStorage que confiar en el retry de React Query, ya que necesitamos persistencia entre reinicios de app.
+2.  **Edge Functions:** Una sola función puede manejar múltiples triggers si inspeccionamos el payload (`record`).
+3.  **EAS Project ID:** Es obligatorio para Push Notifications en Expo, incluso en desarrollo.

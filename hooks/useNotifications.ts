@@ -128,6 +128,8 @@ export function useNotifications() {
 
         if (data?.conversationId) {
           router.push(`/chat/${data.conversationId}`);
+        } else if (data?.expenseId) {
+          router.push(`/expenses/${data.expenseId}`);
         }
       });
 
