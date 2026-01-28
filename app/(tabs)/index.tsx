@@ -23,6 +23,7 @@ export default function HomeScreen() {
   const [userName, setUserName] = useState("User");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<"admin" | "staff" | null>(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -30,7 +31,7 @@ export default function HomeScreen() {
       if (user) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("full_name, avatar_url, organization_id")
+          .select("full_name, avatar_url, organization_id, role")
           .eq("id", user.id)
           .single();
 
@@ -39,6 +40,7 @@ export default function HomeScreen() {
           setUserName(firstName);
           setAvatarUrl(profile.avatar_url);
           setOrgId(profile.organization_id);
+          setUserRole(profile.role as "admin" | "staff");
         }
       }
     }
@@ -167,12 +169,6 @@ export default function HomeScreen() {
           </View>
           
           <View className="flex-row gap-3">
-             {orgId && (
-                <TouchableOpacity onPress={handleInvite} className="bg-brand-red p-3 rounded-full shadow-sm">
-                   <Ionicons name="person-add" size={20} color="white" />
-                </TouchableOpacity>
-             )}
-
             <TouchableOpacity onPress={() => router.push("/complete-profile")} className="bg-gray-100 p-1 rounded-full border border-gray-200">
                 <View className="w-12 h-12 bg-gray-300 rounded-full items-center justify-center overflow-hidden">
                 {avatarUrl ? (
@@ -283,6 +279,17 @@ export default function HomeScreen() {
             <Text className="text-brand-dark font-bold text-lg">{t('expenses')}</Text>
           </TouchableOpacity>
         </View>
+
+        {/* INVITE BUTTON (Admin Only) */}
+        {orgId && userRole === 'admin' && (
+          <TouchableOpacity 
+            onPress={handleInvite}
+            className="w-full bg-brand-red py-4 rounded-2xl flex-row items-center justify-center shadow-md mb-10"
+          >
+            <Ionicons name="person-add" size={22} color="white" />
+            <Text className="text-white font-bold text-lg ml-3">{t('invite_member')}</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </View>
   );

@@ -13,6 +13,7 @@ export const translations = {
     next_activity: "NEXT ACTIVITY",
     quick_actions: "Quick Actions",
     expenses: "Expenses",
+    invite_member: "Invite Team Member",
 
     // Chat
     messages_title: "Messages",
@@ -109,6 +110,7 @@ export const translations = {
     next_activity: "次の予定",
     quick_actions: "クイックアクション",
     expenses: "経費精算",
+    invite_member: "チームメンバーを招待",
 
     // Chat
     messages_title: "メッセージ",
