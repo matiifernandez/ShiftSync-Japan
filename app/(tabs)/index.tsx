@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ScrollView, Image, Share, Alert } from "r
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as Linking from "expo-linking";
 import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useTravelContext } from "../../context/TravelContext";
@@ -50,15 +51,18 @@ export default function HomeScreen() {
   const handleInvite = async () => {
     if (!orgId) return;
 
-    // Deep Link format
-    const url = `shiftsync://complete-profile?orgId=${orgId}`;
-    const message = `Join my team on ShiftSync Japan! Setup your profile here: ${url}`;
+    // Dynamically create URL (works in Expo Go and Production)
+    const url = Linking.createURL("complete-profile", {
+      queryParams: { orgId },
+    });
+    
+    const message = `${t('invite_member')}! ${t('setup_profile')}: ${url}`;
 
     try {
       await Share.share({
         message,
-        url, // iOS often uses this for AirDrop/Copy Link
-        title: "Join ShiftSync Team"
+        url, 
+        title: t('invite_member')
       });
     } catch (error) {
       Alert.alert("Error", "Could not share invite.");

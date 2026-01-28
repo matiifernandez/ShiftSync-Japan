@@ -230,7 +230,16 @@ export default function CompleteProfileScreen() {
                 </Text>
             </View>
             {isEditing && (
-                <TouchableOpacity onPress={() => router.back()} className="bg-gray-100 p-2 rounded-full">
+                <TouchableOpacity 
+                    onPress={() => {
+                        if (router.canGoBack()) {
+                            router.back();
+                        } else {
+                            router.replace("/(tabs)");
+                        }
+                    }} 
+                    className="bg-gray-100 p-2 rounded-full"
+                >
                     <Ionicons name="close" size={24} color="#4B5563" />
                 </TouchableOpacity>
             )}
