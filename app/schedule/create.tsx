@@ -12,10 +12,11 @@ import {
 import { Calendar, DateData } from "react-native-calendars";
 import { useRouter, Stack, useNavigation } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-import { format, eachDayOfInterval, parseISO, isAfter, isBefore, isEqual } from "date-fns";
+import { format, eachDayOfInterval, parseISO, isAfter, isBefore, isEqual, startOfDay } from "date-fns";
 import { useStaff } from "../../hooks/useStaff";
 import { useTranslation } from "../../hooks/useTranslation";
 import { supabase } from "../../lib/supabase";
+import { useQueryClient } from "@tanstack/react-query";
 
 const THEME_COLOR = "#D9381E";
 
@@ -26,6 +27,7 @@ const SHIFT_TYPES = [
 ];
 
 export default function CreateBulkShiftScreen() {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const navigation = useNavigation();
   const { t } = useTranslation();
@@ -58,14 +60,21 @@ export default function CreateBulkShiftScreen() {
   };
 
   const handleDayPress = (day: DateData) => {
+    const selectedDate = parseISO(day.dateString);
+    const today = startOfDay(new Date());
+
+    if (isBefore(selectedDate, today)) {
+      Alert.alert("Invalid Date", "You cannot create shifts in the past.");
+      return;
+    }
+
     if (!startDate || (startDate && endDate)) {
       setStartDate(day.dateString);
       setEndDate(null);
     } else {
       const start = parseISO(startDate);
-      const current = parseISO(day.dateString);
       
-      if (isBefore(current, start)) {
+      if (isBefore(selectedDate, start)) {
         setStartDate(day.dateString);
         setEndDate(null);
       } else {
@@ -163,6 +172,9 @@ export default function CreateBulkShiftScreen() {
 
       const { error } = await supabase.from("schedule_items").insert(shiftItems);
       if (error) throw error;
+
+      // Force refresh of schedule list
+      queryClient.invalidateQueries({ queryKey: ['schedule'] });
 
       Alert.alert("Success", `${shiftItems.length} shift entries created!`, [
         { text: "OK", onPress: () => router.back() }
