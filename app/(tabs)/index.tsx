@@ -233,7 +233,7 @@ export default function HomeScreen() {
           
           {/* CHAT */}
           <TouchableOpacity 
-            className="w-[48%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
+            className="w-[48%] md:w-[23%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
             onPress={() => router.push("/(tabs)/chat")}
           >
             {totalUnreadCount > 0 && (
@@ -249,7 +249,7 @@ export default function HomeScreen() {
 
           {/* TRAVEL */}
           <TouchableOpacity 
-            className="w-[48%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
+            className="w-[48%] md:w-[23%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
             onPress={handlePressTravel}
           >
             {showTravelBadge && (
@@ -263,7 +263,7 @@ export default function HomeScreen() {
 
           {/* SCHEDULE */}
           <TouchableOpacity 
-            className="w-[48%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
+            className="w-[48%] md:w-[23%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
             onPress={handlePressSchedule}
           >
              {showScheduleBadge && (
@@ -276,7 +276,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           {/* EXPENSES */}
-          <TouchableOpacity className="w-[48%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm" onPress={() => router.push("/expenses")}>
+          <TouchableOpacity className="w-[48%] md:w-[23%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm" onPress={() => router.push("/expenses")}>
             <View className="bg-orange-100 w-12 h-12 rounded-full items-center justify-center">
               <FontAwesome5 name="yen-sign" size={24} color="#EA580C" />
             </View>
