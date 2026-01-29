@@ -1,6 +1,4 @@
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Image } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Image, Alert } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { format } from "date-fns";
@@ -28,7 +26,6 @@ export default function ScheduleScreen() {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-          console.log("Full Profile Data:", data);
           setUserRole(data?.role || 'staff');
         }
       }
@@ -61,6 +58,31 @@ export default function ScheduleScreen() {
   const selectedEvents = useMemo(() => {
     return schedule.filter((item) => item.date === selectedDate);
   }, [selectedDate, schedule]);
+
+  const handleLongPress = (item: ScheduleItem) => {
+    if (userRole !== 'admin') return;
+
+    Alert.alert(
+      "Manage Shift",
+      "Choose an action",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Edit", 
+          onPress: () => router.push({ pathname: "/schedule/[id]", params: { id: item.id } }) 
+        },
+        { 
+          text: "Delete", 
+          style: "destructive", 
+          onPress: async () => {
+             const { error } = await supabase.from('schedule_items').delete().eq('id', item.id);
+             if (error) Alert.alert("Error", error.message);
+             else refreshSchedule();
+          } 
+        },
+      ]
+    );
+  };
 
   // Helper to determine icon color
   const getIconColor = (type: string) => {
@@ -159,8 +181,10 @@ export default function ScheduleScreen() {
               }
 
               return (
-                <View
+                <TouchableOpacity
                   key={event.id}
+                  onLongPress={() => handleLongPress(event)}
+                  activeOpacity={0.7}
                   className="bg-white rounded-2xl p-4 mb-3 shadow-sm border border-gray-100 flex-row"
                 >
                   <View
@@ -201,7 +225,7 @@ export default function ScheduleScreen() {
                       </Text>
                     )}
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })
           ) : (
