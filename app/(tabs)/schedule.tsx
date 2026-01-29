@@ -1,3 +1,5 @@
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Image, Alert } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
