@@ -14,9 +14,15 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.matiifernandez.shiftsyncjapan",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to let you scan and upload receipts for expense reports.",
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photos to let you select receipt images for expense reports."
+      }
     },
     "android": {
+      "package": "com.matiifernandez.shiftsyncjapan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
