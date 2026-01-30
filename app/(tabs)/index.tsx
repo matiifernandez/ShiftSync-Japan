@@ -105,10 +105,9 @@ export default function HomeScreen() {
                 type: 'shift',
                 date: itemDate,
                 title: t(s.type as any),
-                location: s.location_name || s.notes || (
-                  s.type === 'off_day' ? "Enjoy your day off!" : 
+                location: s.type === 'off_day' ? "Enjoy your day off!" : (s.location_name || s.notes || (
                   s.type === 'travel_day' ? "Transit to destination" : "On Site"
-                ),
+                )),
                 detail: s.type === 'work_shift' ? 'Scheduled Duty' : (s.type === 'off_day' ? 'Rest & Recharge' : 'Logistics'),
                 raw: s
              });
