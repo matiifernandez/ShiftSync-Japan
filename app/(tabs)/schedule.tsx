@@ -211,7 +211,7 @@ export default function ScheduleScreen() {
                          </View>
                     )}
 
-                    {timeString && (
+                    {timeString && event.type !== 'off_day' && (
                       <Text className="text-gray-500 font-medium text-sm my-1">
                         {timeString}
                       </Text>

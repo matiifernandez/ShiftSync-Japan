@@ -104,9 +104,12 @@ export default function HomeScreen() {
              candidates.push({
                 type: 'shift',
                 date: itemDate,
-                title: s.type === 'work_shift' ? 'Work Shift' : (s.type === 'off_day' ? 'Off Day' : 'Travel Day'),
-                location: s.notes || 'On Site',
-                detail: s.type === 'work_shift' ? 'Scheduled Duty' : 'Rest',
+                title: t(s.type as any),
+                location: s.location_name || s.notes || (
+                  s.type === 'off_day' ? "Enjoy your day off!" : 
+                  s.type === 'travel_day' ? "Transit to destination" : "On Site"
+                ),
+                detail: s.type === 'work_shift' ? 'Scheduled Duty' : (s.type === 'off_day' ? 'Rest & Recharge' : 'Logistics'),
                 raw: s
              });
         }
@@ -132,7 +135,7 @@ export default function HomeScreen() {
     return {
         title: next.title,
         location: next.location,
-        time: next.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        time: (next.type === 'shift' && next.raw?.type !== 'work_shift') ? null : next.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         detail: next.detail,
         isShift: next.type === 'shift'
     };
