@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
 
     // Sanitize input
     const sanitizedContent = record.content_original.replace(/<\/text_to_translate>/g, '');
-    
+
     console.log("Using model: llama-3.3-70b-versatile");
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {

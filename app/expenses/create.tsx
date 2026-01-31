@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter, Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import * as Haptics from 'expo-haptics';
 import { useExpenses } from "../../hooks/useExpenses";
 import { useTranslation } from "../../hooks/useTranslation";
 
@@ -38,6 +39,7 @@ export default function CreateExpenseScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   const pickImage = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert("Permission required", "We need access to your gallery to upload receipts.");
@@ -57,11 +59,13 @@ export default function CreateExpenseScreen() {
 
   const handleSave = async () => {
     if (!amount || isNaN(Number(amount))) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Invalid Amount", "Please enter a valid numeric amount.");
       return;
     }
 
     if (category === "other" && !description.trim()) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Description Required", "Please provide a description for 'Other' expenses.");
       return;
     }
@@ -79,6 +83,7 @@ export default function CreateExpenseScreen() {
     );
 
     if (success) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     }
     setSubmitting(false);

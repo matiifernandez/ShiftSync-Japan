@@ -3,6 +3,7 @@ import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Image, Alert } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import * as Haptics from 'expo-haptics';
 import { format } from "date-fns";
 import { useSchedule } from "../../hooks/useSchedule";
 import { ScheduleItem } from "../../types";
@@ -64,6 +65,7 @@ export default function ScheduleScreen() {
   const handleLongPress = (item: ScheduleItem) => {
     if (userRole !== 'admin') return;
 
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     Alert.alert(
       "Manage Shift",
       "Choose an action",
@@ -135,7 +137,10 @@ export default function ScheduleScreen() {
           {t('schedule_title')}
         </Text>
         <Calendar
-          onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
+          onDayPress={(day: DateData) => {
+            Haptics.selectionAsync();
+            setSelectedDate(day.dateString);
+          }}
           markedDates={markedDates}
           // Enable horizontal paging for better UX
           enableSwipeMonths={true}
@@ -245,7 +250,10 @@ export default function ScheduleScreen() {
       {/* ADMIN ADD BUTTON */}
       {userRole === 'admin' && (
         <TouchableOpacity
-          onPress={() => router.push("/schedule/create")}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            router.push("/schedule/create");
+          }}
           style={{
             position: "absolute",
             bottom: 20,

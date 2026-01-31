@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from 'expo-haptics';
 import { useChat, Message } from "../../hooks/useChat";
 import { useChatContext } from "../../context/ChatContext";
 
@@ -35,6 +36,7 @@ export default function ChatDetailScreen() {
 
   const handleSend = () => {
     if (!inputText.trim()) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     sendToSupabase(inputText);
     setInputText("");
   };

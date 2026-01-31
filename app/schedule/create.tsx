@@ -13,6 +13,7 @@ import { Calendar, DateData } from "react-native-calendars";
 import { useRouter, Stack, useNavigation } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { format, eachDayOfInterval, parseISO, isAfter, isBefore, isEqual, startOfDay } from "date-fns";
+import * as Haptics from 'expo-haptics';
 import { useStaff } from "../../hooks/useStaff";
 import { useTranslation } from "../../hooks/useTranslation";
 import { supabase } from "../../lib/supabase";
@@ -49,6 +50,7 @@ export default function CreateBulkShiftScreen() {
       router.back();
       return;
     }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     Alert.alert(
       t('discard_title'),
       t('discard_msg'),
@@ -60,6 +62,7 @@ export default function CreateBulkShiftScreen() {
   };
 
   const handleDayPress = (day: DateData) => {
+    Haptics.selectionAsync();
     const selectedDate = parseISO(day.dateString);
     const today = startOfDay(new Date());
 
@@ -109,6 +112,7 @@ export default function CreateBulkShiftScreen() {
   }, [startDate, endDate]);
 
   const toggleStaff = (id: string) => {
+    Haptics.selectionAsync();
     setSelectedStaff((prev) =>
       prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
     );
@@ -176,10 +180,12 @@ export default function CreateBulkShiftScreen() {
       // Force refresh of schedule list
       queryClient.invalidateQueries({ queryKey: ['schedule'] });
 
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert("Success", `${shiftItems.length} shift entries created!`, [
         { text: "OK", onPress: () => router.back() }
       ]);
     } catch (error: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert("Error", error.message);
     } finally {
       setSubmitting(false);
