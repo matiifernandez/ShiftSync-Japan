@@ -52,6 +52,10 @@ export default function JoinTeamScreen() {
 
         if (profileError) throw profileError;
 
+        // 3. Refresh Session to ensure layout picks up the change
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) console.log("Session refresh warning:", refreshError);
+
         showToast(`Joined ${org.name} successfully!`, "success");
         router.replace("/(tabs)");
 

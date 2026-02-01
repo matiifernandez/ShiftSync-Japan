@@ -57,6 +57,9 @@ export default function CreateOrgScreen() {
 
         if (profileError) throw profileError;
 
+        // 3. Refresh Session
+        await supabase.auth.refreshSession();
+
         showToast("Workspace created successfully!", "success");
         
         // Redirect to dashboard (layout will handle it, but explicit push is safer for UX transition)
