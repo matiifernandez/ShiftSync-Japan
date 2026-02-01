@@ -16,14 +16,29 @@ export function useTranslation() {
   useEffect(() => {
     loadLanguage();
 
-    // Subscribe to changes
+    // Subscribe to language changes (manual)
     const onLanguageChange = (newLang: 'en' | 'ja') => {
       setLocale(newLang);
     };
     listeners.add(onLanguageChange);
 
+    // Subscribe to Auth changes (Logout cleanup)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+        if (event === 'SIGNED_OUT') {
+            await AsyncStorage.removeItem(LANGUAGE_KEY);
+            // Reset to system default immediately
+            const systemLocales = Localization.getLocales();
+            const primaryLocale = systemLocales[0]?.languageCode;
+            setLocale(primaryLocale === 'ja' ? 'ja' : 'en');
+        } else if (event === 'SIGNED_IN') {
+            // Re-load language for new user
+            loadLanguage();
+        }
+    });
+
     return () => {
       listeners.delete(onLanguageChange);
+      subscription.unsubscribe();
     };
   }, []);
 
