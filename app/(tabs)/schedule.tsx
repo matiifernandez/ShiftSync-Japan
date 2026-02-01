@@ -1,5 +1,5 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Image, Alert } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
@@ -8,8 +8,9 @@ import { format } from "date-fns";
 import { useSchedule } from "../../hooks/useSchedule";
 import { ScheduleItem } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
-import { useRouter, useFocusEffect } from "expo-router";
-import { supabase } from "../../lib/supabase";
+import { useRouter } from "expo-router";
+import { useUserRole } from "../../hooks/useUserRole";
+import { useToast } from "../../context/ToastContext";
 
 const THEME_COLOR = "#D9381E";
 
@@ -17,23 +18,15 @@ export default function ScheduleScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
-  const [userRole, setUserRole] = useState<string | null>(null);
-  // Pass dynamic role to hook
-  const { schedule, loading, refreshSchedule } = useSchedule({ allUsers: userRole === 'admin' });
+  const { showToast } = useToast();
+  
+  // Custom Hooks for Logic Separation (Issue #5)
+  const { role: userRole, isAdmin } = useUserRole();
+  const { schedule, loading, deleteScheduleItem } = useSchedule({ allUsers: isAdmin });
+  
   const [selectedDate, setSelectedDate] = useState(
     format(new Date(), "yyyy-MM-dd")
   );
-
-  useEffect(() => {
-    async function getRole() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-          setUserRole(data?.role || 'staff');
-        }
-      }
-      getRole();
-    }, [refreshSchedule]);
 
   // Generate marked dates for the calendar
   const markedDates = useMemo(() => {
@@ -62,8 +55,17 @@ export default function ScheduleScreen() {
     return schedule.filter((item) => item.date === selectedDate);
   }, [selectedDate, schedule]);
 
+  const handleDelete = async (itemId: string) => {
+      try {
+          await deleteScheduleItem(itemId);
+          showToast("Shift deleted", "success");
+      } catch (error: any) {
+          showToast(error.message, "error");
+      }
+  };
+
   const handleLongPress = (item: ScheduleItem) => {
-    if (userRole !== 'admin') return;
+    if (!isAdmin) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     Alert.alert(
@@ -78,11 +80,7 @@ export default function ScheduleScreen() {
         { 
           text: "Delete", 
           style: "destructive", 
-          onPress: async () => {
-             const { error } = await supabase.from('schedule_items').delete().eq('id', item.id);
-             if (error) Alert.alert("Error", error.message);
-             else refreshSchedule();
-          } 
+          onPress: () => handleDelete(item.id)
         },
       ]
     );
@@ -205,7 +203,7 @@ export default function ScheduleScreen() {
                     </Text>
                     
                     {/* ADMIN VIEW: SHOW USER INFO */}
-                    {userRole === 'admin' && event.profiles && (
+                    {isAdmin && event.profiles && (
                          <View className="flex-row items-center mt-1 mb-1">
                             {event.profiles.avatar_url ? (
                                 <Image source={{ uri: event.profiles.avatar_url }} className="w-5 h-5 rounded-full mr-2" />
@@ -248,7 +246,7 @@ export default function ScheduleScreen() {
       </View>
 
       {/* ADMIN ADD BUTTON */}
-      {userRole === 'admin' && (
+      {isAdmin && (
         <TouchableOpacity
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

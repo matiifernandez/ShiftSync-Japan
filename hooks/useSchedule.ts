@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { ScheduleItem } from "../types";
 
@@ -44,6 +44,16 @@ export function useSchedule({ allUsers = false } = {}) {
     }
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('schedule_items').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    }
+  });
+
   // Realtime Subscription
   useEffect(() => {
     const subscription = supabase
@@ -67,5 +77,11 @@ export function useSchedule({ allUsers = false } = {}) {
     };
   }, [allUsers, queryClient]);
 
-  return { schedule, loading, refreshSchedule: refetch };
+  return { 
+    schedule, 
+    loading, 
+    refreshSchedule: refetch,
+    deleteScheduleItem: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending
+  };
 }
