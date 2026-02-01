@@ -3,9 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "reac
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { supabase } from "../../lib/supabase";
 import { useToast } from "../../context/ToastContext";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useOrganization } from "../../hooks/useOrganization";
 
 export default function JoinTeamScreen() {
   const insets = useSafeAreaInsets();
@@ -13,8 +13,9 @@ export default function JoinTeamScreen() {
   const { showToast } = useToast();
   const { t } = useTranslation();
   
+  // Logic Separation (Issue #5)
+  const { joinOrganization, loading } = useOrganization();
   const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const handleJoin = async () => {
     if (code.length < 6) {
@@ -22,58 +23,27 @@ export default function JoinTeamScreen() {
         return;
     }
 
-    setLoading(true);
     try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("No authenticated user");
-
-        // 1. Find Organization by Invite Code
-        // Assuming 'organizations' table has 'invite_code' column.
-        const { data: org, error: findError } = await supabase
-            .from('organizations')
-            .select('id, name')
-            .eq('invite_code', code.toUpperCase())
-            .single();
-
-        if (findError || !org) {
-            showToast("Invalid invite code. Please check and try again.", "error");
-            setLoading(false);
-            return;
-        }
-
-        // 2. Update User Profile (Role Staff + Org ID)
-        const { error: profileError } = await supabase
-            .from('profiles')
-            .update({
-                organization_id: org.id,
-                role: 'staff'
-            })
-            .eq('id', user.id);
-
-        if (profileError) throw profileError;
-
-        // 3. Refresh Session to ensure layout picks up the change
-        const { error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError) console.log("Session refresh warning:", refreshError);
-
+        const org = await joinOrganization(code);
         showToast(`Joined ${org.name} successfully!`, "success");
         router.replace("/(tabs)");
-
     } catch (error: any) {
-        console.error(error);
         showToast("Error joining team. " + error.message, "error");
-    } finally {
-        setLoading(false);
     }
   };
 
   return (
     <View style={{ paddingTop: insets.top }} className="flex-1 bg-white px-6">
-      <TouchableOpacity onPress={() => router.back()} className="mt-2 mb-6 w-10">
+      <TouchableOpacity 
+        onPress={() => router.back()} 
+        className="mt-2 mb-6 w-10"
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+      >
         <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
       </TouchableOpacity>
 
-      <Text className="text-3xl font-bold text-brand-dark mb-2">{t('join_team_title')}</Text>
+      <Text className="text-3xl font-bold text-brand-dark mb-2" accessibilityRole="header">{t('join_team_title')}</Text>
       <Text className="text-gray-500 mb-8">
         {t('join_team_instruction')}
       </Text>
@@ -88,6 +58,7 @@ export default function JoinTeamScreen() {
             autoCapitalize="characters"
             maxLength={6}
             autoFocus
+            accessibilityLabel="Invitation code input"
         />
       </View>
 
@@ -95,6 +66,9 @@ export default function JoinTeamScreen() {
         onPress={handleJoin}
         disabled={loading || code.length < 6}
         className={`w-full bg-blue-600 py-4 rounded-xl items-center mt-4 ${loading || code.length < 6 ? 'opacity-50' : ''}`}
+        accessibilityRole="button"
+        accessibilityLabel="Join Team"
+        accessibilityState={{ disabled: loading || code.length < 6 }}
       >
         {loading ? (
             <ActivityIndicator color="white" />
