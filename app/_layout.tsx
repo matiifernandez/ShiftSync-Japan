@@ -50,15 +50,39 @@ export default function Layout() {
   }, [params.orgId]);
 
   useEffect(() => {
-    // 1. Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setInitialized(true);
-    });
+    // 1. Check initial session with robust error handling
+    const initSession = async () => {
+        try {
+            const { data, error } = await supabase.auth.getSession();
+            if (error) {
+                if (error.message.includes("Refresh Token")) {
+                    console.warn("Session expired or invalid, signing out...");
+                    await supabase.auth.signOut();
+                    setSession(null);
+                } else {
+                    console.error("Session check error:", error);
+                }
+            } else {
+                setSession(data.session);
+            }
+        } catch (e) {
+            console.error("Unexpected session error:", e);
+        } finally {
+            setInitialized(true);
+        }
+    };
+
+    initSession();
 
     // 2. Listen for changes (login, logout, auto-refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Handle TOKEN_REFRESHED explicitly if needed, but session update covers it
+      if (event === 'SIGNED_OUT') {
+         setSession(null);
+         // Clear any local storage if needed here
+      } else {
+         setSession(session);
+      }
     });
 
     return () => subscription.unsubscribe();
