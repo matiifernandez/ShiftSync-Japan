@@ -128,6 +128,13 @@ export default function LoginScreen() {
             )}
           </TouchableOpacity>
 
+          <View className="flex-row justify-center items-center mb-8">
+            <Text className="text-gray-500">Don't have an account? </Text>
+            <TouchableOpacity onPress={() => router.push("/signup")}>
+                <Text className="text-brand-red font-bold">Sign Up</Text>
+            </TouchableOpacity>
+          </View>
+
           <View className="flex-row justify-center mt-auto mb-10">
             <Text className="text-xs text-gray-400">ShiftSync Japan v1.0</Text>
           </View>
