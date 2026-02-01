@@ -1,15 +1,21 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import Logo from "../../components/Logo";
 import { useTranslation } from "../../hooks/useTranslation";
+import { supabase } from "../../lib/supabase";
 
 export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.replace("/");
+  };
 
   return (
     <View 
@@ -65,6 +71,9 @@ export default function OnboardingScreen() {
       </View>
 
       <View className="items-center mb-6">
+        <TouchableOpacity onPress={handleLogout} className="mb-4">
+            <Text className="text-brand-red font-bold">{t('log_out')}</Text>
+        </TouchableOpacity>
         <Text className="text-xs text-gray-400">
             ShiftSync Japan • Optimized for efficiency
         </Text>

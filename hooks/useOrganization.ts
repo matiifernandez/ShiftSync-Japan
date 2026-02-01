@@ -32,13 +32,15 @@ export function useOrganization() {
       if (orgError) throw orgError;
 
       // 2. Update User Profile
+      // Use upsert to ensure profile exists even if trigger failed
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+            id: user.id,
             organization_id: org.id,
-            role: 'admin'
-        })
-        .eq('id', user.id);
+            role: 'admin',
+            updated_at: new Date()
+        });
 
       if (profileError) throw profileError;
 
@@ -71,13 +73,15 @@ export function useOrganization() {
       if (findError || !org) throw new Error("Invalid invite code");
 
       // 2. Update Profile
+      // Use upsert here too
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+            id: user.id,
             organization_id: org.id,
-            role: 'staff'
-        })
-        .eq('id', user.id);
+            role: 'staff',
+            updated_at: new Date()
+        });
 
       if (profileError) throw profileError;
 

@@ -75,22 +75,24 @@ export default function Layout() {
     if (session) {
       // User is logged in
       const checkOrg = async () => {
-        // If we are already checking, skip or optimize? 
-        // For now simple check
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('organization_id')
-            .eq('id', session.user.id)
-            .single();
-        
-        const hasOrg = !!profile?.organization_id;
+        try {
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('organization_id')
+                .eq('id', session.user.id)
+                .maybeSingle();
+            
+            if (error) return;
 
-        if (!hasOrg && !inOnboarding) {
-            // New user without org -> Onboarding
-            router.replace("/onboarding");
-        } else if (hasOrg && (inAuth || inOnboarding)) {
-            // Existing user in login/onboarding -> Dashboard
-            router.replace("/(tabs)");
+            const hasOrg = !!profile?.organization_id;
+
+            if (!hasOrg && !inOnboarding) {
+                router.replace("/onboarding");
+            } else if (hasOrg && (inAuth || inOnboarding)) {
+                router.replace("/(tabs)");
+            }
+        } catch (e) {
+            // Silently fail or handle error
         }
       };
 

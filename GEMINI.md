@@ -30,6 +30,7 @@
 - **UX/UI & Accesibilidad (Issue #3):**
     - **Feedback System:** Creación de un contexto global de notificaciones (`ToastContext`) para mensajes de éxito/error no intrusivos, reemplazando `Alert` nativos.
     - **Accesibilidad:** Adición de etiquetas (`accessibilityLabel`, `accessibilityRole`) en pantallas críticas (Login, Chat) para soporte de lectores de pantalla.
+    - **Internationalization (i18n):** Implementación de detección de idioma del sistema mediante `expo-localization` como fallback inicial, asegurando que usuarios que no han configurado su perfil vean la app en su idioma preferido (inglés/japonés) desde el primer contacto.
 
 ## 2. Estado de la Arquitectura
 
