@@ -15,6 +15,7 @@ export const translations = {
     expenses: "Expenses",
     invite_member: "Invite Team Member",
     no_activities: "No activities planned",
+    enjoy_day_off: "Enjoy your day off!",
 
     // Chat
     messages_title: "Messages",
@@ -65,6 +66,9 @@ export const translations = {
     approve: "Approve",
     reject: "Reject",
     all_caught_up: "All caught up!",
+    pending_tab: "Pending",
+    history_tab: "History",
+    no_history: "No history yet",
     // Categories
     cat_transport: "Transport",
     cat_hotel: "Hotel",
@@ -147,6 +151,7 @@ export const translations = {
     expenses: "経費精算",
     invite_member: "チームメンバーを招待",
     no_activities: "予定されている活動はありません",
+    enjoy_day_off: "休日を楽しんでください！",
 
     // Chat
     messages_title: "メッセージ",
@@ -197,6 +202,9 @@ export const translations = {
     approve: "承認",
     reject: "却下",
     all_caught_up: "保留中の申請はありません",
+    pending_tab: "承認待ち",
+    history_tab: "履歴",
+    no_history: "履歴はありません",
     // Categories
     cat_transport: "交通費",
     cat_hotel: "宿泊費",
