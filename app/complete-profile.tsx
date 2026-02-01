@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,17 +16,29 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../hooks/useTranslation";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+/**
+ * CompleteProfileScreen
+ * 
+ * Handles user profile creation and editing.
+ * - For new users: acts as an onboarding step to set name, org, and photo.
+ * - For existing users: allows editing profile details.
+ * 
+ * Key Features:
+ * - Image Upload to Supabase Storage
+ * - Organization ID handling (deep link params vs stored pending ID)
+ * - Localization preference setting
+ */
 export default function CompleteProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const params = useLocalSearchParams();
   const { changeLanguage, t } = useTranslation();
+  
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false); // To distinguish between Onboarding vs Editing
 
   // Form State
   const [fullName, setFullName] = useState("");
-  // Default to param if exists, otherwise default/hack
   const [organizationId, setOrganizationId] = useState(
     (params.orgId as string) || "00000000-0000-0000-0000-000000000000"
   ); 
@@ -34,14 +46,14 @@ export default function CompleteProfileScreen() {
   const [image, setImage] = useState<string | null>(null);
 
   // Effect to update orgId if params change (e.g. late deep link)
-  React.useEffect(() => {
+  useEffect(() => {
     if (params.orgId) {
       setOrganizationId(params.orgId as string);
     }
   }, [params.orgId]);
 
   // Load existing profile on mount
-  React.useEffect(() => {
+  useEffect(() => {
     async function loadProfile() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -86,6 +98,19 @@ export default function CompleteProfileScreen() {
     loadProfile();
   }, []);
 
+  // Handler for closing/going back
+  const handleClose = useCallback(() => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(tabs)");
+    }
+  }, [router]);
+
+  // Language handlers
+  const handleSetEnglish = useCallback(() => setLanguage("en"), []);
+  const handleSetJapanese = useCallback(() => setLanguage("ja"), []);
+
   // 1. Function to pick an image from gallery
   const pickImage = async () => {
     // Request permission first
@@ -96,7 +121,7 @@ export default function CompleteProfileScreen() {
     }
 
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'], // Updated to match proper type
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1], // Square crop (perfect for avatars)
       quality: 0.5, // Compress a bit to save data
@@ -141,12 +166,22 @@ export default function CompleteProfileScreen() {
     }
   };
 
+  // Validation Logic
+  const validateForm = () => {
+    if (!fullName.trim()) {
+      Alert.alert(t('missing_info'), "Please enter your full name.");
+      return false;
+    }
+    if (!organizationId.trim()) {
+      Alert.alert(t('missing_info'), "Organization ID is missing.");
+      return false;
+    }
+    return true;
+  };
+
   // 3. Function to save profile to Supabase
   const handleSaveProfile = async () => {
-    if (!fullName || !organizationId) {
-      Alert.alert("Missing Info", "Please fill in all fields.");
-      return;
-    }
+    if (!validateForm()) return;
 
     setLoading(true);
 
@@ -231,13 +266,7 @@ export default function CompleteProfileScreen() {
             </View>
             {isEditing && (
                 <TouchableOpacity 
-                    onPress={() => {
-                        if (router.canGoBack()) {
-                            router.back();
-                        } else {
-                            router.replace("/(tabs)");
-                        }
-                    }} 
+                    onPress={handleClose}
                     className="bg-gray-100 p-2 rounded-full"
                 >
                     <Ionicons name="close" size={24} color="#4B5563" />
@@ -302,7 +331,7 @@ export default function CompleteProfileScreen() {
             </Text>
             <View className="flex-row gap-4">
               <TouchableOpacity
-                onPress={() => setLanguage("en")}
+                onPress={handleSetEnglish}
                 className={`flex-1 p-4 rounded-xl border-2 items-center ${
                   language === "en"
                     ? "border-brand-red bg-red-50"
@@ -319,7 +348,7 @@ export default function CompleteProfileScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => setLanguage("ja")}
+                onPress={handleSetJapanese}
                 className={`flex-1 p-4 rounded-xl border-2 items-center ${
                   language === "ja"
                     ? "border-brand-red bg-red-50"

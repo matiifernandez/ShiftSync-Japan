@@ -7,10 +7,21 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../hooks/useTranslation";
 import Logo from "../components/Logo";
 
+/**
+ * LoginScreen
+ * 
+ * Entry point for unauthenticated users.
+ * Handles:
+ * - Email/Password authentication via Supabase
+ * - Auto-redirect if session exists
+ * - UI styling matching the brand identity
+ */
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
+  
+  // Form State
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,6 +37,7 @@ export default function LoginScreen() {
     });
   }, []);
 
+  // Handle Sign In
   const handleLogin = async () => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
@@ -49,6 +61,7 @@ export default function LoginScreen() {
       className="flex-1 bg-white"
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        {/* BRAND HEADER */}
         <View 
           style={{ paddingTop: insets.top + 40 }}
           className="flex-1 justify-center px-8 bg-brand-red pb-10"
@@ -62,6 +75,7 @@ export default function LoginScreen() {
           </View>
         </View>
 
+        {/* LOGIN FORM */}
         <View className="flex-[1.5] bg-white rounded-t-[40px] -mt-10 px-8 pt-12">
           <Text className="text-2xl font-bold text-gray-800 mb-2">Welcome Back</Text>
           <Text className="text-gray-500 mb-8">{t('simplify_work')}</Text>

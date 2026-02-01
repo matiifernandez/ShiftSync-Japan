@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,9 +10,8 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { useRouter, Stack, useLocalSearchParams } from "expo-router";
-import * as ImagePicker from "expo-image-picker";
 import { supabase } from "../../lib/supabase";
 import { Expense } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -26,8 +25,13 @@ const CATEGORIES = [
   { id: "other", icon: "receipt" },
 ];
 
+/**
+ * ExpenseDetailScreen
+ * 
+ * Displays detailed information about a specific expense.
+ * Allows editing or deleting the expense if its status is 'pending'.
+ */
 export default function ExpenseDetailScreen() {
-  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { t } = useTranslation();
@@ -72,6 +76,10 @@ export default function ExpenseDetailScreen() {
     }
   }
 
+  // Handlers
+  const handleEditStart = useCallback(() => setIsEditing(true), []);
+  const handleEditCancel = useCallback(() => setIsEditing(false), []);
+
   const handleDelete = () => {
     Alert.alert("Delete Expense", "Are you sure? This cannot be undone.", [
       { text: "Cancel", style: "cancel" },
@@ -88,7 +96,21 @@ export default function ExpenseDetailScreen() {
     ]);
   };
 
+  const validateExpenseForm = () => {
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+       Alert.alert("Invalid Amount", "Please enter a valid positive amount.");
+       return false;
+    }
+    if (!category) {
+       Alert.alert("Missing Category", "Please select a category.");
+       return false;
+    }
+    return true;
+  }
+
   const handleUpdate = async () => {
+    if (!validateExpenseForm()) return;
+
     setSaving(true);
     try {
       const updates = {
@@ -135,7 +157,7 @@ export default function ExpenseDetailScreen() {
           title: isEditing ? t('edit_expense') : t('expense_details'),
           headerRight: () => (
             isPending && !isEditing ? (
-              <TouchableOpacity onPress={() => setIsEditing(true)}>
+              <TouchableOpacity onPress={handleEditStart}>
                 <Text className="text-brand-red font-bold text-base">Edit</Text>
               </TouchableOpacity>
             ) : null
@@ -223,7 +245,7 @@ export default function ExpenseDetailScreen() {
             <View>
                 <Text className="text-gray-500 font-bold mb-2 uppercase text-xs">{t('receipt')}</Text>
                 {image ? (
-                    <TouchableOpacity onPress={() => {/* TODO: Fullscreen view */}} activeOpacity={0.9}>
+                    <TouchableOpacity activeOpacity={0.9}>
                         <Image 
                             source={{ uri: image }} 
                             className="w-full h-64 bg-gray-100 rounded-xl border border-gray-200" 
@@ -250,7 +272,7 @@ export default function ExpenseDetailScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity 
-                    onPress={() => setIsEditing(false)}
+                    onPress={handleEditCancel}
                     disabled={saving}
                     className="bg-gray-200 p-4 rounded-xl items-center"
                 >

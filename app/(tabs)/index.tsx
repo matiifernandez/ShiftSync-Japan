@@ -12,20 +12,34 @@ import { useConversations } from "../../hooks/useConversations";
 import { useSchedule } from "../../hooks/useSchedule";
 import { useBadgeTracker } from "../../hooks/useBadgeTracker";
 
+/**
+ * HomeScreen (Dashboard)
+ * 
+ * The main landing page for the application.
+ * Displays:
+ * - User Greeting and Profile Avatar
+ * - "Next Activity" Hero Card (closest upcoming travel or shift)
+ * - Quick Actions Grid (Chat, Travel, Schedule, Expenses) with Notification Badges
+ * - Admin-only "Invite Member" button
+ */
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
+  
+  // Context Data
   const { totalUnreadCount } = useConversations();
   const { trip } = useTravelContext();
   const { schedule } = useSchedule();
   const { hasNewTravel, hasNewSchedule, markTravelVisited, markScheduleVisited } = useBadgeTracker();
   
+  // Local State
   const [userName, setUserName] = useState("User");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<"admin" | "staff" | null>(null);
 
+  // 1. Load User Profile on Mount
   useEffect(() => {
     async function loadProfile() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -48,6 +62,7 @@ export default function HomeScreen() {
     loadProfile();
   }, []);
 
+  // 2. Handle Admin Invite Action
   const handleInvite = async () => {
     if (!orgId) return;
 
@@ -69,6 +84,7 @@ export default function HomeScreen() {
     }
   };
 
+  // 3. Determine Greeting based on time
   const getGreeting = (): TranslationKey => {
     const hour = new Date().getHours();
     if (hour < 12) return "greeting_morning";
@@ -76,11 +92,13 @@ export default function HomeScreen() {
     return "greeting_evening";
   };
 
+  // 4. Calculate Next Activity (Hero Card Content)
+  // Combines Tickets and Schedule Items to find the nearest future event
   const nextActivity = useMemo(() => {
     const now = new Date();
     const candidates: any[] = [];
 
-    // 1. Add Tickets
+    // Add Travel Tickets
     if (trip && trip.tickets) {
       trip.tickets.forEach(t => {
         if (new Date(t.departure_time) > now) {
@@ -96,10 +114,11 @@ export default function HomeScreen() {
       });
     }
 
-    // 2. Add Schedule Items
+    // Add Schedule Items
     if (schedule) {
       schedule.forEach(s => {
         let itemDate = new Date(s.date);
+        // Include items from today onwards
         if (itemDate >= new Date(now.setHours(0,0,0,0))) {
              candidates.push({
                 type: 'shift',
@@ -115,6 +134,7 @@ export default function HomeScreen() {
       });
     }
 
+    // Fallback if no future specific events but inside a trip
     if (candidates.length === 0) {
         if (trip) {
             return {
@@ -127,7 +147,7 @@ export default function HomeScreen() {
         return null;
     }
 
-    // Sort by date ascending
+    // Sort by date ascending to find the soonest
     candidates.sort((a, b) => a.date.getTime() - b.date.getTime());
 
     const next = candidates[0];
@@ -141,10 +161,11 @@ export default function HomeScreen() {
 
   }, [trip, schedule]);
 
-  // Badge Logic
+  // Badge Logic (Memoized)
   const showTravelBadge = useMemo(() => hasNewTravel(trip?.tickets || []), [trip, hasNewTravel]);
   const showScheduleBadge = useMemo(() => hasNewSchedule(schedule), [schedule, hasNewSchedule]);
 
+  // Navigation Handlers (clearing badges on press)
   const handlePressTravel = () => {
     markTravelVisited();
     router.push("/(tabs)/travel");
@@ -165,7 +186,7 @@ export default function HomeScreen() {
       className="bg-white"
     >
       <ScrollView className="flex-1 px-6 pt-4" showsVerticalScrollIndicator={false}>
-        {/* HEADER */}
+        {/* HEADER: Greeting & Avatar */}
         <View className="flex-row justify-between items-center mb-6">
           <View>
             <Text className="text-gray-500 text-lg">{t(getGreeting())},</Text>
@@ -187,7 +208,7 @@ export default function HomeScreen() {
           </View>
         </View>
         
-        {/* HERO CARD - NEXT ACTIVITY */}
+        {/* HERO CARD: Next Activity */}
         {nextActivity ? (
           <TouchableOpacity 
             onPress={() => router.push(nextActivity.isShift ? "/(tabs)/schedule" : "/(tabs)/travel")}
@@ -229,11 +250,11 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ACTION GRID */}
+        {/* QUICK ACTIONS GRID */}
         <Text className="text-brand-dark text-xl font-bold mb-4">{t('quick_actions')}</Text>
         <View className="flex-row flex-wrap justify-between gap-y-3 mb-10">
           
-          {/* CHAT */}
+          {/* 1. CHAT */}
           <TouchableOpacity 
             className="w-[48%] md:w-[23%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
             onPress={() => router.push("/(tabs)/chat")}
@@ -249,7 +270,7 @@ export default function HomeScreen() {
             <Text className="text-brand-dark font-bold text-lg">{t('tab_chat')}</Text>
           </TouchableOpacity>
 
-          {/* TRAVEL */}
+          {/* 2. TRAVEL */}
           <TouchableOpacity 
             className="w-[48%] md:w-[23%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
             onPress={handlePressTravel}
@@ -263,7 +284,7 @@ export default function HomeScreen() {
             <Text className="text-brand-dark font-bold text-lg">{t('tab_travel')}</Text>
           </TouchableOpacity>
 
-          {/* SCHEDULE */}
+          {/* 3. SCHEDULE */}
           <TouchableOpacity 
             className="w-[48%] md:w-[23%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
             onPress={handlePressSchedule}
@@ -277,7 +298,7 @@ export default function HomeScreen() {
             <Text className="text-brand-dark font-bold text-lg">{t('tab_schedule')}</Text>
           </TouchableOpacity>
 
-          {/* EXPENSES */}
+          {/* 4. EXPENSES */}
           <TouchableOpacity className="w-[48%] md:w-[23%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm" onPress={() => router.push("/expenses")}>
             <View className="bg-orange-100 w-12 h-12 rounded-full items-center justify-center">
               <FontAwesome5 name="yen-sign" size={24} color="#EA580C" />
