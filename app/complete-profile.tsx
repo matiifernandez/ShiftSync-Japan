@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../hooks/useTranslation";
+import { useToast } from "../context/ToastContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 /**
@@ -33,6 +34,7 @@ export default function CompleteProfileScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { changeLanguage, t } = useTranslation();
+  const { showToast } = useToast();
   
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false); // To distinguish between Onboarding vs Editing
@@ -218,11 +220,15 @@ export default function CompleteProfileScreen() {
       // Update app language globally
       changeLanguage(language);
 
-      Alert.alert("Success", "Profile updated!", [
-        { text: "OK", onPress: () => router.replace("/(tabs)") },
-      ]);
+      showToast("Profile updated successfully!", "success");
+      
+      // Delay navigation slightly to let user see toast
+      setTimeout(() => {
+        router.replace("/(tabs)");
+      }, 1000);
+      
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      showToast(error.message, "error");
     } finally {
       setLoading(false);
     }

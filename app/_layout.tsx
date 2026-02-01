@@ -14,6 +14,9 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { ToastProvider } from "../context/ToastContext";
+import Toast from "../components/Toast";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -93,21 +96,24 @@ export default function Layout() {
       client={queryClient}
       persistOptions={{ persister: asyncStoragePersister }}
     >
-      <TravelProvider>
-        <ChatProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: "#FFFFFF" },
-            }}
-          >
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="complete-profile" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="chat-create" options={{ presentation: 'modal', headerShown: false }} />
-          </Stack>
-        </ChatProvider>
-      </TravelProvider>
+      <ToastProvider>
+        <TravelProvider>
+          <ChatProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: "#FFFFFF" },
+              }}
+            >
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="complete-profile" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="chat-create" options={{ presentation: 'modal', headerShown: false }} />
+            </Stack>
+            <Toast />
+          </ChatProvider>
+        </TravelProvider>
+      </ToastProvider>
     </PersistQueryClientProvider>
   );
 }

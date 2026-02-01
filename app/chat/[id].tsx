@@ -136,8 +136,14 @@ export default function ChatDetailScreen() {
       <View
         style={{ paddingTop: insets.top }}
         className="flex-row items-center px-4 py-3 border-b border-gray-100 bg-white"
+        accessibilityRole="header"
       >
-        <TouchableOpacity onPress={() => router.back()} className="mr-4 p-2">
+        <TouchableOpacity 
+            onPress={() => router.back()} 
+            className="mr-4 p-2"
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+        >
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
 
@@ -145,6 +151,8 @@ export default function ChatDetailScreen() {
           className="flex-1"
           disabled={!isGroup}
           onPress={() => isGroup && router.push({ pathname: "/chat/details", params: { id: id as string } })}
+          accessibilityRole={isGroup ? "button" : "text"}
+          accessibilityLabel={isGroup ? `Chat group ${name}, tap for details` : `Chat with ${name}`}
         >
           <Text className="text-xl font-bold text-brand-dark" numberOfLines={1}>
             {name || "Chat"}
@@ -172,7 +180,11 @@ export default function ChatDetailScreen() {
 
         {/* INPUT AREA */}
         <View className="px-4 py-3 bg-white border-t border-gray-100 flex-row items-center pb-8">
-          <TouchableOpacity className="mr-3">
+          <TouchableOpacity 
+            className="mr-3"
+            accessibilityRole="button"
+            accessibilityLabel="Add attachment"
+          >
             <Ionicons name="add-circle-outline" size={28} color="#9CA3AF" />
           </TouchableOpacity>
 
@@ -183,6 +195,7 @@ export default function ChatDetailScreen() {
               multiline
               value={inputText}
               onChangeText={setInputText}
+              accessibilityLabel="Message input field"
               style={{ 
                 textAlignVertical: "center",
                 maxHeight: 100,
@@ -199,6 +212,9 @@ export default function ChatDetailScreen() {
               inputText.trim() ? "bg-brand-red" : "bg-gray-200"
             }`}
             disabled={!inputText.trim()}
+            accessibilityRole="button"
+            accessibilityLabel="Send message"
+            accessibilityState={{ disabled: !inputText.trim() }}
           >
             <Ionicons name="send" size={20} color="white" />
           </TouchableOpacity>

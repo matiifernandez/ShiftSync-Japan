@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../hooks/useTranslation";
 import Logo from "../components/Logo";
+import { useToast } from "../context/ToastContext";
 
 /**
  * LoginScreen
@@ -20,6 +21,7 @@ export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   
   // Form State
   const [email, setEmail] = useState("");
@@ -46,7 +48,7 @@ export default function LoginScreen() {
     });
 
     if (error) {
-      Alert.alert("Error", error.message);
+      showToast(error.message, "error");
       setLoading(false);
     } else {
       router.replace("/(tabs)");
@@ -91,6 +93,7 @@ export default function LoginScreen() {
                 onChangeText={setEmail}
                 autoCapitalize="none"
                 keyboardType="email-address"
+                accessibilityLabel="Email address input"
               />
             </View>
           </View>
@@ -105,6 +108,7 @@ export default function LoginScreen() {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
+                accessibilityLabel="Password input"
               />
             </View>
           </View>
@@ -113,6 +117,9 @@ export default function LoginScreen() {
             onPress={handleLogin}
             disabled={loading}
             className={`w-full bg-brand-red py-4 rounded-2xl shadow-lg shadow-red-200 items-center mb-6 ${loading ? 'opacity-70' : ''}`}
+            accessibilityRole="button"
+            accessibilityLabel="Sign In"
+            accessibilityState={{ disabled: loading }}
           >
             {loading ? (
               <ActivityIndicator color="white" />
