@@ -68,18 +68,39 @@ export default function Layout() {
     if (!initialized) return;
 
     // Navigation Logic
-    // "app/(tabs)/..." -> segments = ["(tabs)", ...]
-    // "app/chat/[id].tsx" -> segments = ["chat", "[id]"]
-    // "app/index.tsx" -> segments = [] (root)
-    
-    const isAtLogin = !segments[0];
+    const inTabs = segments[0] === "(tabs)";
+    const inAuth = segments[0] === "index" || segments[0] === "signup";
+    const inOnboarding = segments[0] === "onboarding";
 
-    if (session && isAtLogin) {
-      // Logged in but viewing login screen -> Go to Tabs
-      router.replace("/(tabs)");
-    } else if (!session && !isAtLogin) {
-      // Not logged in but viewing internal screens -> Go to Login
-      router.replace("/");
+    if (session) {
+      // User is logged in
+      const checkOrg = async () => {
+        // If we are already checking, skip or optimize? 
+        // For now simple check
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('organization_id')
+            .eq('id', session.user.id)
+            .single();
+        
+        const hasOrg = !!profile?.organization_id;
+
+        if (!hasOrg && !inOnboarding) {
+            // New user without org -> Onboarding
+            router.replace("/onboarding");
+        } else if (hasOrg && (inAuth || inOnboarding)) {
+            // Existing user in login/onboarding -> Dashboard
+            router.replace("/(tabs)");
+        }
+      };
+
+      checkOrg();
+    } else {
+      // Not logged in
+      if (!inAuth) {
+        // Trying to access protected route -> Login
+        router.replace("/");
+      }
     }
   }, [session, initialized, segments]);
 
