@@ -14,6 +14,7 @@ export const translations = {
     quick_actions: "Quick Actions",
     expenses: "Expenses",
     invite_member: "Invite Team Member",
+    no_activities: "No activities planned",
 
     // Chat
     messages_title: "Messages",
@@ -144,6 +145,7 @@ export const translations = {
     quick_actions: "クイックアクション",
     expenses: "経費精算",
     invite_member: "チームメンバーを招待",
+    no_activities: "予定されている活動はありません",
 
     // Chat
     messages_title: "メッセージ",

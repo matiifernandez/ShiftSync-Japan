@@ -246,7 +246,7 @@ export default function HomeScreen() {
         ) : (
           <View className="bg-gray-50 border border-dotted border-gray-200 rounded-3xl p-8 mb-6 items-center">
             <Ionicons name="calendar-outline" size={32} color="#D1D5DB" />
-            <Text className="text-gray-400 font-medium mt-2">No activities planned</Text>
+            <Text className="text-gray-400 font-medium mt-2">{t('no_activities')}</Text>
           </View>
         )}
 
