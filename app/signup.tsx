@@ -31,7 +31,7 @@ export default function SignUpScreen() {
 
   const handleSignUp = async () => {
     if (!email || !password || !confirmPassword) {
-      showToast("Please fill in all fields", "error");
+      showToast(t('missing_info'), "error");
       return;
     }
 
@@ -92,8 +92,8 @@ export default function SignUpScreen() {
             <View className="bg-white p-2 rounded-[32px] shadow-2xl mb-4">
                <Logo size={60} />
             </View>
-            <Text className="text-white text-3xl font-bold">Join ShiftSync</Text>
-            <Text className="text-white/80 mt-1 font-medium text-sm">Create your account</Text>
+            <Text className="text-white text-3xl font-bold">{t('signup_title')}</Text>
+            <Text className="text-white/80 mt-1 font-medium text-sm">{t('signup_subtitle')}</Text>
           </View>
         </View>
 
@@ -132,7 +132,7 @@ export default function SignUpScreen() {
           </View>
 
           <View className="mb-8">
-            <Text className="text-gray-600 mb-2 ml-1 font-medium">Confirm Password</Text>
+            <Text className="text-gray-600 mb-2 ml-1 font-medium">{t('confirm_password')}</Text>
             <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3.5">
               <Ionicons name="shield-checkmark-outline" size={20} color="#9CA3AF" />
               <TextInput
@@ -156,14 +156,14 @@ export default function SignUpScreen() {
             {loading ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text className="text-white font-bold text-lg">Create Account</Text>
+              <Text className="text-white font-bold text-lg">{t('create_account')}</Text>
             )}
           </TouchableOpacity>
 
           <View className="flex-row justify-center items-center mb-10">
-            <Text className="text-gray-500">Already have an account? </Text>
+            <Text className="text-gray-500">{t('already_have_account')} </Text>
             <TouchableOpacity onPress={() => router.back()}>
-                <Text className="text-brand-red font-bold">Sign In</Text>
+                <Text className="text-brand-red font-bold">{t('sign_in_link')}</Text>
             </TouchableOpacity>
           </View>
         </View>

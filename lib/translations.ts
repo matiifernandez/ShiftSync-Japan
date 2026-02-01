@@ -95,6 +95,39 @@ export const translations = {
     discard_msg: "Going back will discard your unsaved shift.",
     discard_confirm: "Discard",
     keep_editing: "Keep Editing",
+
+    // Auth & Onboarding
+    login_welcome: "Welcome Back",
+    signup_title: "Join ShiftSync",
+    signup_subtitle: "Create your account",
+    confirm_password: "Confirm Password",
+    create_account: "Create Account",
+    already_have_account: "Already have an account?",
+    no_account: "Don't have an account?",
+    sign_up_link: "Sign Up",
+    sign_in_link: "Sign In",
+    
+    // Onboarding Screen
+    onboarding_welcome: "Welcome to ShiftSync",
+    onboarding_desc: "To get started, tell us how you plan to use the app.",
+    create_workspace: "Create Workspace",
+    create_workspace_desc: "For managers setting up a new company team.",
+    join_team: "Join Existing Team",
+    join_team_desc: "Enter an invite code provided by your manager.",
+    
+    // Create Org
+    name_workspace: "Name your Workspace",
+    name_workspace_desc: "This is the name your team will see.",
+    company_name_label: "Company / Team Name",
+    company_placeholder: "e.g. Tokyo Logistics Co.",
+    create_action: "Create Workspace",
+    
+    // Join Team
+    join_team_title: "Join a Team",
+    join_team_instruction: "Enter the 6-character code shared by your manager.",
+    invite_code_label: "Invite Code",
+    join_action: "Join Team",
+    missing_info: "Missing Information",
   },
   ja: {
     // Tabs
@@ -192,6 +225,39 @@ export const translations = {
     discard_msg: "保存されていないシフトは破棄されます。",
     discard_confirm: "破棄する",
     keep_editing: "編集を続ける",
+
+    // Auth & Onboarding
+    login_welcome: "お帰りなさい",
+    signup_title: "ShiftSyncに参加",
+    signup_subtitle: "アカウントを作成",
+    confirm_password: "パスワード確認",
+    create_account: "アカウント作成",
+    already_have_account: "すでにアカウントをお持ちですか？",
+    no_account: "アカウントをお持ちでないですか？",
+    sign_up_link: "登録",
+    sign_in_link: "ログイン",
+    
+    // Onboarding Screen
+    onboarding_welcome: "ShiftSyncへようこそ",
+    onboarding_desc: "始める前に、アプリの利用方法を教えてください。",
+    create_workspace: "ワークスペースを作成",
+    create_workspace_desc: "新しいチームを立ち上げるマネージャー向け。",
+    join_team: "チームに参加",
+    join_team_desc: "マネージャーから共有された招待コードを入力。",
+    
+    // Create Org
+    name_workspace: "ワークスペース名",
+    name_workspace_desc: "チームメンバーに表示される名前です。",
+    company_name_label: "会社名 / チーム名",
+    company_placeholder: "例: 東京ロジスティクス株式会社",
+    create_action: "ワークスペースを作成",
+    
+    // Join Team
+    join_team_title: "チームに参加",
+    join_team_instruction: "マネージャーから共有された6文字のコードを入力してください。",
+    invite_code_label: "招待コード",
+    join_action: "チームに参加",
+    missing_info: "情報が不足しています",
   }
 };
 

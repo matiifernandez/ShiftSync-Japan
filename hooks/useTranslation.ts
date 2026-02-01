@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Localization from 'expo-localization';
 import { translations, TranslationKey } from '../lib/translations';
 import { supabase } from '../lib/supabase';
 
@@ -48,8 +49,17 @@ export function useTranslation() {
           const dbLang = profile.preferred_language as 'en' | 'ja';
           setLocale(dbLang);
           await AsyncStorage.setItem(LANGUAGE_KEY, dbLang);
+          return;
         }
       }
+
+      // 3. Fallback to System Language
+      const systemLocales = Localization.getLocales();
+      const primaryLocale = systemLocales[0]?.languageCode;
+      
+      const defaultLang = primaryLocale === 'ja' ? 'ja' : 'en';
+      setLocale(defaultLang);
+      
     } catch (error) {
       console.log('Error loading language', error);
     }

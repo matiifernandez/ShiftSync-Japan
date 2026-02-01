@@ -4,10 +4,12 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import Logo from "../../components/Logo";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export default function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <View 
@@ -17,10 +19,10 @@ export default function OnboardingScreen() {
       <View className="items-center mt-10">
         <Logo size={60} />
         <Text className="text-3xl font-bold text-brand-dark mt-6 text-center">
-          Welcome to ShiftSync
+          {t('onboarding_welcome')}
         </Text>
         <Text className="text-gray-500 text-center mt-2 px-4">
-          To get started, tell us how you plan to use the app.
+          {t('onboarding_desc')}
         </Text>
       </View>
 
@@ -35,9 +37,9 @@ export default function OnboardingScreen() {
              <FontAwesome5 name="building" size={24} color="white" />
           </View>
           <View className="flex-1">
-            <Text className="text-white font-bold text-xl">Create Workspace</Text>
+            <Text className="text-white font-bold text-xl">{t('create_workspace')}</Text>
             <Text className="text-white/80 text-sm mt-1">
-              For managers setting up a new company team.
+              {t('create_workspace_desc')}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={24} color="white" />
@@ -53,9 +55,9 @@ export default function OnboardingScreen() {
              <FontAwesome5 name="user-friends" size={24} color="#2563EB" />
           </View>
           <View className="flex-1">
-            <Text className="text-brand-dark font-bold text-xl">Join Existing Team</Text>
+            <Text className="text-brand-dark font-bold text-xl">{t('join_team')}</Text>
             <Text className="text-gray-500 text-sm mt-1">
-              Enter an invite code provided by your manager.
+              {t('join_team_desc')}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#9CA3AF" />

@@ -5,11 +5,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabase";
 import { useToast } from "../../context/ToastContext";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export default function CreateOrgScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { showToast } = useToast();
+  const { t } = useTranslation();
   
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,7 @@ export default function CreateOrgScreen() {
 
   const handleCreate = async () => {
     if (!name.trim()) {
-        showToast("Please enter a company name", "error");
+        showToast(t('missing_info'), "error");
         return;
     }
 
@@ -76,16 +78,16 @@ export default function CreateOrgScreen() {
         <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
       </TouchableOpacity>
 
-      <Text className="text-3xl font-bold text-brand-dark mb-2">Name your Workspace</Text>
+      <Text className="text-3xl font-bold text-brand-dark mb-2">{t('name_workspace')}</Text>
       <Text className="text-gray-500 mb-8">
-        This is the name your team will see.
+        {t('name_workspace_desc')}
       </Text>
 
       <View className="mb-4">
-        <Text className="text-gray-600 mb-2 font-medium">Company / Team Name</Text>
+        <Text className="text-gray-600 mb-2 font-medium">{t('company_name_label')}</Text>
         <TextInput
             className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-lg text-brand-dark"
-            placeholder="e.g. Tokyo Logistics Co."
+            placeholder={t('company_placeholder')}
             value={name}
             onChangeText={setName}
             autoFocus
@@ -100,7 +102,7 @@ export default function CreateOrgScreen() {
         {loading ? (
             <ActivityIndicator color="white" />
         ) : (
-            <Text className="text-white font-bold text-lg">Create Workspace</Text>
+            <Text className="text-white font-bold text-lg">{t('create_action')}</Text>
         )}
       </TouchableOpacity>
     </View>

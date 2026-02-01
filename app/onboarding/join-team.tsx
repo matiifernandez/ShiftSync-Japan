@@ -5,11 +5,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabase";
 import { useToast } from "../../context/ToastContext";
+import { useTranslation } from "../../hooks/useTranslation";
 
 export default function JoinTeamScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { showToast } = useToast();
+  const { t } = useTranslation();
   
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -67,13 +69,13 @@ export default function JoinTeamScreen() {
         <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
       </TouchableOpacity>
 
-      <Text className="text-3xl font-bold text-brand-dark mb-2">Join a Team</Text>
+      <Text className="text-3xl font-bold text-brand-dark mb-2">{t('join_team_title')}</Text>
       <Text className="text-gray-500 mb-8">
-        Enter the 6-character code shared by your manager.
+        {t('join_team_instruction')}
       </Text>
 
       <View className="mb-4">
-        <Text className="text-gray-600 mb-2 font-medium">Invite Code</Text>
+        <Text className="text-gray-600 mb-2 font-medium">{t('invite_code_label')}</Text>
         <TextInput
             className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center text-3xl font-bold tracking-widest text-brand-dark uppercase"
             placeholder="XYZ123"
@@ -93,7 +95,7 @@ export default function JoinTeamScreen() {
         {loading ? (
             <ActivityIndicator color="white" />
         ) : (
-            <Text className="text-white font-bold text-lg">Join Team</Text>
+            <Text className="text-white font-bold text-lg">{t('join_action')}</Text>
         )}
       </TouchableOpacity>
     </View>
