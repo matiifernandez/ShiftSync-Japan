@@ -67,7 +67,7 @@ export default function CreateBulkShiftScreen() {
     const today = startOfDay(new Date());
 
     if (isBefore(selectedDate, today)) {
-      Alert.alert("Invalid Date", "You cannot create shifts in the past.");
+      Alert.alert(t('invalid_date'), t('past_date_error'));
       return;
     }
 
@@ -137,11 +137,11 @@ export default function CreateBulkShiftScreen() {
 
   const handleCreate = async () => {
     if (!startDate) {
-      Alert.alert("Error", "Please select at least one date.");
+      Alert.alert(t('error_title'), t('select_date_error'));
       return;
     }
     if (selectedStaff.length === 0) {
-      Alert.alert("Error", "Please select at least one staff member.");
+      Alert.alert(t('error_title'), t('select_staff_error'));
       return;
     }
 
@@ -156,8 +156,7 @@ export default function CreateBulkShiftScreen() {
       
       // Get my profile for organization_id
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: myProfile } = await supabase.from('profiles').select('organization_id').eq('id', user?.id).single();
-
+      
       dates.forEach((date) => {
         const dateString = format(date, "yyyy-MM-dd");
         selectedStaff.forEach((userId) => {
@@ -168,8 +167,6 @@ export default function CreateBulkShiftScreen() {
             start_time: startTime,
             end_time: endTime,
             location_name: locationName,
-            // Assuming organization_id logic is handled by RLS or we need to add it if schedule_items has it
-            // Based on schema, it doesn't have it, but it has project_id (optional).
           });
         });
       });
@@ -181,12 +178,12 @@ export default function CreateBulkShiftScreen() {
       queryClient.invalidateQueries({ queryKey: ['schedule'] });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert("Success", `${shiftItems.length} shift entries created!`, [
-        { text: "OK", onPress: () => router.back() }
+      Alert.alert(t('success_title'), `${shiftItems.length} ${t('shifts_created')}`, [
+        { text: t('ok'), onPress: () => router.back() }
       ]);
     } catch (error: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("Error", error.message);
+      Alert.alert(t('error_title'), error.message);
     } finally {
       setSubmitting(false);
     }
@@ -295,7 +292,7 @@ export default function CreateBulkShiftScreen() {
                 className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
                 value={locationName}
                 onChangeText={setLocationName}
-                placeholder="e.g. Kobe Office"
+                placeholder={t('location_placeholder')}
                 />
             </View>
           </View>
@@ -375,7 +372,7 @@ export default function CreateBulkShiftScreen() {
             disabled={submitting}
             className="w-full p-4 rounded-2xl items-center border border-gray-200 bg-white"
           >
-            <Text className="text-gray-500 font-bold text-lg">{t('keep_editing') === '編集を続ける' ? 'キャンセル' : 'Cancel'}</Text>
+            <Text className="text-gray-500 font-bold text-lg">{t('cancel')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

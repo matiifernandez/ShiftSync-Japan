@@ -134,6 +134,130 @@ export const translations = {
     invite_code_label: "Invite Code",
     join_action: "Join Team",
     missing_info: "Missing Information",
+    
+    // Team Management
+    team_management: "Team Management",
+    team_members: "Team Members",
+    copy_code: "Copy Code",
+    share_link: "Share Invite Link",
+    no_members: "No members joined yet",
+    seats_used: "Seats used",
+    code_copied: "Code copied to clipboard",
+
+    // Common Alerts & Actions
+    error_title: "Error",
+    success_title: "Success",
+    ok: "OK",
+    cancel: "Cancel",
+    invalid_date: "Invalid Date",
+    past_date_error: "You cannot create shifts in the past.",
+    select_date_error: "Please select at least one date.",
+    select_staff_error: "Please select at least one staff member.",
+    shifts_created: "shift entries created!",
+    
+    // Chat Create
+    direct_message: "Direct Message",
+    new_group: "New Group",
+    search_staff: "Search staff...",
+    group_name_error: "Please enter a group name",
+    group_member_error: "Please select at least one member",
+    group_placeholder: "e.g. Bus 1 Team",
+    location_placeholder: "e.g. Kobe Office",
+    
+    // Chat Actions
+    pin_chat: "Pin Chat",
+    unpin_chat: "Unpin Chat",
+    delete_chat: "Delete Chat",
+    no_messages: "No messages yet",
+    select_option: "Select an option",
+    group_info: "Group Info",
+    members_count: "members",
+    participants: "Participants",
+    leave_group: "Leave Group",
+    leave_group_msg: "Are you sure you want to leave this group?",
+    leave_confirm: "Leave",
+    
+    // Profile & Setup
+    edit_profile_desc: "Update your personal details",
+    setup_profile_desc: "Let's verify your identity and get you set up.",
+    camera_permission_title: "Sorry",
+    camera_permission_msg: "We need camera roll permissions to make this work!",
+    full_name_error: "Please enter your full name.",
+    org_id_error: "Organization ID is missing.",
+    profile_updated: "Profile updated successfully!",
+    logout_confirm_title: "Log Out",
+    logout_confirm_msg: "Are you sure you want to sign out?",
+    name_placeholder: "e.g. Ken Watanabe",
+    org_placeholder: "Ask your manager for the code",
+    saving: "Saving...",
+    
+    // Expenses Create
+    gallery_permission_title: "Permission required",
+    gallery_permission_msg: "We need access to your gallery to upload receipts.",
+    invalid_amount_title: "Invalid Amount",
+    invalid_amount_msg: "Please enter a valid numeric amount.",
+    description_required_title: "Description Required",
+    description_required_msg: "Please provide a description for 'Other' expenses.",
+    required_placeholder: "Required...",
+    notes_placeholder: "Notes...",
+    
+    // Travel Create
+    trip_name_error: "Please enter a trip name",
+    trip_date_error: "Please select at least one date",
+    trip_staff_error: "Please select at least one staff member",
+    trip_created: "Trip created and team assigned!",
+    select_team: "Select Team",
+    description_optional: "Description (Optional)",
+    trip_placeholder: "e.g. Kyoto Expedition 2025",
+    
+    // Offline
+    offline_title: "Offline",
+    offline_msg: "Expense saved locally. Will sync when online.",
+    syncing: "Syncing...",
+    
+    // Shift Edit
+    edit_shift: "Edit Shift",
+    editing_for: "Editing for",
+    unknown_staff: "Unknown Staff",
+    shift_updated: "Shift updated successfully",
+    delete_shift_title: "Delete Shift",
+    delete_shift_msg: "Are you sure you want to delete this shift?",
+    load_shift_error: "Could not load shift details.",
+    
+    // Hotel
+    add_hotel: "Add Hotel",
+    hotel_name: "Hotel Name",
+    address: "Address",
+    maps_url: "Google Maps URL",
+    check_in_out: "Check-in / Check-out",
+    hotel_name_error: "Please enter hotel name",
+    hotel_added: "Hotel added!",
+    hotel_placeholder: "e.g. Hotel Granvia Osaka",
+    address_placeholder: "3-1-1 Umeda, Kita-ku, Osaka",
+    
+    // Ticket
+    add_ticket: "Add Ticket",
+    transport_name: "Transport Name",
+    from: "From",
+    to: "To",
+    time_format: "Time (HH:MM)",
+    seat: "Seat",
+    ticket_photo: "Ticket Photo (Optional)",
+    tap_to_upload: "Tap to upload ticket image",
+    assign_to: "Assign To",
+    everyone: "Everyone (Group Ticket)",
+    transport_error: "Please enter transport name",
+    ticket_added: "Ticket added successfully!",
+    ticket_placeholder: "e.g. Shinkansen Nozomi 123",
+    from_placeholder: "Tokyo",
+    to_placeholder: "Osaka",
+    seat_placeholder: "12A",
+    
+    // Expenses Edit
+    load_expense_error: "Could not load expense details",
+    delete_expense_msg: "Are you sure? This cannot be undone.",
+    expense_updated: "Expense updated!",
+    category_error: "Please select a category.",
   },
   ja: {
     // Tabs
@@ -270,6 +394,130 @@ export const translations = {
     invite_code_label: "招待コード",
     join_action: "チームに参加",
     missing_info: "情報が不足しています",
+    
+    // Team Management
+    team_management: "チーム管理",
+    team_members: "チームメンバー",
+    copy_code: "コードをコピー",
+    share_link: "招待リンクを共有",
+    no_members: "参加しているメンバーはいません",
+    seats_used: "利用中の人数",
+    code_copied: "コードをクリップボードにコピーしました",
+
+    // Common Alerts & Actions
+    error_title: "エラー",
+    success_title: "成功",
+    ok: "OK",
+    cancel: "キャンセル",
+    invalid_date: "無効な日付",
+    past_date_error: "過去の日付にシフトを作成することはできません。",
+    select_date_error: "少なくとも1つの日付を選択してください。",
+    select_staff_error: "少なくとも1人のスタッフを選択してください。",
+    shifts_created: "個のシフトが作成されました！",
+    
+    // Chat Create
+    direct_message: "ダイレクトメッセージ",
+    new_group: "新規グループ",
+    search_staff: "スタッフを検索...",
+    group_name_error: "グループ名を入力してください",
+    group_member_error: "少なくとも1人のメンバーを選択してください",
+    group_placeholder: "例: バス1号車チーム",
+    location_placeholder: "例: 神戸オフィス",
+
+    // Chat Actions
+    pin_chat: "チャットを固定",
+    unpin_chat: "固定を解除",
+    delete_chat: "チャットを削除",
+    no_messages: "メッセージはまだありません",
+    select_option: "オプションを選択してください",
+    group_info: "グループ情報",
+    members_count: "名",
+    participants: "参加者",
+    leave_group: "グループを退出",
+    leave_group_msg: "本当にこのグループを退出しますか？",
+    leave_confirm: "退出",
+
+    // Profile & Setup
+    edit_profile_desc: "個人情報を更新してください",
+    setup_profile_desc: "本人確認を行い、設定を完了しましょう。",
+    camera_permission_title: "申し訳ありません",
+    camera_permission_msg: "この機能を利用するにはカメラロールへのアクセス許可が必要です！",
+    full_name_error: "氏名を入力してください。",
+    org_id_error: "組織IDが不足しています。",
+    profile_updated: "プロフィールが正常に更新されました！",
+    logout_confirm_title: "ログアウト",
+    logout_confirm_msg: "本当にログアウトしますか？",
+    name_placeholder: "例: 渡辺 謙",
+    org_placeholder: "マネージャーにコードを確認してください",
+    saving: "保存中...",
+
+    // Expenses Create
+    gallery_permission_title: "アクセス許可が必要",
+    gallery_permission_msg: "レシートをアップロードするにはギャラリーへのアクセス許可が必要です。",
+    invalid_amount_title: "無効な金額",
+    invalid_amount_msg: "有効な数値を入力してください。",
+    description_required_title: "備考が必要",
+    description_required_msg: "「その他」の経費には備考を入力してください。",
+    required_placeholder: "入力必須...",
+    notes_placeholder: "メモ...",
+
+    // Travel Create
+    trip_name_error: "旅行名を入力してください",
+    trip_date_error: "少なくとも1つの日付を選択してください",
+    trip_staff_error: "少なくとも1人のスタッフを選択してください",
+    trip_created: "旅行が作成され、チームが割り当てられました！",
+    select_team: "チームを選択",
+    description_optional: "備考（任意）",
+    trip_placeholder: "例: 京都遠征 2025",
+
+    // Offline
+    offline_title: "オフライン",
+    offline_msg: "経費はローカルに保存されました。オンライン時に同期されます。",
+    syncing: "同期中...",
+
+    // Shift Edit
+    edit_shift: "シフトを編集",
+    editing_for: "編集対象",
+    unknown_staff: "不明なスタッフ",
+    shift_updated: "シフトが正常に更新されました",
+    delete_shift_title: "シフトを削除",
+    delete_shift_msg: "このシフトを削除してもよろしいですか？",
+    load_shift_error: "シフト詳細を読み込めませんでした。",
+
+    // Hotel
+    add_hotel: "宿泊先を追加",
+    hotel_name: "ホテル名",
+    address: "住所",
+    maps_url: "GoogleマップURL",
+    check_in_out: "チェックイン / チェックアウト",
+    hotel_name_error: "ホテル名を入力してください",
+    hotel_added: "宿泊先が追加されました！",
+    hotel_placeholder: "例: ホテルグランヴィア大阪",
+    address_placeholder: "大阪府大阪市北区梅田3-1-1",
+
+    // Ticket
+    add_ticket: "チケットを追加",
+    transport_name: "交通機関名",
+    from: "出発地",
+    to: "到着地",
+    time_format: "時間 (時:分)",
+    seat: "座席",
+    ticket_photo: "チケット写真（任意）",
+    tap_to_upload: "タップして画像をアップロード",
+    assign_to: "割り当て先",
+    everyone: "全員（グループチケット）",
+    transport_error: "交通機関名を入力してください",
+    ticket_added: "チケットが正常に追加されました！",
+    ticket_placeholder: "例: 山陽新幹線 のぞみ123号",
+    from_placeholder: "東京",
+    to_placeholder: "大阪",
+    seat_placeholder: "12A",
+
+    // Expenses Edit
+    load_expense_error: "経費詳細を読み込めませんでした",
+    delete_expense_msg: "本当に削除しますか？この操作は取り消せません。",
+    expense_updated: "経費が更新されました！",
+    category_error: "カテゴリーを選択してください。",
   }
 };
 

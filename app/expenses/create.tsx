@@ -42,7 +42,7 @@ export default function CreateExpenseScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission required", "We need access to your gallery to upload receipts.");
+      Alert.alert(t('gallery_permission_title'), t('gallery_permission_msg'));
       return;
     }
 
@@ -60,13 +60,13 @@ export default function CreateExpenseScreen() {
   const handleSave = async () => {
     if (!amount || isNaN(Number(amount))) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("Invalid Amount", "Please enter a valid numeric amount.");
+      Alert.alert(t('invalid_amount_title'), t('invalid_amount_msg'));
       return;
     }
 
     if (category === "other" && !description.trim()) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert("Description Required", "Please provide a description for 'Other' expenses.");
+      Alert.alert(t('description_required_title'), t('description_required_msg'));
       return;
     }
 
@@ -150,7 +150,7 @@ export default function CreateExpenseScreen() {
           <Text className="text-brand-dark font-bold mb-2">{t('description')}</Text>
           <TextInput
             className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-brand-dark"
-            placeholder={category === 'other' ? "Required..." : "Notes..."}
+            placeholder={category === 'other' ? t('required_placeholder') : t('notes_placeholder')}
             multiline
             numberOfLines={3}
             value={description}

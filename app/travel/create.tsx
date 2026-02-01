@@ -71,15 +71,15 @@ export default function CreateTripScreen() {
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      Alert.alert("Error", "Please enter a trip name");
+      Alert.alert(t('error_title'), t('trip_name_error'));
       return;
     }
     if (!startDate) {
-      Alert.alert("Error", "Please select at least one date");
+      Alert.alert(t('error_title'), t('trip_date_error'));
       return;
     }
     if (selectedStaffIds.length === 0) {
-      Alert.alert("Error", "Please select at least one staff member");
+      Alert.alert(t('error_title'), t('trip_staff_error'));
       return;
     }
 
@@ -123,12 +123,12 @@ export default function CreateTripScreen() {
 
       if (memError) throw memError;
 
-      Alert.alert("Success", "Trip created and team assigned!", [
-        { text: "OK", onPress: () => router.back() }
+      Alert.alert(t('success_title'), t('trip_created'), [
+        { text: t('ok'), onPress: () => router.back() }
       ]);
 
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t('error_title'), error.message);
     } finally {
       setSubmitting(false);
     }
@@ -150,7 +150,7 @@ export default function CreateTripScreen() {
           <Text className="text-brand-dark font-bold mb-2">{t('trip_name')}</Text>
           <TextInput
             className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
-            placeholder="e.g. Kyoto Expedition 2025"
+            placeholder={t('trip_placeholder')}
             value={name}
             onChangeText={setName}
           />
@@ -174,7 +174,7 @@ export default function CreateTripScreen() {
 
         {/* SELECT TEAM */}
         <View className="mb-6">
-          <Text className="text-brand-dark font-bold mb-3">Select Team</Text>
+          <Text className="text-brand-dark font-bold mb-3">{t('select_team')}</Text>
           {staff.map((member) => (
             <TouchableOpacity
               key={member.id}
@@ -208,10 +208,10 @@ export default function CreateTripScreen() {
         </View>
 
         <View className="mb-10">
-          <Text className="text-brand-dark font-bold mb-2">Description (Optional)</Text>
+          <Text className="text-brand-dark font-bold mb-2">{t('description_optional')}</Text>
           <TextInput
             className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base min-h-[80px]"
-            placeholder="Logistics notes..."
+            placeholder={t('notes_placeholder')}
             multiline
             value={description}
             onChangeText={setDescription}
@@ -229,7 +229,7 @@ export default function CreateTripScreen() {
           {submitting ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-white font-bold text-lg">Create Itinerary</Text>
+            <Text className="text-white font-bold text-lg">{t('create_itinerary')}</Text>
           )}
         </TouchableOpacity>
       </ScrollView>

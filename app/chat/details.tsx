@@ -59,12 +59,12 @@ export default function ChatDetailsScreen() {
 
   const handleLeaveGroup = async () => {
     Alert.alert(
-      "Leave Group",
-      "Are you sure you want to leave this group?",
+      t('leave_group'),
+      t('leave_group_msg'),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t('cancel'), style: "cancel" },
         {
-          text: "Leave",
+          text: t('leave_confirm'),
           style: "destructive",
           onPress: async () => {
             try {
@@ -83,7 +83,7 @@ export default function ChatDetailsScreen() {
               router.dismissAll(); 
               router.replace("/(tabs)/chat");
             } catch (error: any) {
-              Alert.alert("Error", error.message);
+              Alert.alert(t('error_title'), error.message);
             }
           }
         }
@@ -104,7 +104,7 @@ export default function ChatDetailsScreen() {
           <Ionicons name="chevron-back" size={28} color="#D9381E" />
         </TouchableOpacity>
         <Text className="text-lg font-bold text-brand-dark flex-1 text-center mr-10">
-          Group Info
+          {t('group_info')}
         </Text>
       </View>
 
@@ -120,11 +120,11 @@ export default function ChatDetailsScreen() {
               <Ionicons name="people" size={40} color="#9CA3AF" />
             </View>
             <Text className="text-xl font-bold text-brand-dark">{conversationName}</Text>
-            <Text className="text-gray-500 mt-1">{participants.length} members</Text>
+            <Text className="text-gray-500 mt-1">{participants.length} {t('members_count')}</Text>
           </View>
 
           {/* LIST */}
-          <Text className="px-6 py-4 text-gray-500 font-bold text-xs uppercase tracking-wider">Participants</Text>
+          <Text className="px-6 py-4 text-gray-500 font-bold text-xs uppercase tracking-wider">{t('participants')}</Text>
           <FlatList
             data={participants}
             keyExtractor={(item) => item.id}
@@ -150,7 +150,7 @@ export default function ChatDetailsScreen() {
               className="flex-row items-center justify-center p-4 bg-red-50 rounded-2xl"
             >
               <Ionicons name="log-out-outline" size={20} color="#D9381E" />
-              <Text className="ml-2 text-brand-red font-bold">Leave Group</Text>
+              <Text className="ml-2 text-brand-red font-bold">{t('leave_group')}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -27,18 +27,18 @@ export default function ChatScreen() {
   const handleOptions = (item: Conversation) => {
     Alert.alert(
       item.name,
-      "Select an option",
+      t('select_option'),
       [
         {
-          text: item.is_pinned ? "Unpin Chat" : "Pin Chat",
+          text: item.is_pinned ? t('unpin_chat') : t('pin_chat'),
           onPress: () => handleTogglePin(item.id, !!item.is_pinned),
         },
         {
-          text: "Delete Chat",
+          text: t('delete_chat'),
           style: "destructive",
           onPress: () => handleDeleteConversation(item.id),
         },
-        { text: "Cancel", style: "cancel" },
+        { text: t('cancel'), style: "cancel" },
       ]
     );
   };
@@ -57,18 +57,18 @@ export default function ChatScreen() {
       if (error) throw error;
       refreshConversations();
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t('error_title'), error.message);
     }
   };
 
   const handleDeleteConversation = (conversationId: string) => {
     Alert.alert(
-      "Delete Chat",
-      "Are you sure you want to delete this conversation?",
+      t('delete_chat_title'),
+      t('delete_chat_msg'),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t('cancel'), style: "cancel" },
         {
-          text: "Delete",
+          text: t('delete_confirm'),
           style: "destructive",
           onPress: async () => {
             try {
@@ -85,7 +85,7 @@ export default function ChatScreen() {
               
               refreshConversations();
             } catch (error: any) {
-              Alert.alert("Error", error.message);
+              Alert.alert(t('error_title'), error.message);
             }
           }
         }
@@ -139,7 +139,7 @@ export default function ChatScreen() {
             </View>
           </View>
           <Text className="text-gray-500 text-sm" numberOfLines={1}>
-            {item.last_message || "No messages yet"}
+            {item.last_message || t('no_messages')}
           </Text>
         </View>
 

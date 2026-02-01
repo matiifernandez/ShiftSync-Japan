@@ -80,7 +80,7 @@ export default function HomeScreen() {
         title: t('invite_member')
       });
     } catch (error) {
-      Alert.alert("Error", "Could not share invite.");
+      Alert.alert(t('error_title'), "Could not share invite.");
     }
   };
 

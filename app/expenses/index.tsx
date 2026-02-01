@@ -161,7 +161,16 @@ export default function ExpensesScreen() {
         options={{
           headerShown: true,
           title: t('expenses_title'),
-          headerBackTitle: t('tab_home'),
+          headerLeft: () => (
+            <TouchableOpacity 
+              onPress={() => router.back()} 
+              className="mr-4 p-2"
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
+            </TouchableOpacity>
+          ),
           headerTitleStyle: { fontWeight: "bold" },
           headerShadowVisible: false,
           headerStyle: { backgroundColor: "#F9FAFB" },
@@ -176,7 +185,7 @@ export default function ExpensesScreen() {
             className={`flex-1 items-center py-3 border-b-2 ${activeTab === 'pending' ? 'border-brand-red' : 'border-transparent'}`}
           >
             <Text className={`font-bold ${activeTab === 'pending' ? 'text-brand-red' : 'text-gray-400'}`}>
-              Pending ({pendingExpenses.length})
+              {t('pending_tab')} ({pendingExpenses.length})
             </Text>
           </TouchableOpacity>
           <TouchableOpacity 
@@ -184,7 +193,7 @@ export default function ExpensesScreen() {
             className={`flex-1 items-center py-3 border-b-2 ${activeTab === 'history' ? 'border-brand-red' : 'border-transparent'}`}
           >
             <Text className={`font-bold ${activeTab === 'history' ? 'text-brand-red' : 'text-gray-400'}`}>
-              History
+              {t('history_tab')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -229,7 +238,7 @@ export default function ExpensesScreen() {
             !loading ? (
               <View className="items-center justify-center mt-20">
                 <Ionicons name="time-outline" size={64} color="#E5E7EB" />
-                <Text className="text-gray-400 mt-4 text-lg font-medium">No history yet</Text>
+                <Text className="text-gray-400 mt-4 text-lg font-medium">{t('no_history')}</Text>
               </View>
             ) : null
           }

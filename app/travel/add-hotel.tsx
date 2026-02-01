@@ -66,15 +66,15 @@ export default function AddHotelScreen() {
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      Alert.alert("Error", "Please enter hotel name");
+      Alert.alert(t('error_title'), t('hotel_name_error'));
       return;
     }
     if (!projectId) {
-      Alert.alert("Error", "Project ID missing");
+      Alert.alert(t('error_title'), "Project ID missing");
       return;
     }
     if (!startDate || !endDate) {
-      Alert.alert("Error", "Please select check-in and check-out dates");
+      Alert.alert(t('error_title'), t('select_date_error'));
       return;
     }
 
@@ -93,12 +93,12 @@ export default function AddHotelScreen() {
 
       if (error) throw error;
 
-      Alert.alert("Success", "Hotel added!", [
-        { text: "OK", onPress: () => router.back() }
+      Alert.alert(t('success_title'), t('hotel_added'), [
+        { text: t('ok'), onPress: () => router.back() }
       ]);
 
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t('error_title'), error.message);
     } finally {
       setSubmitting(false);
     }
@@ -108,8 +108,8 @@ export default function AddHotelScreen() {
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <Stack.Screen 
         options={{ 
-          title: "Add Hotel", 
-          headerBackTitle: "Travel",
+          title: t('add_hotel'), 
+          headerBackTitle: t('tab_travel'),
           headerTintColor: THEME_COLOR,
           headerShown: true
         }} 
@@ -118,20 +118,20 @@ export default function AddHotelScreen() {
       <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
         
         <View className="mb-6">
-          <Text className="text-brand-dark font-bold mb-2">Hotel Name</Text>
+          <Text className="text-brand-dark font-bold mb-2">{t('hotel_name')}</Text>
           <TextInput
             className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
-            placeholder="e.g. Hotel Granvia Osaka"
+            placeholder={t('hotel_placeholder')}
             value={name}
             onChangeText={setName}
           />
         </View>
 
         <View className="mb-6">
-          <Text className="text-brand-dark font-bold mb-2">Address</Text>
+          <Text className="text-brand-dark font-bold mb-2">{t('address')}</Text>
           <TextInput
             className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
-            placeholder="3-1-1 Umeda, Kita-ku, Osaka"
+            placeholder={t('address_placeholder')}
             value={address}
             onChangeText={setAddress}
             multiline
@@ -139,7 +139,7 @@ export default function AddHotelScreen() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-brand-dark font-bold mb-2">Google Maps URL</Text>
+          <Text className="text-brand-dark font-bold mb-2">{t('maps_url')}</Text>
           <TextInput
             className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
             placeholder="https://maps.google.com/..."
@@ -149,7 +149,7 @@ export default function AddHotelScreen() {
         </View>
 
         <View className="mb-10">
-          <Text className="text-brand-dark font-bold mb-2">Check-in / Check-out</Text>
+          <Text className="text-brand-dark font-bold mb-2">{t('check_in_out')}</Text>
           <View className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
             <Calendar
               onDayPress={handleDayPress}
@@ -174,7 +174,7 @@ export default function AddHotelScreen() {
           {submitting ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-white font-bold text-lg">Add Hotel</Text>
+            <Text className="text-white font-bold text-lg">{t('add_hotel')}</Text>
           )}
         </TouchableOpacity>
 

@@ -70,7 +70,7 @@ export default function ExpenseDetailScreen() {
 
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Could not load expense details");
+      Alert.alert(t('error_title'), t('load_expense_error'));
     } finally {
       setLoading(false);
     }
@@ -81,15 +81,15 @@ export default function ExpenseDetailScreen() {
   const handleEditCancel = useCallback(() => setIsEditing(false), []);
 
   const handleDelete = () => {
-    Alert.alert("Delete Expense", "Are you sure? This cannot be undone.", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t('delete_expense'), t('delete_expense_msg'), [
+      { text: t('cancel'), style: "cancel" },
       { 
-        text: "Delete", 
+        text: t('delete_confirm'), 
         style: "destructive", 
         onPress: async () => {
           setSaving(true);
           const { error } = await supabase.from("expenses").delete().eq("id", id);
-          if (error) Alert.alert("Error", error.message);
+          if (error) Alert.alert(t('error_title'), error.message);
           else router.back();
         } 
       }
@@ -98,11 +98,11 @@ export default function ExpenseDetailScreen() {
 
   const validateExpenseForm = () => {
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-       Alert.alert("Invalid Amount", "Please enter a valid positive amount.");
+       Alert.alert(t('invalid_amount_title'), t('invalid_amount_msg'));
        return false;
     }
     if (!category) {
-       Alert.alert("Missing Category", "Please select a category.");
+       Alert.alert(t('missing_info'), t('category_error'));
        return false;
     }
     return true;
@@ -127,11 +127,11 @@ export default function ExpenseDetailScreen() {
 
       if (error) throw error;
       
-      Alert.alert("Success", "Expense updated!");
+      Alert.alert(t('success_title'), t('expense_updated'));
       setIsEditing(false);
       fetchExpense(); // Refresh
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t('error_title'), error.message);
     } finally {
       setSaving(false);
     }
@@ -158,7 +158,7 @@ export default function ExpenseDetailScreen() {
           headerRight: () => (
             isPending && !isEditing ? (
               <TouchableOpacity onPress={handleEditStart}>
-                <Text className="text-brand-red font-bold text-base">Edit</Text>
+                <Text className="text-brand-red font-bold text-base">{t('sign_up_link') === '登録' ? '編集' : 'Edit'}</Text>
               </TouchableOpacity>
             ) : null
           ),
@@ -276,7 +276,7 @@ export default function ExpenseDetailScreen() {
                     disabled={saving}
                     className="bg-gray-200 p-4 rounded-xl items-center"
                 >
-                    <Text className="text-gray-700 font-bold text-lg">Cancel</Text>
+                    <Text className="text-gray-700 font-bold text-lg">{t('cancel')}</Text>
                 </TouchableOpacity>
             </View>
         )}

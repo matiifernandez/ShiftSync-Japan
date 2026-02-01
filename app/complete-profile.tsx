@@ -118,7 +118,7 @@ export default function CompleteProfileScreen() {
     // Request permission first
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Sorry", "We need camera roll permissions to make this work!");
+      Alert.alert(t('camera_permission_title'), t('camera_permission_msg'));
       return;
     }
 
@@ -171,11 +171,11 @@ export default function CompleteProfileScreen() {
   // Validation Logic
   const validateForm = () => {
     if (!fullName.trim()) {
-      Alert.alert(t('missing_info'), "Please enter your full name.");
+      Alert.alert(t('missing_info'), t('full_name_error'));
       return false;
     }
     if (!organizationId.trim()) {
-      Alert.alert(t('missing_info'), "Organization ID is missing.");
+      Alert.alert(t('missing_info'), t('org_id_error'));
       return false;
     }
     return true;
@@ -220,7 +220,7 @@ export default function CompleteProfileScreen() {
       // Update app language globally
       changeLanguage(language);
 
-      showToast("Profile updated successfully!", "success");
+      showToast(t('profile_updated'), "success");
       
       // Delay navigation slightly to let user see toast
       setTimeout(() => {
@@ -235,10 +235,10 @@ export default function CompleteProfileScreen() {
   };
 
   const handleLogout = async () => {
-    Alert.alert("Log Out", "Are you sure you want to sign out?", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t('logout_confirm_title'), t('logout_confirm_msg'), [
+      { text: t('cancel'), style: "cancel" },
       {
-        text: "Log Out",
+        text: t('log_out'),
         style: "destructive",
         onPress: async () => {
           await supabase.auth.signOut();
@@ -267,7 +267,7 @@ export default function CompleteProfileScreen() {
                     {isEditing ? t('edit_profile') : t('setup_profile')}
                 </Text>
                 <Text className="text-gray-500">
-                    {isEditing ? "Update your personal details" : "Let's verify your identity and get you set up."}
+                    {isEditing ? t('edit_profile_desc') : t('setup_profile_desc')}
                 </Text>
             </View>
             {isEditing && (
@@ -310,7 +310,7 @@ export default function CompleteProfileScreen() {
             <Text className="text-gray-700 font-medium mb-1">{t('full_name')}</Text>
             <TextInput
               className="bg-gray-50 p-4 rounded-xl border border-gray-200"
-              placeholder="e.g. Ken Watanabe"
+              placeholder={t('name_placeholder')}
               value={fullName}
               onChangeText={setFullName}
             />
@@ -322,7 +322,7 @@ export default function CompleteProfileScreen() {
             </Text>
             <TextInput
               className="bg-gray-50 p-4 rounded-xl border border-gray-200"
-              placeholder="Ask your manager for the code"
+              placeholder={t('org_placeholder')}
               value={organizationId}
               onChangeText={setOrganizationId}
               autoCapitalize="none"
@@ -382,7 +382,7 @@ export default function CompleteProfileScreen() {
           }`}
         >
           <Text className="text-white font-bold text-lg">
-            {loading ? "Saving..." : isEditing ? t('save_changes') : t('complete_setup')}
+            {loading ? t('saving') : isEditing ? t('save_changes') : t('complete_setup')}
           </Text>
         </TouchableOpacity>
         

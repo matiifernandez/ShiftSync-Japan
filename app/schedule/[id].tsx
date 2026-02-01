@@ -52,9 +52,9 @@ export default function EditShiftScreen() {
       setLocationName(data.location_name || "");
       setShiftType(data.type);
       setNotes(data.notes || "");
-      setStaffName(data.profiles?.full_name || "Unknown Staff");
+      setStaffName(data.profiles?.full_name || t('unknown_staff'));
     } catch (error) {
-      Alert.alert("Error", "Could not load shift details.");
+      Alert.alert(t('error_title'), t('load_shift_error'));
       router.back();
     } finally {
       setLoading(false);
@@ -86,11 +86,11 @@ export default function EditShiftScreen() {
       if (error) throw error;
 
       queryClient.invalidateQueries({ queryKey: ['schedule'] });
-      Alert.alert("Success", "Shift updated successfully", [
-        { text: "OK", onPress: () => router.back() }
+      Alert.alert(t('success_title'), t('shift_updated'), [
+        { text: t('ok'), onPress: () => router.back() }
       ]);
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t('error_title'), error.message);
     } finally {
       setSubmitting(false);
     }
@@ -98,12 +98,12 @@ export default function EditShiftScreen() {
 
   const handleDelete = async () => {
     Alert.alert(
-      "Delete Shift",
-      "Are you sure you want to delete this shift?",
+      t('delete_shift_title'),
+      t('delete_shift_msg'),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t('cancel'), style: "cancel" },
         { 
-          text: "Delete", 
+          text: t('delete_confirm'), 
           style: "destructive", 
           onPress: async () => {
             setSubmitting(true);
@@ -113,7 +113,7 @@ export default function EditShiftScreen() {
               queryClient.invalidateQueries({ queryKey: ['schedule'] });
               router.back();
             } catch (err: any) {
-              Alert.alert("Error", err.message);
+              Alert.alert(t('error_title'), err.message);
               setSubmitting(false);
             }
           }
@@ -131,11 +131,11 @@ export default function EditShiftScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: "Edit Shift",
+          title: t('edit_shift'),
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()} className="flex-row items-center -ml-2">
               <Ionicons name="chevron-back" size={28} color="#D9381E" />
-              <Text className="text-brand-red text-base">Back</Text>
+              <Text className="text-brand-red text-base">{t('tab_schedule')}</Text>
             </TouchableOpacity>
           ),
           headerRight: () => (
@@ -147,7 +147,7 @@ export default function EditShiftScreen() {
       />
 
       <ScrollView className="flex-1 px-6 pt-6">
-        <Text className="text-gray-500 mb-6 text-center font-medium">Editing for: <Text className="font-bold text-brand-dark">{staffName}</Text></Text>
+        <Text className="text-gray-500 mb-6 text-center font-medium">{t('editing_for')}: <Text className="font-bold text-brand-dark">{staffName}</Text></Text>
 
         {/* TYPE SELECTOR */}
         <View className="mb-6">

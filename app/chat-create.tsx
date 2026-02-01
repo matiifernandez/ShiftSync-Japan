@@ -105,7 +105,7 @@ export default function CreateChatScreen() {
       });
 
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t('error_title'), error.message);
     } finally {
       setCreating(false);
     }
@@ -113,11 +113,11 @@ export default function CreateChatScreen() {
 
   const handleCreateGroup = async () => {
     if (!groupName.trim()) {
-      Alert.alert("Error", "Please enter a group name");
+      Alert.alert(t('error_title'), t('group_name_error'));
       return;
     }
     if (selectedUserIds.length === 0) {
-      Alert.alert("Error", "Please select at least one member");
+      Alert.alert(t('error_title'), t('group_member_error'));
       return;
     }
 
@@ -161,7 +161,7 @@ export default function CreateChatScreen() {
       });
 
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t('error_title'), error.message);
     } finally {
       setCreating(false);
     }
@@ -172,7 +172,7 @@ export default function CreateChatScreen() {
       {/* HEADER */}
       <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-100">
         <TouchableOpacity onPress={() => router.back()}>
-            <Text className="text-brand-red font-bold text-base">Cancel</Text>
+            <Text className="text-brand-red font-bold text-base">{t('cancel')}</Text>
         </TouchableOpacity>
         <Text className="text-brand-dark font-bold text-lg">{t('new_chat')}</Text>
         <View className="w-16" /> 
@@ -185,24 +185,24 @@ export default function CreateChatScreen() {
           className="flex-1 py-2 items-center rounded-lg"
           style={{ backgroundColor: mode === "dm" ? "white" : "transparent" }}
         >
-          <Text className="font-bold" style={{ color: mode === "dm" ? "#1A1A1A" : "#9CA3AF" }}>Direct Message</Text>
+          <Text className="font-bold" style={{ color: mode === "dm" ? "#1A1A1A" : "#9CA3AF" }}>{t('direct_message')}</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           onPress={() => setMode("group")}
           className="flex-1 py-2 items-center rounded-lg"
           style={{ backgroundColor: mode === "group" ? "white" : "transparent" }}
         >
-          <Text className="font-bold" style={{ color: mode === "group" ? "#1A1A1A" : "#9CA3AF" }}>New Group</Text>
+          <Text className="font-bold" style={{ color: mode === "group" ? "#1A1A1A" : "#9CA3AF" }}>{t('new_group')}</Text>
         </TouchableOpacity>
       </View>
 
       {/* GROUP INFO INPUT */}
       {mode === "group" && (
         <View className="px-6 mt-6">
-          <Text className="text-brand-dark font-bold mb-2">Group Name</Text>
+          <Text className="text-brand-dark font-bold mb-2">{t('group_name')}</Text>
           <TextInput
             className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
-            placeholder="e.g. Bus 1 Team"
+            placeholder={t('group_placeholder')}
             value={groupName}
             onChangeText={setGroupName}
           />
@@ -211,12 +211,12 @@ export default function CreateChatScreen() {
 
       {/* SEARCH */}
       <View className="px-6 mt-6 mb-2">
-        <Text className="text-brand-dark font-bold mb-2">Select Members</Text>
+        <Text className="text-brand-dark font-bold mb-2">{t('select_members')}</Text>
         <View className="bg-gray-50 flex-row items-center px-4 py-3 rounded-xl border border-gray-100">
           <Ionicons name="search" size={20} color="#9CA3AF" />
           <TextInput
             className="flex-1 ml-3 text-brand-dark"
-            placeholder="Search staff..."
+            placeholder={t('search_staff')}
             value={search}
             onChangeText={setSearch}
           />
@@ -270,7 +270,7 @@ export default function CreateChatScreen() {
             {creating ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text className="text-white font-bold text-lg">Create Group ({selectedUserIds.length})</Text>
+              <Text className="text-white font-bold text-lg">{t('create_group')} ({selectedUserIds.length})</Text>
             )}
           </TouchableOpacity>
         </View>

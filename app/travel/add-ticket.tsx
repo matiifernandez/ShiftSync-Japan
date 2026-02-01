@@ -44,17 +44,17 @@ export default function AddTicketScreen() {
         setImageBase64(result.assets[0].base64 || null);
       }
     } catch (error) {
-      Alert.alert("Error picking image", "Could not select image.");
+      Alert.alert(t('error_title'), "Could not select image.");
     }
   };
 
   const handleCreate = async () => {
     if (!transportName.trim()) {
-      Alert.alert("Error", "Please enter transport name");
+      Alert.alert(t('error_title'), t('transport_error'));
       return;
     }
     if (!projectId) {
-      Alert.alert("Error", "Project ID missing");
+      Alert.alert(t('error_title'), t('missing_info'));
       return;
     }
 
@@ -102,12 +102,12 @@ export default function AddTicketScreen() {
 
       if (error) throw error;
 
-      Alert.alert("Success", "Ticket added successfully!", [
-        { text: "OK", onPress: () => router.back() }
+      Alert.alert(t('success_title'), t('ticket_added'), [
+        { text: t('ok'), onPress: () => router.back() }
       ]);
 
     } catch (error: any) {
-      Alert.alert("Error", error.message);
+      Alert.alert(t('error_title'), error.message);
     } finally {
       setSubmitting(false);
     }
@@ -117,8 +117,8 @@ export default function AddTicketScreen() {
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <Stack.Screen 
         options={{ 
-          title: "Add Ticket", 
-          headerBackTitle: "Travel",
+          title: t('add_ticket'), 
+          headerBackTitle: t('tab_travel'),
           headerTintColor: THEME_COLOR,
           headerShown: true
         }} 
@@ -128,29 +128,29 @@ export default function AddTicketScreen() {
         
         {/* TRANSPORT INFO */}
         <View className="mb-6">
-          <Text className="text-brand-dark font-bold mb-2">Transport Name</Text>
+          <Text className="text-brand-dark font-bold mb-2">{t('transport_name')}</Text>
           <TextInput
             className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base mb-4"
-            placeholder="e.g. Shinkansen Nozomi 123"
+            placeholder={t('ticket_placeholder')}
             value={transportName}
             onChangeText={setTransportName}
           />
           
           <View className="flex-row gap-4 mb-4">
             <View className="flex-1">
-                <Text className="text-brand-dark font-bold mb-2">From</Text>
+                <Text className="text-brand-dark font-bold mb-2">{t('from')}</Text>
                 <TextInput
                     className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
-                    placeholder="Tokyo"
+                    placeholder={t('from_placeholder')}
                     value={deptStation}
                     onChangeText={setDeptStation}
                 />
             </View>
             <View className="flex-1">
-                <Text className="text-brand-dark font-bold mb-2">To</Text>
+                <Text className="text-brand-dark font-bold mb-2">{t('to')}</Text>
                 <TextInput
                     className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
-                    placeholder="Osaka"
+                    placeholder={t('to_placeholder')}
                     value={arrStation}
                     onChangeText={setArrStation}
                 />
@@ -159,7 +159,7 @@ export default function AddTicketScreen() {
 
           <View className="flex-row gap-4">
             <View className="flex-1">
-                <Text className="text-brand-dark font-bold mb-2">Time (HH:MM)</Text>
+                <Text className="text-brand-dark font-bold mb-2">{t('time_format')}</Text>
                 <TextInput
                     className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
                     placeholder="09:00"
@@ -169,10 +169,10 @@ export default function AddTicketScreen() {
                 />
             </View>
             <View className="flex-1">
-                <Text className="text-brand-dark font-bold mb-2">Seat</Text>
+                <Text className="text-brand-dark font-bold mb-2">{t('seat')}</Text>
                 <TextInput
                     className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
-                    placeholder="12A"
+                    placeholder={t('seat_placeholder')}
                     value={seat}
                     onChangeText={setSeat}
                 />
@@ -182,7 +182,7 @@ export default function AddTicketScreen() {
 
         {/* TICKET IMAGE UPLOAD */}
         <View className="mb-8">
-            <Text className="text-brand-dark font-bold mb-3">Ticket Photo (Optional)</Text>
+            <Text className="text-brand-dark font-bold mb-3">{t('ticket_photo')}</Text>
             <TouchableOpacity 
                 onPress={pickImage}
                 className="bg-gray-50 border border-dashed border-gray-300 rounded-xl p-6 items-center justify-center"
@@ -192,7 +192,7 @@ export default function AddTicketScreen() {
                 ) : (
                     <>
                         <Ionicons name="camera-outline" size={32} color="#9CA3AF" />
-                        <Text className="text-gray-400 mt-2 font-medium">Tap to upload ticket image</Text>
+                        <Text className="text-gray-400 mt-2 font-medium">{t('tap_to_upload')}</Text>
                     </>
                 )}
             </TouchableOpacity>
@@ -200,7 +200,7 @@ export default function AddTicketScreen() {
 
         {/* ASSIGNMENT */}
         <View className="mb-10">
-          <Text className="text-brand-dark font-bold mb-3">Assign To</Text>
+          <Text className="text-brand-dark font-bold mb-3">{t('assign_to')}</Text>
           
           {/* GROUP OPTION */}
           <TouchableOpacity
@@ -215,7 +215,7 @@ export default function AddTicketScreen() {
                 <FontAwesome5 name="users" size={14} color={selectedUserId === null ? "white" : "#9CA3AF"} />
             </View>
             <Text className={`font-bold ${selectedUserId === null ? "text-white" : "text-gray-700"}`}>
-              Everyone (Group Ticket)
+              {t('everyone')}
             </Text>
             {selectedUserId === null && <Ionicons name="checkmark-circle" size={20} color="white" style={{marginLeft: 'auto'}} />}
           </TouchableOpacity>
@@ -254,7 +254,7 @@ export default function AddTicketScreen() {
           {submitting ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-white font-bold text-lg">Add Ticket</Text>
+            <Text className="text-white font-bold text-lg">{t('add_ticket')}</Text>
           )}
         </TouchableOpacity>
 
