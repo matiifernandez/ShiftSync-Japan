@@ -64,6 +64,7 @@ export const translations = {
     delete_expense: "Delete Expense",
     approve: "Approve",
     reject: "Reject",
+    all_caught_up: "All caught up!",
     // Categories
     cat_transport: "Transport",
     cat_hotel: "Hotel",
@@ -195,6 +196,7 @@ export const translations = {
     delete_expense: "削除する",
     approve: "承認",
     reject: "却下",
+    all_caught_up: "保留中の申請はありません",
     // Categories
     cat_transport: "交通費",
     cat_hotel: "宿泊費",
