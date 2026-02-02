@@ -254,54 +254,57 @@ export default function HomeScreen() {
         <Text className="text-brand-dark text-xl font-bold mb-4">{t('quick_actions')}</Text>
         <View className="flex-row flex-wrap justify-between gap-y-3 mb-10">
           
-          {/* 1. CHAT */}
+          {/* 1. CHAT - Navy Blue */}
           <TouchableOpacity 
-            className="w-[48%] md:w-[23%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
+            className="w-[48%] md:w-[23%] h-36 bg-slate-50 rounded-3xl p-4 justify-between border border-slate-100 shadow-sm relative" 
             onPress={() => router.push("/(tabs)/chat")}
           >
             {totalUnreadCount > 0 && (
               <View className="absolute top-2 right-2 bg-brand-red rounded-full min-w-[20px] h-[20px] px-1 items-center justify-center z-10">
-                <Text className="text-white text-xs font-bold">{totalUnreadCount}</Text>
+                <Text className="text-white text-[10px] font-bold">{totalUnreadCount}</Text>
               </View>
             )}
-            <View className="bg-blue-100 w-12 h-12 rounded-full items-center justify-center">
-              <Ionicons name="chatbubble-ellipses" size={24} color="#2563EB" />
+            <View className="bg-slate-200/50 w-12 h-12 rounded-2xl items-center justify-center">
+              <Ionicons name="chatbubble-ellipses" size={24} color="#1E293B" />
             </View>
             <Text className="text-brand-dark font-bold text-lg">{t('tab_chat')}</Text>
           </TouchableOpacity>
 
-          {/* 2. TRAVEL */}
+          {/* 2. TRAVEL - JR Cyan */}
           <TouchableOpacity 
-            className="w-[48%] md:w-[23%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
+            className="w-[48%] md:w-[23%] h-36 bg-cyan-50 rounded-3xl p-4 justify-between border border-cyan-100 shadow-sm relative" 
             onPress={handlePressTravel}
           >
             {showTravelBadge && (
               <View className="absolute top-2 right-2 bg-brand-red w-3 h-3 rounded-full z-10" />
             )}
-            <View className="bg-green-100 w-12 h-12 rounded-full items-center justify-center">
-              <FontAwesome5 name="plane" size={24} color="#059669" />
+            <View className="bg-cyan-100 w-12 h-12 rounded-2xl items-center justify-center">
+              <FontAwesome5 name="train" size={22} color="#0891B2" />
             </View>
             <Text className="text-brand-dark font-bold text-lg">{t('tab_travel')}</Text>
           </TouchableOpacity>
 
-          {/* 3. SCHEDULE */}
+          {/* 3. SCHEDULE - Brand Red */}
           <TouchableOpacity 
-            className="w-[48%] md:w-[23%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm relative" 
+            className="w-[48%] md:w-[23%] h-36 bg-red-50 rounded-3xl p-4 justify-between border border-red-100 shadow-sm relative" 
             onPress={handlePressSchedule}
           >
              {showScheduleBadge && (
               <View className="absolute top-2 right-2 bg-brand-red w-3 h-3 rounded-full z-10" />
             )}
-            <View className="bg-purple-100 w-12 h-12 rounded-full items-center justify-center">
-              <FontAwesome5 name="calendar-alt" size={24} color="#7C3AED" />
+            <View className="bg-red-100 w-12 h-12 rounded-2xl items-center justify-center">
+              <FontAwesome5 name="calendar-check" size={22} color="#D9381E" />
             </View>
             <Text className="text-brand-dark font-bold text-lg">{t('tab_schedule')}</Text>
           </TouchableOpacity>
 
-          {/* 4. EXPENSES */}
-          <TouchableOpacity className="w-[48%] md:w-[23%] h-36 bg-gray-50 rounded-2xl p-4 justify-between border border-gray-100 shadow-sm" onPress={() => router.push("/expenses")}>
-            <View className="bg-orange-100 w-12 h-12 rounded-full items-center justify-center">
-              <FontAwesome5 name="yen-sign" size={24} color="#EA580C" />
+          {/* 4. EXPENSES - Money Amber */}
+          <TouchableOpacity 
+            className="w-[48%] md:w-[23%] h-36 bg-amber-50 rounded-3xl p-4 justify-between border border-amber-100 shadow-sm" 
+            onPress={() => router.push("/expenses")}
+          >
+            <View className="bg-amber-100 w-12 h-12 rounded-2xl items-center justify-center">
+              <FontAwesome5 name="yen-sign" size={22} color="#B45309" />
             </View>
             <Text className="text-brand-dark font-bold text-lg">{t('expenses')}</Text>
           </TouchableOpacity>
