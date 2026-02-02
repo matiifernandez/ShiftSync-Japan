@@ -310,7 +310,7 @@ export default function HomeScreen() {
         {/* INVITE BUTTON (Admin Only) */}
         {orgId && userRole === 'admin' && (
           <TouchableOpacity 
-            onPress={handleInvite}
+            onPress={() => router.push("/team")}
             className="w-full bg-brand-red py-4 rounded-2xl flex-row items-center justify-center shadow-md mb-10"
           >
             <Ionicons name="person-add" size={22} color="white" />
