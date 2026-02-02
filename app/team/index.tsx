@@ -53,7 +53,16 @@ export default function TeamManagementScreen() {
         options={{
           headerShown: true,
           title: t('team_management'),
-          headerBackTitle: t('tab_home'),
+          headerLeft: () => (
+            <TouchableOpacity 
+              onPress={() => router.back()} 
+              className="mr-4 p-2 -ml-2"
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <Ionicons name="arrow-back" size={24} color="#D9381E" />
+            </TouchableOpacity>
+          ),
           headerTintColor: "#D9381E",
           headerShadowVisible: false,
           headerStyle: { backgroundColor: "#F9FAFB" },
