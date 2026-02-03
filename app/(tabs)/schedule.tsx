@@ -162,15 +162,27 @@ export default function ScheduleScreen() {
 
         {/* MONTHLY SUMMARY WIDGET */}
         <View className="flex-row justify-between px-6 mb-2">
-            <View className="bg-red-50 flex-1 mr-2 p-2 rounded-xl items-center border border-red-100">
+            <View 
+                className="bg-red-50 flex-1 mr-2 p-2 rounded-xl items-center border border-red-100"
+                accessible={true}
+                accessibilityLabel={`${t('work_shift')}, ${monthlyStats.work}`}
+            >
                 <Text className="text-xs text-gray-500 font-medium mb-1">{t('work_shift')}</Text>
                 <Text className="text-xl font-bold text-brand-red">{monthlyStats.work}</Text>
             </View>
-             <View className="bg-cyan-50 flex-1 mr-2 p-2 rounded-xl items-center border border-cyan-100">
+             <View 
+                className="bg-cyan-50 flex-1 mr-2 p-2 rounded-xl items-center border border-cyan-100"
+                accessible={true}
+                accessibilityLabel={`${t('travel_day')}, ${monthlyStats.travel}`}
+             >
                 <Text className="text-xs text-gray-500 font-medium mb-1">{t('travel_day')}</Text>
                 <Text className="text-xl font-bold text-cyan-600">{monthlyStats.travel}</Text>
             </View>
-             <View className="bg-gray-50 flex-1 p-2 rounded-xl items-center border border-gray-100">
+             <View 
+                className="bg-gray-50 flex-1 p-2 rounded-xl items-center border border-gray-100"
+                accessible={true}
+                accessibilityLabel={`${t('off_day')}, ${monthlyStats.off}`}
+             >
                 <Text className="text-xs text-gray-500 font-medium mb-1">{t('off_day')}</Text>
                 <Text className="text-xl font-bold text-gray-600">{monthlyStats.off}</Text>
             </View>
