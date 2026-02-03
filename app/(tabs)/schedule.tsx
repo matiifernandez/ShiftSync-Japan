@@ -27,6 +27,26 @@ export default function ScheduleScreen() {
   const [selectedDate, setSelectedDate] = useState(
     format(new Date(), "yyyy-MM-dd")
   );
+  
+  // Track the currently visible month in the calendar (default to today)
+  const [currentMonth, setCurrentMonth] = useState(
+    format(new Date(), "yyyy-MM")
+  );
+
+  // Calculate Monthly Stats
+  const monthlyStats = useMemo(() => {
+    const stats = { work: 0, travel: 0, off: 0 };
+    
+    schedule.forEach(item => {
+        if (item.date.startsWith(currentMonth)) {
+            if (item.type === 'work_shift') stats.work++;
+            if (item.type === 'travel_day') stats.travel++;
+            if (item.type === 'off_day') stats.off++;
+        }
+    });
+    
+    return stats;
+  }, [schedule, currentMonth]);
 
   // Generate marked dates for the calendar
   const markedDates = useMemo(() => {
@@ -131,13 +151,39 @@ export default function ScheduleScreen() {
         style={{ paddingTop: insets.top }}
         className="bg-white pb-4 rounded-b-3xl shadow-sm z-10"
       >
-        <Text className="text-3xl font-bold text-left text-brand-dark px-6 mb-4 pt-2">
-          {t('schedule_title')}
-        </Text>
+        <View className="px-6 mb-4 pt-2 flex-row justify-between items-center">
+            <Text className="text-3xl font-bold text-brand-dark">
+            {t('schedule_title')}
+            </Text>
+            <View className="bg-gray-100 px-3 py-1 rounded-full">
+                 <Text className="text-xs font-bold text-gray-500">{currentMonth}</Text>
+            </View>
+        </View>
+
+        {/* MONTHLY SUMMARY WIDGET */}
+        <View className="flex-row justify-between px-6 mb-2">
+            <View className="bg-red-50 flex-1 mr-2 p-2 rounded-xl items-center border border-red-100">
+                <Text className="text-xs text-gray-500 font-medium mb-1">{t('work_shift')}</Text>
+                <Text className="text-xl font-bold text-brand-red">{monthlyStats.work}</Text>
+            </View>
+             <View className="bg-cyan-50 flex-1 mr-2 p-2 rounded-xl items-center border border-cyan-100">
+                <Text className="text-xs text-gray-500 font-medium mb-1">{t('travel_day')}</Text>
+                <Text className="text-xl font-bold text-cyan-600">{monthlyStats.travel}</Text>
+            </View>
+             <View className="bg-gray-50 flex-1 p-2 rounded-xl items-center border border-gray-100">
+                <Text className="text-xs text-gray-500 font-medium mb-1">{t('off_day')}</Text>
+                <Text className="text-xl font-bold text-gray-600">{monthlyStats.off}</Text>
+            </View>
+        </View>
+
         <Calendar
           onDayPress={(day: DateData) => {
             Haptics.selectionAsync();
             setSelectedDate(day.dateString);
+          }}
+          onMonthChange={(month: DateData) => {
+             // Update the current month to recalculate stats
+             setCurrentMonth(month.dateString.substring(0, 7)); // 'YYYY-MM'
           }}
           markedDates={markedDates}
           // Enable horizontal paging for better UX
