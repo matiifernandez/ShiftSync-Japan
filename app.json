@@ -36,7 +36,8 @@
     "plugins": [
       "expo-router",
       "expo-asset",
-      "expo-localization"
+      "expo-localization",
+      "@sentry/react-native"
     ],
     "extra": {
       "router": {},

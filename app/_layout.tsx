@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
+import * as Sentry from '@sentry/react-native';
 
 import { useGlobalRealtime } from "../hooks/useGlobalRealtime";
 import { useNotifications } from "../hooks/useNotifications";
@@ -16,6 +17,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { ToastProvider } from "../context/ToastContext";
 import Toast from "../components/Toast";
+
+// Initialize Sentry
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN || "https://examplePublicKey@o0.ingest.sentry.io/0",
+  debug: false,
+  enableSpotlight: __DEV__,
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,7 +38,7 @@ const asyncStoragePersister = createAsyncStoragePersister({
   storage: AsyncStorage,
 });
 
-export default function Layout() {
+function Layout() {
   const [session, setSession] = useState<Session | null>(null);
   const [initialized, setInitialized] = useState(false);
   const segments = useSegments();
@@ -164,3 +172,5 @@ export default function Layout() {
     </PersistQueryClientProvider>
   );
 }
+
+export default Sentry.wrap(Layout);
