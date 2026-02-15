@@ -112,6 +112,9 @@ export const translations = {
     no_account: "Don't have an account?",
     sign_up_link: "Sign Up",
     sign_in_link: "Sign In",
+    status_pending: "Pending",
+    status_approved: "Approved",
+    status_rejected: "Rejected",
     
     // Onboarding Screen
     onboarding_welcome: "Welcome to ShiftSync",
@@ -134,6 +137,9 @@ export const translations = {
     invite_code_label: "Invite Code",
     join_action: "Join Team",
     missing_info: "Missing Information",
+    passwords_not_match: "Passwords do not match",
+    password_too_short: "Password must be at least 6 characters",
+    account_created: "Account created! Please check your email.",
     
     // Team Management
     team_management: "Team Management",
@@ -154,6 +160,25 @@ export const translations = {
     select_date_error: "Please select at least one date.",
     select_staff_error: "Please select at least one staff member.",
     shifts_created: "shift entries created!",
+    share_error: "Could not share invite.",
+    invalid_code_format: "Invalid code format",
+    workspace_created: "Workspace created successfully!",
+    create_workspace_error: "Error creating workspace",
+    join_success: "Joined successfully!",
+    join_error: "Error joining team",
+    
+    // Plans
+    free_plan: "Free Plan",
+    pro_plan: "Pro Plan",
+
+    // Next Activity Details
+    status_active: "Active",
+    transit_desc: "Transit to destination",
+    onsite_desc: "On Site",
+    scheduled_duty: "Scheduled Duty",
+    rest_recharge: "Rest & Recharge",
+    logistics_desc: "Logistics",
+    ongoing_project: "Ongoing Project",
     
     // Chat Create
     direct_message: "Direct Message",
@@ -258,6 +283,11 @@ export const translations = {
     delete_expense_msg: "Are you sure? This cannot be undone.",
     expense_updated: "Expense updated!",
     category_error: "Please select a category.",
+    add_ticket_btn: "ADD TICKET",
+    add_hotel_btn: "ADD HOTEL",
+    trip_reminder_title: "Trip Reminder 🚄",
+    trip_reminder_msg: "Your trip starts soon! Don't forget your tickets.",
+    for_label: "FOR",
   },
   ja: {
     // Tabs
@@ -372,6 +402,9 @@ export const translations = {
     no_account: "アカウントをお持ちでないですか？",
     sign_up_link: "登録",
     sign_in_link: "ログイン",
+    status_pending: "保留中",
+    status_approved: "承認済み",
+    status_rejected: "却下済み",
     
     // Onboarding Screen
     onboarding_welcome: "ShiftSyncへようこそ",
@@ -394,6 +427,9 @@ export const translations = {
     invite_code_label: "招待コード",
     join_action: "チームに参加",
     missing_info: "情報が不足しています",
+    passwords_not_match: "パスワードが一致しません",
+    password_too_short: "パスワードは6文字以上で入力してください",
+    account_created: "アカウントが作成されました！メールを確認してください。",
     
     // Team Management
     team_management: "チーム管理",
@@ -413,7 +449,25 @@ export const translations = {
     past_date_error: "過去の日付にシフトを作成することはできません。",
     select_date_error: "少なくとも1つの日付を選択してください。",
     select_staff_error: "少なくとも1人のスタッフを選択してください。",
-    shifts_created: "個のシフトが作成されました！",
+        shifts_created: "個のシフトが作成されました！",
+        share_error: "招待を共有できませんでした。",
+        invalid_code_format: "無効なコード形式です",
+        workspace_created: "ワークスペースが作成されました！",
+        create_workspace_error: "ワークスペースの作成に失敗しました",
+        join_success: "チームに参加しました！",
+        join_error: "チームへの参加に失敗しました",
+        
+        // Plans    free_plan: "無料プラン",
+    pro_plan: "プロプラン",
+
+    // Next Activity Details
+    status_active: "アクティブ",
+    transit_desc: "目的地へ移動",
+    onsite_desc: "現場",
+    scheduled_duty: "勤務予定",
+    rest_recharge: "休息・リフレッシュ",
+    logistics_desc: "ロジスティクス",
+    ongoing_project: "進行中のプロジェクト",
     
     // Chat Create
     direct_message: "ダイレクトメッセージ",
@@ -518,6 +572,11 @@ export const translations = {
     delete_expense_msg: "本当に削除しますか？この操作は取り消せません。",
     expense_updated: "経費が更新されました！",
     category_error: "カテゴリーを選択してください。",
+    add_ticket_btn: "チケット追加",
+    add_hotel_btn: "ホテル追加",
+    trip_reminder_title: "移動のリマインド 🚄",
+    trip_reminder_msg: "まもなく出発です！チケットを忘れずに。",
+    for_label: "対象",
   }
 };
 

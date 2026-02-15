@@ -80,7 +80,7 @@ export default function HomeScreen() {
         title: t('invite_member')
       });
     } catch (error) {
-      Alert.alert(t('error_title'), "Could not share invite.");
+      Alert.alert(t('error_title'), t('share_error'));
     }
   };
 
@@ -105,9 +105,9 @@ export default function HomeScreen() {
           candidates.push({
             type: 'ticket',
             date: new Date(t.departure_time),
-            title: t.transport_name || "Travel",
+            title: t.transport_name || t('tab_travel'),
             location: `${t.departure_station || '?'} → ${t.arrival_station || '?'}`,
-            detail: t.seat_number ? `Seat ${t.seat_number}` : 'Travel',
+            detail: t.seat_number ? `${t('seat')} ${t.seat_number}` : t('tab_travel'),
             raw: t
           });
         }
@@ -125,9 +125,9 @@ export default function HomeScreen() {
                 date: itemDate,
                 title: t(s.type as any),
                 location: s.type === 'off_day' ? t('enjoy_day_off') : (s.location_name || s.notes || (
-                  s.type === 'travel_day' ? "Transit to destination" : "On Site"
+                  s.type === 'travel_day' ? t('transit_desc') : t('onsite_desc')
                 )),
-                detail: s.type === 'work_shift' ? 'Scheduled Duty' : (s.type === 'off_day' ? 'Rest & Recharge' : 'Logistics'),
+                detail: s.type === 'work_shift' ? t('scheduled_duty') : (s.type === 'off_day' ? t('rest_recharge') : t('logistics_desc')),
                 raw: s
              });
         }
@@ -141,7 +141,7 @@ export default function HomeScreen() {
                 title: trip.name,
                 location: trip.dates,
                 time: null,
-                detail: 'Ongoing Project'
+                detail: t('ongoing_project')
             };
         }
         return null;
@@ -159,7 +159,7 @@ export default function HomeScreen() {
         isShift: next.type === 'shift'
     };
 
-  }, [trip, schedule]);
+  }, [trip, schedule, t]);
 
   // Badge Logic (Memoized)
   const showTravelBadge = useMemo(() => hasNewTravel(trip?.tickets || []), [trip, hasNewTravel]);
@@ -220,7 +220,7 @@ export default function HomeScreen() {
                   {t('next_activity')}
                 </Text>
               </View>
-              <Text className="text-brand-red font-bold text-lg">Active</Text>
+              <Text className="text-brand-red font-bold text-lg">{t('status_active')}</Text>
             </View>
 
             <Text className="text-white text-2xl font-bold mb-1">

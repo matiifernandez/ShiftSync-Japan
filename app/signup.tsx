@@ -36,12 +36,12 @@ export default function SignUpScreen() {
     }
 
     if (password !== confirmPassword) {
-      showToast("Passwords do not match", "error");
+      showToast(t('passwords_not_match'), "error");
       return;
     }
 
     if (password.length < 6) {
-        showToast("Password must be at least 6 characters", "error");
+        showToast(t('password_too_short'), "error");
         return;
     }
 
@@ -56,7 +56,7 @@ export default function SignUpScreen() {
       if (error) throw error;
 
       if (data.user) {
-        showToast("Account created! Please check your email.", "success");
+        showToast(t('account_created'), "success");
         // Optional: Redirect to login or let Supabase auto-login if email confirmation is off
         // For now, we assume email confirmation might be required or auto-login works.
         // If auto-login works, the _layout listener will handle the redirect.

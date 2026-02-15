@@ -19,16 +19,16 @@ export default function JoinTeamScreen() {
 
   const handleJoin = async () => {
     if (code.length < 6) {
-        showToast("Invalid code format", "error");
+        showToast(t('invalid_code_format'), "error");
         return;
     }
 
     try {
-        const org = await joinOrganization(code);
-        showToast(`Joined ${org.name} successfully!`, "success");
+        await joinOrganization(code);
+        showToast(t('join_success'), "success");
         router.replace("/(tabs)");
     } catch (error: any) {
-        showToast("Error joining team. " + error.message, "error");
+        showToast(t('join_error') + ". " + error.message, "error");
     }
   };
 

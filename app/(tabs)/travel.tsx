@@ -57,8 +57,8 @@ export default function TravelScreen() {
         // En una app real, calcularíamos la diferencia de tiempo hasta la salida (ticket.departure_time - 2 horas)
         // Para demo, usaremos 5 segundos para probar que funciona
         await scheduleNotification(
-            "Trip Reminder 🚄", 
-            "Your trip to Osaka starts soon! Don't forget your tickets.", 
+            t('trip_reminder_title'), 
+            t('trip_reminder_msg'), 
             5
         );
     }
@@ -133,7 +133,7 @@ export default function TravelScreen() {
               onPress={() => router.push({ pathname: "/travel/add-ticket", params: { projectId: trip.id } })}
               className="bg-red-50 px-3 py-1 rounded-full"
             >
-              <Text className="text-brand-red font-bold text-[10px]">+ {t('new_expense') === '経費登録' ? 'チケット追加' : 'ADD TICKET'}</Text>
+              <Text className="text-brand-red font-bold text-[10px]">+ {t('add_ticket_btn')}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -166,7 +166,7 @@ export default function TravelScreen() {
               {/* ADMIN: SHOW WHO IS FOR */}
               {userRole === 'admin' && ticket.profiles && (
                 <View className="mt-2 bg-gray-50 self-start px-2 py-1 rounded-md">
-                  <Text className="text-[10px] text-gray-500 font-bold">FOR: {ticket.profiles.full_name}</Text>
+                  <Text className="text-[10px] text-gray-500 font-bold">{t('for_label')}: {ticket.profiles.full_name}</Text>
                 </View>
               )}
 
@@ -203,7 +203,7 @@ export default function TravelScreen() {
               onPress={() => router.push({ pathname: "/travel/add-hotel", params: { projectId: trip.id } })}
               className="bg-red-50 px-3 py-1 rounded-full"
             >
-              <Text className="text-brand-red font-bold text-[10px]">+ {t('new_expense') === '経費登録' ? 'ホテル追加' : 'ADD HOTEL'}</Text>
+              <Text className="text-brand-red font-bold text-[10px]">+ {t('add_hotel_btn')}</Text>
             </TouchableOpacity>
           )}
         </View>
