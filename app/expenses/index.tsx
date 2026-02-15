@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter, Stack, useFocusEffect } from "expo-router";
 import { format, parseISO } from "date-fns";
+import { enUS, ja } from "date-fns/locale";
 import { useExpenses } from "../../hooks/useExpenses";
 import { Expense } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -20,9 +21,11 @@ import { useTranslation } from "../../hooks/useTranslation";
 export default function ExpensesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { expenses, loading, refreshExpenses, userRole, updateExpenseStatus } = useExpenses();
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
+
+  const dateLocale = useMemo(() => locale === 'ja' ? ja : enUS, [locale]);
 
   // React Query handles fetching automatically
 
@@ -37,6 +40,14 @@ export default function ExpensesScreen() {
         return "bg-yellow-100 text-yellow-700 border-yellow-200";
     }
   };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+        case "approved": return t('status_approved');
+        case "rejected": return t('status_rejected');
+        default: return t('status_pending');
+    }
+  }
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
@@ -60,7 +71,7 @@ export default function ExpensesScreen() {
     // Group by Month
     const grouped: { title: string; data: Expense[] }[] = [];
     history.forEach(item => {
-      const month = format(parseISO(item.created_at), 'MMMM yyyy');
+      const month = format(parseISO(item.created_at), 'MMMM yyyy', { locale: dateLocale });
       const existing = grouped.find(g => g.title === month);
       if (existing) {
         existing.data.push(item);
@@ -69,7 +80,7 @@ export default function ExpensesScreen() {
       }
     });
     return grouped;
-  }, [expenses]);
+  }, [expenses, dateLocale]);
 
   const renderExpenseItem = ({ item }: { item: Expense }) => {
     const isPending = item.status === "pending";
@@ -101,7 +112,7 @@ export default function ExpensesScreen() {
                 ¥{item.amount.toLocaleString()}
               </Text>
               <Text className="text-gray-500 text-xs capitalize">
-                {t(('cat_' + item.category) as any)} • {format(parseISO(item.created_at), 'MMM d')}
+                {t(('cat_' + item.category) as any)} • {format(parseISO(item.created_at), 'MMM d', { locale: dateLocale })}
               </Text>
             </View>
           </View>
@@ -109,7 +120,7 @@ export default function ExpensesScreen() {
             className={`px-3 py-1 rounded-full border ${isOptimistic ? 'bg-yellow-100 border-yellow-200' : getStatusColor(item.status)}`}
           >
             <Text className={`text-[10px] font-bold uppercase ${isOptimistic ? 'text-yellow-700' : ''}`}>
-              {isOptimistic ? 'Syncing...' : item.status}
+              {isOptimistic ? t('syncing') : getStatusLabel(item.status)}
             </Text>
           </View>
         </View>

@@ -25,11 +25,11 @@ export default function CreateOrgScreen() {
 
     try {
         await createOrganization(name);
-        showToast("Workspace created successfully!", "success");
+        showToast(t('workspace_created'), "success");
         router.replace("/(tabs)");
     } catch (error: any) {
         // Fallback message handles DB constraint errors too
-        showToast("Error creating workspace. " + error.message, "error");
+        showToast(t('create_workspace_error') + ". " + error.message, "error");
     }
   };
 

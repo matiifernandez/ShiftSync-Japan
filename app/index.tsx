@@ -79,7 +79,7 @@ export default function LoginScreen() {
 
         {/* LOGIN FORM */}
         <View className="flex-[1.5] bg-white rounded-t-[40px] -mt-10 px-8 pt-12">
-          <Text className="text-2xl font-bold text-gray-800 mb-2">Welcome Back</Text>
+          <Text className="text-2xl font-bold text-gray-800 mb-2">{t('login_welcome')}</Text>
           <Text className="text-gray-500 mb-8">{t('simplify_work')}</Text>
 
           <View className="mb-6">
@@ -118,20 +118,20 @@ export default function LoginScreen() {
             disabled={loading}
             className={`w-full bg-brand-red py-4 rounded-2xl shadow-lg shadow-red-200 items-center mb-6 ${loading ? 'opacity-70' : ''}`}
             accessibilityRole="button"
-            accessibilityLabel="Sign In"
+            accessibilityLabel={t('sign_in_link')}
             accessibilityState={{ disabled: loading }}
           >
             {loading ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text className="text-white font-bold text-lg">Sign In</Text>
+              <Text className="text-white font-bold text-lg">{t('sign_in_link')}</Text>
             )}
           </TouchableOpacity>
 
           <View className="flex-row justify-center items-center mb-8">
-            <Text className="text-gray-500">Don't have an account? </Text>
+            <Text className="text-gray-500">{t('no_account')} </Text>
             <TouchableOpacity onPress={() => router.push("/signup")}>
-                <Text className="text-brand-red font-bold">Sign Up</Text>
+                <Text className="text-brand-red font-bold">{t('sign_up_link')}</Text>
             </TouchableOpacity>
           </View>
 

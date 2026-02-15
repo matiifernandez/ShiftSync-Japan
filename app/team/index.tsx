@@ -148,7 +148,7 @@ export default function TeamManagementScreen() {
         {/* STATS FOOTER */}
         <View className="items-center py-4 border-t border-gray-200 mt-2">
             <Text className="text-xs text-gray-400">
-                {organization?.plan_type === 'free' ? 'Free Plan' : 'Pro Plan'} • {staff.length} / {organization?.max_seats || '∞'} {t('seats_used')}
+                {organization?.plan_type === 'free' ? t('free_plan') : t('pro_plan')} • {staff.length} / {organization?.max_seats || '∞'} {t('seats_used')}
             </Text>
         </View>
 
