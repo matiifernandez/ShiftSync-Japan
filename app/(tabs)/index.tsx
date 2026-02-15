@@ -100,15 +100,15 @@ export default function HomeScreen() {
 
     // Add Travel Tickets
     if (trip && trip.tickets) {
-      trip.tickets.forEach(t => {
-        if (new Date(t.departure_time) > now) {
+      trip.tickets.forEach(ticket => {
+        if (new Date(ticket.departure_time) > now) {
           candidates.push({
             type: 'ticket',
-            date: new Date(t.departure_time),
-            title: t.transport_name || t('tab_travel'),
-            location: `${t.departure_station || '?'} → ${t.arrival_station || '?'}`,
-            detail: t.seat_number ? `${t('seat')} ${t.seat_number}` : t('tab_travel'),
-            raw: t
+            date: new Date(ticket.departure_time),
+            title: ticket.transport_name || t('tab_travel'),
+            location: `${ticket.departure_station || '?'} → ${ticket.arrival_station || '?'}`,
+            detail: ticket.seat_number ? `${t('seat')} ${ticket.seat_number}` : t('tab_travel'),
+            raw: ticket
           });
         }
       });
