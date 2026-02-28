@@ -77,8 +77,10 @@ export function useSchedule({ allUsers = false, enabled = true } = {}) {
     }
   });
 
-  // Realtime Subscription
+  // Realtime Subscription — only active when data fetching is enabled
   useEffect(() => {
+    if (!enabled) return;
+
     const subscription = supabase
       .channel("schedule_updates")
       .on(

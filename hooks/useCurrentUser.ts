@@ -1,6 +1,5 @@
-import { useEffect } from "react";
 import { User } from "@supabase/supabase-js";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 
 interface CurrentUser {
@@ -26,22 +25,14 @@ async function fetchCurrentUser(): Promise<{ user: User | null; organizationId: 
 /**
  * Returns the authenticated user and their organization ID.
  * Uses TanStack Query for caching and deduplication across components.
+ * Auth state changes are handled in _layout.tsx to avoid multiple listeners.
  */
 export function useCurrentUser(): CurrentUser {
-  const queryClient = useQueryClient();
-
   const { data, isLoading } = useQuery({
     queryKey: ["currentUser"],
     queryFn: fetchCurrentUser,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
-    });
-    return () => subscription.unsubscribe();
-  }, [queryClient]);
 
   return {
     user: data?.user ?? null,

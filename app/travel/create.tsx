@@ -87,7 +87,7 @@ export default function CreateTripScreen() {
 
     setSubmitting(true);
     try {
-      if (!userId) return;
+      if (!userId || !organizationId) return;
 
       // 1. Create Project
       const { data: project, error: projError } = await supabase
