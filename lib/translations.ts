@@ -458,7 +458,7 @@ export const translations = {
         join_error: "チームへの参加に失敗しました",
         
         // Plans
-        free_plan: "無料プラン",
+        free_plan: "フリープラン",
         pro_plan: "プロプラン",
 
     // Next Activity Details

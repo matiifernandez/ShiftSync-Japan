@@ -25,7 +25,7 @@ The root layout handles all auth routing imperatively:
 Deep links capture `orgId` param and persist it to AsyncStorage as `@pending_org_id` for the onboarding join flow.
 
 ### Data Layer Pattern
-All Supabase queries live in custom hooks under `hooks/`. Components never call `supabase` directly.
+Prefer putting Supabase queries in custom hooks under `hooks/` instead of calling `supabase` directly from components. Some existing screens still call `supabase` directly (tracked in issue #9); when touching them, prefer using the existing hook or creating a new one to migrate the logic out.
 
 - **Reads:** `useQuery` with descriptive `queryKey` arrays, e.g. `['schedule', { allUsers }]`
 - **Writes:** `useMutation` + `queryClient.invalidateQueries` immediately after for optimistic-feel UX
@@ -41,10 +41,10 @@ All Supabase queries live in custom hooks under `hooks/`. Components never call 
 2. `profiles.preferred_language` in DB
 3. `expo-localization` system locale fallback
 
-All UI strings must use `t('translation_key')`. Keys are typed via `TranslationKey` from `lib/translations.ts`. Add new keys to **both** `en` and `ja` objects. Never use hardcoded English strings in components.
+All new UI strings must use `t('translation_key')`. Keys are typed via `TranslationKey` from `lib/translations.ts`. Add new keys to **both** `en` and `ja` objects. Avoid introducing new hardcoded strings; existing legacy hardcoded strings can be migrated to `t(...)` over time (tracked in issue #12).
 
 ### Feedback / Toasts
-Never use `Alert.alert()`. Use `useToast()` from `context/ToastContext.tsx`:
+Prefer `useToast()` from `context/ToastContext.tsx` for transient feedback (success, error, info). Use `Alert.alert()` only for blocking confirmations (e.g. destructive actions like delete). Avoid `Alert.alert()` for simple error/success messages.
 ```ts
 const { showToast } = useToast();
 showToast("Saved!", "success"); // types: "success" | "error" | "info"
