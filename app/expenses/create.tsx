@@ -19,7 +19,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 
 const CATEGORIES = [
   { id: "transport", icon: "train" },
-  { id: "accommodation", icon: "hotel" },
+  { id: "hotel", icon: "hotel" },
   { id: "fuel", icon: "gas-pump" },
   { id: "parking", icon: "parking" },
   { id: "meals", icon: "utensils" },
