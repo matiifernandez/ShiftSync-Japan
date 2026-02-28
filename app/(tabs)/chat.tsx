@@ -15,12 +15,14 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useConversations, Conversation } from "../../hooks/useConversations";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { supabase } from "../../lib/supabase";
 
 export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { userId } = useCurrentUser();
   const [search, setSearch] = useState("");
   const { conversations, loading, refreshConversations } = useConversations();
 
@@ -45,14 +47,13 @@ export default function ChatScreen() {
 
   const handleTogglePin = async (conversationId: string, currentStatus: boolean) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!userId) return;
 
       const { error } = await supabase
         .from('conversation_participants')
         .update({ is_pinned: !currentStatus })
         .eq('conversation_id', conversationId)
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       if (error) throw error;
       refreshConversations();
@@ -72,14 +73,13 @@ export default function ChatScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (!user) return;
+              if (!userId) return;
               
               const { error } = await supabase
                 .from('conversation_participants')
                 .delete()
                 .eq('conversation_id', conversationId)
-                .eq('user_id', user.id);
+                .eq('user_id', userId);
                 
               if (error) throw error;
               

@@ -5,12 +5,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 
 export default function ChatDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { userId } = useCurrentUser();
   const [participants, setParticipants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [conversationName, setConversationName] = useState("");
@@ -68,14 +70,13 @@ export default function ChatDetailsScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (!user) return;
+              if (!userId) return;
 
               const { error } = await supabase
                 .from('conversation_participants')
                 .delete()
                 .eq('conversation_id', id)
-                .eq('user_id', user.id);
+                .eq('user_id', userId);
 
               if (error) throw error;
 

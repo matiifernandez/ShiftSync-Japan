@@ -83,6 +83,7 @@ function Layout() {
     initSession();
 
     // 2. Listen for changes (login, logout, auto-refresh)
+    // Also invalidates the currentUser cache so useCurrentUser stays fresh
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       // Handle TOKEN_REFRESHED explicitly if needed, but session update covers it
       if (event === 'SIGNED_OUT') {
@@ -91,6 +92,7 @@ function Layout() {
       } else {
          setSession(session);
       }
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
     });
 
     return () => subscription.unsubscribe();

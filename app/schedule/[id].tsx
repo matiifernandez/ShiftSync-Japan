@@ -4,7 +4,7 @@ import { useRouter, useLocalSearchParams, Stack } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
-import { useQueryClient } from "@tanstack/react-query";
+import { useSchedule } from "../../hooks/useSchedule";
 
 const THEME_COLOR = "#D9381E";
 
@@ -18,7 +18,7 @@ export default function EditShiftScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
+  const { deleteScheduleItem, updateScheduleItem } = useSchedule({ enabled: false });
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -71,21 +71,18 @@ export default function EditShiftScreen() {
   const handleUpdate = async () => {
     setSubmitting(true);
     try {
-      const { error } = await supabase
-        .from("schedule_items")
-        .update({
+      await updateScheduleItem({
+        id: id as string,
+        updates: {
           date,
           start_time: startTime,
           end_time: endTime,
           location_name: locationName,
           type: shiftType,
           notes: notes
-        })
-        .eq("id", id);
+        }
+      });
 
-      if (error) throw error;
-
-      queryClient.invalidateQueries({ queryKey: ['schedule'] });
       Alert.alert(t('success_title'), t('shift_updated'), [
         { text: t('ok'), onPress: () => router.back() }
       ]);
@@ -108,9 +105,7 @@ export default function EditShiftScreen() {
           onPress: async () => {
             setSubmitting(true);
             try {
-              const { error } = await supabase.from("schedule_items").delete().eq("id", id);
-              if (error) throw error;
-              queryClient.invalidateQueries({ queryKey: ['schedule'] });
+              await deleteScheduleItem(id as string);
               router.back();
             } catch (err: any) {
               Alert.alert(t('error_title'), err.message);

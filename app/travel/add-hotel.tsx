@@ -70,7 +70,7 @@ export default function AddHotelScreen() {
       return;
     }
     if (!projectId) {
-      Alert.alert(t('error_title'), "Project ID missing");
+      Alert.alert(t('error_title'), t('project_id_missing'));
       return;
     }
     if (!startDate || !endDate) {
