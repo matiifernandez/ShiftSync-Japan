@@ -80,8 +80,11 @@ export function useExpenses() {
 
           if (uploadError) throw uploadError;
           
-          const { data: publicUrl } = supabase.storage.from("receipts").getPublicUrl(fileName);
-          receiptUrl = publicUrl.publicUrl;
+          const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+            .from("receipts")
+            .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year expiry
+          if (signedUrlError) throw signedUrlError;
+          receiptUrl = signedUrlData.signedUrl;
         }
 
         const { error } = await supabase.from("expenses").insert({

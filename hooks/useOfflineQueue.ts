@@ -78,13 +78,16 @@ export function useOfflineQueue() {
 
         if (uploadError) throw uploadError;
 
-        const { data: publicUrl } = supabase.storage.from("receipts").getPublicUrl(fileName);
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+          .from("receipts")
+          .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year expiry
+        if (signedUrlError) throw signedUrlError;
         
         // 2. Insert Expense
         const { error: insertError } = await supabase.from("expenses").insert({
           ...task.expenseData,
           user_id: user.id,
-          receipt_url: publicUrl.publicUrl,
+          receipt_url: signedUrlData.signedUrl,
           status: "pending"
         });
 

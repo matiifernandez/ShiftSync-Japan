@@ -18,11 +18,20 @@ export interface Message {
 export function useChat(conversationId: string) {
   const queryClient = useQueryClient();
   const userRef = useRef<string | null>(null);
+  const languageRef = useRef<string>('en');
 
-  // 0. Initialize User Ref
+  // 0. Initialize User Ref + detect sender language from profile
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       userRef.current = user?.id || null;
+      if (user?.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('preferred_language')
+          .eq('id', user.id)
+          .single();
+        languageRef.current = profile?.preferred_language || 'en';
+      }
     });
   }, []);
 
@@ -75,7 +84,7 @@ export function useChat(conversationId: string) {
         conversation_id: conversationId,
         sender_id: userRef.current,
         content_original: text,
-        original_language: 'en'
+        original_language: languageRef.current
       }).select().single();
 
       if (error) throw error;

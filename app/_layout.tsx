@@ -47,7 +47,7 @@ function Layout() {
 
   // Activate global listeners for notifications
   useNotifications();
-  // useGlobalRealtime();
+  useGlobalRealtime();
 
   // Capture pending orgId from deep links
   useEffect(() => {

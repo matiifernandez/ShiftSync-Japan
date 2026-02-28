@@ -317,21 +317,6 @@ export default function CompleteProfileScreen() {
           </View>
 
           <View>
-            <Text className="text-gray-700 font-medium mb-1">
-              {t('org_id')}
-            </Text>
-            <TextInput
-              className="bg-gray-50 p-4 rounded-xl border border-gray-200"
-              placeholder={t('org_placeholder')}
-              value={organizationId}
-              onChangeText={setOrganizationId}
-              autoCapitalize="none"
-              // If editing, maybe we should disable organization change? Usually staff can't change orgs freely.
-              // For MVP flexibility we keep it enabled, but you might want to consider `editable={!isEditing}` later.
-            />
-          </View>
-
-          <View>
             <Text className="text-gray-700 font-medium mb-2">
               {t('pref_language')}
             </Text>

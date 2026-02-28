@@ -73,12 +73,13 @@ export default function AddTicketScreen() {
 
         if (uploadError) throw uploadError;
 
-        // Get Public URL
-        const { data: urlData } = supabase.storage
+        // Get Signed URL (requires 'receipts' bucket to be private in Supabase Dashboard)
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
           .from('receipts')
-          .getPublicUrl(fileName);
+          .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year expiry
+        if (signedUrlError) throw signedUrlError;
         
-        publicUrl = urlData.publicUrl;
+        publicUrl = signedUrlData.signedUrl;
       }
 
       // 2. Create ISO Date (Mocking logic for MVP)
