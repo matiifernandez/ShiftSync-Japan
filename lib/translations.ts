@@ -456,8 +456,9 @@ export const translations = {
         create_workspace_error: "ワークスペースの作成に失敗しました",
         join_success: "チームに参加しました！",
         join_error: "チームへの参加に失敗しました",
-        
-        // Plans    free_plan: "無料プラン",
+
+    // Plans
+    free_plan: "フリープラン",
     pro_plan: "プロプラン",
 
     // Next Activity Details
