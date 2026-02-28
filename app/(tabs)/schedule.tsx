@@ -106,11 +106,6 @@ export default function ScheduleScreen() {
     );
   };
 
-  // Helper to determine icon color
-  const getIconColor = (type: string) => {
-    return THEME_COLOR;
-  };
-
   // Helper to format title based on type
   const getEventTitle = (item: ScheduleItem) => {
     switch (item.type) {
@@ -221,7 +216,6 @@ export default function ScheduleScreen() {
             selectedEvents.map((event) => {
               let iconName = "calendar";
               let bgColor = "bg-gray-100";
-              const color = getIconColor(event.type);
               const title = getEventTitle(event);
               const timeString = formatTimeRange(
                 event.start_time,
@@ -253,7 +247,7 @@ export default function ScheduleScreen() {
                   <View
                     className={`w-12 h-12 ${bgColor} rounded-full items-center justify-center mr-4`}
                   >
-                    <FontAwesome5 name={iconName} size={20} color={color} />
+                    <FontAwesome5 name={iconName} size={20} color={THEME_COLOR} />
                   </View>
                   <View className="flex-1">
                     <Text className="text-lg font-bold text-brand-dark">
