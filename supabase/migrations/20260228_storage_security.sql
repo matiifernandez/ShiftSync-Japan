@@ -4,7 +4,11 @@
 -- BEFORE running this migration:
 -- 1. Go to Storage > Buckets in Supabase Dashboard
 -- 2. For the 'receipts' bucket: click the bucket → Settings → toggle OFF "Public bucket"
--- 3. Then run this SQL to add the access policies.
+-- 3. For the 'avatars' bucket: decide if it should be public or private.
+--    NOTE: Public buckets in Supabase do NOT enforce RLS for writes. If you want the
+--    "Users can upload their own avatar" policy below to be effective, ensure the
+--    'avatars' bucket is NOT marked as a public bucket.
+-- 4. Then run this SQL to add the access policies.
 --
 -- This migration is idempotent: it drops policies before (re)creating them.
 

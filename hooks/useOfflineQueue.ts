@@ -78,16 +78,11 @@ export function useOfflineQueue() {
 
         if (uploadError) throw uploadError;
 
-        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-          .from("receipts")
-          .createSignedUrl(fileName, RECEIPT_SIGNED_URL_EXPIRY);
-        if (signedUrlError) throw signedUrlError;
-        
-        // 2. Insert Expense
+        // 2. Insert Expense — store the file path, not a signed URL
         const { error: insertError } = await supabase.from("expenses").insert({
           ...task.expenseData,
           user_id: user.id,
-          receipt_url: signedUrlData.signedUrl,
+          receipt_url: fileName,
           status: "pending"
         });
 

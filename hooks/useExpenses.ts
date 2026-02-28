@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from '../lib/supabase';
+import { Expense } from '../types';
 import { Alert } from 'react-native';
 import { useOfflineQueue, UploadTask } from './useOfflineQueue';
 
@@ -78,12 +79,9 @@ export function useExpenses() {
             .upload(fileName, blob, { contentType: "image/jpeg" });
 
           if (uploadError) throw uploadError;
-          
-          const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-            .from("receipts")
-            .createSignedUrl(fileName, RECEIPT_SIGNED_URL_EXPIRY);
-          if (signedUrlError) throw signedUrlError;
-          receiptUrl = signedUrlData.signedUrl;
+          // Store the file path (not a signed URL) so the receipt remains accessible
+          // indefinitely. A signed URL is generated on-the-fly when displaying.
+          receiptUrl = fileName;
         }
 
         const { error } = await supabase.from("expenses").insert({

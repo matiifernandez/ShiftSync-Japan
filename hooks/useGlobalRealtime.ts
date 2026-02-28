@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { useNotifications } from './useNotifications';
 
-export function useGlobalRealtime() {
-    const { scheduleNotification } = useNotifications();
+type ScheduleNotificationFn = (title: string, body: string, seconds?: number) => Promise<void>;
+
+export function useGlobalRealtime(scheduleNotification: ScheduleNotificationFn) {
     const userIdRef = useRef<string | null>(null);
 
     useEffect(() => {

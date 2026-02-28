@@ -5,7 +5,7 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from "../../hooks/useTranslation";
 import { useStaff } from "../../hooks/useStaff";
-import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
+import { supabase } from "../../lib/supabase";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { decode } from "../../lib/utils";
 
@@ -75,13 +75,8 @@ export default function AddTicketScreen() {
 
         if (uploadError) throw uploadError;
 
-        // Get Signed URL (requires 'receipts' bucket to be private in Supabase Dashboard)
-        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-          .from('receipts')
-          .createSignedUrl(fileName, RECEIPT_SIGNED_URL_EXPIRY);
-        if (signedUrlError) throw signedUrlError;
-        
-        publicUrl = signedUrlData.signedUrl;
+        // Store the file path — signed URL is generated on display
+        publicUrl = fileName;
       }
 
       // 2. Create ISO Date (Mocking logic for MVP)

@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useRouter, Stack, useLocalSearchParams } from "expo-router";
-import { supabase } from "../../lib/supabase";
+import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
 import { Expense } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
 
@@ -66,7 +66,19 @@ export default function ExpenseDetailScreen() {
       setAmount(String(data.amount));
       setCategory(data.category);
       setDescription(data.description || "");
-      setImage(data.receipt_url);
+
+      // Generate a fresh signed URL from the stored file path.
+      // Legacy records (pre-migration) may already contain a full https:// URL — use as-is.
+      if (data.receipt_url) {
+        if (data.receipt_url.startsWith('http')) {
+          setImage(data.receipt_url);
+        } else {
+          const { data: signed } = await supabase.storage
+            .from('receipts')
+            .createSignedUrl(data.receipt_url, RECEIPT_SIGNED_URL_EXPIRY);
+          setImage(signed?.signedUrl ?? null);
+        }
+      }
 
     } catch (error) {
       console.error(error);
