@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { User } from "@supabase/supabase-js";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 
 interface CurrentUser {
@@ -9,64 +10,43 @@ interface CurrentUser {
   loading: boolean;
 }
 
+async function fetchCurrentUser(): Promise<{ user: User | null; organizationId: string | null }> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { user: null, organizationId: null };
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("organization_id")
+    .eq("id", user.id)
+    .single();
+
+  return { user, organizationId: data?.organization_id ?? null };
+}
+
 /**
  * Returns the authenticated user and their organization ID.
- * Replaces the repeated `supabase.auth.getUser()` + profile fetch pattern.
+ * Uses TanStack Query for caching and deduplication across components.
  */
 export function useCurrentUser(): CurrentUser {
-  const [user, setUser] = useState<User | null>(null);
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["currentUser"],
+    queryFn: fetchCurrentUser,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
   useEffect(() => {
-    let isMounted = true;
-    let currentLoadId = 0;
-
-    async function load() {
-      const loadId = ++currentLoadId;
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!isMounted || loadId !== currentLoadId) return;
-
-        setUser(user);
-        if (user) {
-          const { data } = await supabase
-            .from("profiles")
-            .select("organization_id")
-            .eq("id", user.id)
-            .single();
-
-          if (!isMounted || loadId !== currentLoadId) return;
-
-          setOrganizationId(data?.organization_id ?? null);
-        } else {
-          setOrganizationId(null);
-        }
-      } finally {
-        if (isMounted && loadId === currentLoadId) setLoading(false);
-      }
-    }
-
-    load();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!isMounted) return;
-      if (!session) {
-        setUser(null);
-        setOrganizationId(null);
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      load();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
     });
+    return () => subscription.unsubscribe();
+  }, [queryClient]);
 
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  return { user, userId: user?.id ?? null, organizationId, loading };
+  return {
+    user: data?.user ?? null,
+    userId: data?.user?.id ?? null,
+    organizationId: data?.organizationId ?? null,
+    loading: isLoading,
+  };
 }
