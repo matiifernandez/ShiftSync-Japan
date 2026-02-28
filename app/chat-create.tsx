@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Image, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useStaff } from "../hooks/useStaff";
 import { useTranslation } from "../hooks/useTranslation";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 import { supabase } from "../lib/supabase";
 
 const THEME_COLOR = "#D9381E";
@@ -14,23 +15,17 @@ export default function CreateChatScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { staff, loading: loadingStaff } = useStaff();
+  const { userId, organizationId } = useCurrentUser();
   
   const [mode, setMode] = useState<"dm" | "group">("dm");
   const [groupName, setGroupName] = useState("");
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [creating, setCreating] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setCurrentUserId(user.id);
-    });
-  }, []);
 
   // Filter staff based on search and exclude self
   const filteredStaff = staff.filter(user => 
-    user.id !== currentUserId &&
+    user.id !== userId &&
     user.full_name?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -49,8 +44,7 @@ export default function CreateChatScreen() {
   const handleStartDM = async (targetUserId: string) => {
     setCreating(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!userId) return;
 
       // 1. Check if DM already exists
       // This is a complex query. We need to find a conversation of type 'direct'
@@ -77,7 +71,7 @@ export default function CreateChatScreen() {
       const { data: conv, error: convError } = await supabase
         .from('conversations')
         .insert({
-          organization_id: staff.find(s => s.id === targetUserId)?.organization_id, // We assume same org
+          organization_id: organizationId,
           type: 'direct',
           name: 'Direct Message' // Placeholder, usually hidden for DMs
         })
@@ -88,7 +82,7 @@ export default function CreateChatScreen() {
 
       // Add participants
       const participants = [
-        { conversation_id: conv.id, user_id: user.id },
+        { conversation_id: conv.id, user_id: userId },
         { conversation_id: conv.id, user_id: targetUserId }
       ];
 
@@ -123,18 +117,12 @@ export default function CreateChatScreen() {
 
     setCreating(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!userId) return;
 
-      // 1. Create Conversation
-      // We need organization_id. Let's take it from the first selected user or my own profile.
-      // Ideally we fetch my profile.
-      const { data: myProfile } = await supabase.from('profiles').select('organization_id').eq('id', user.id).single();
-      
       const { data: conv, error: convError } = await supabase
         .from('conversations')
         .insert({
-          organization_id: myProfile?.organization_id,
+          organization_id: organizationId,
           type: 'group',
           name: groupName
         })
@@ -145,7 +133,7 @@ export default function CreateChatScreen() {
 
       // 2. Add Participants (Me + Selected)
       const participants = [
-        { conversation_id: conv.id, user_id: user.id },
+        { conversation_id: conv.id, user_id: userId },
         ...selectedUserIds.map(uid => ({ conversation_id: conv.id, user_id: uid }))
       ];
 

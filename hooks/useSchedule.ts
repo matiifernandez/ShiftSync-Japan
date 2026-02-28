@@ -3,6 +3,8 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { ScheduleItem } from "../types";
 
+export type ScheduleItemInsert = Omit<ScheduleItem, "id" | "created_at">;
+
 export function useSchedule({ allUsers = false } = {}) {
   const queryClient = useQueryClient();
   const queryKey = ['schedule', { allUsers }];
@@ -44,6 +46,26 @@ export function useSchedule({ allUsers = false } = {}) {
     }
   });
 
+  const createMutation = useMutation({
+    mutationFn: async (items: ScheduleItemInsert[]) => {
+      const { error } = await supabase.from("schedule_items").insert(items);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<ScheduleItem> }) => {
+      const { error } = await supabase.from("schedule_items").update(updates).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+    }
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('schedule_items').delete().eq('id', id);
@@ -81,6 +103,10 @@ export function useSchedule({ allUsers = false } = {}) {
     schedule, 
     loading, 
     refreshSchedule: refetch,
+    createScheduleItems: createMutation.mutateAsync,
+    isCreating: createMutation.isPending,
+    updateScheduleItem: updateMutation.mutateAsync,
+    isUpdating: updateMutation.isPending,
     deleteScheduleItem: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending
   };

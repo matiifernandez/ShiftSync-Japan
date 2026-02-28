@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { format } from "date-fns";
 import { useTravelContext } from "../../context/TravelContext";
 import { useNotifications } from "../../hooks/useNotifications";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useUserRole } from "../../hooks/useUserRole";
 import { useRouter, useFocusEffect } from "expo-router";
 import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
 
@@ -31,19 +32,8 @@ export default function TravelScreen() {
     isMemberOfActiveTrip 
   } = useTravelContext();
   const { scheduleNotification } = useNotifications();
+  const { role: userRole } = useUserRole();
   const [remindMe, setRemindMe] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function getRole() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-        setUserRole(data?.role || 'staff');
-      }
-    }
-    getRole();
-  }, []);
 
   const handleOpenMaps = (url?: string) => {
     if (url) {

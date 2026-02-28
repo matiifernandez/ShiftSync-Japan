@@ -16,7 +16,7 @@ import { format, eachDayOfInterval, parseISO, isAfter, isBefore, isEqual, startO
 import * as Haptics from 'expo-haptics';
 import { useStaff } from "../../hooks/useStaff";
 import { useTranslation } from "../../hooks/useTranslation";
-import { supabase } from "../../lib/supabase";
+import { useSchedule } from "../../hooks/useSchedule";
 import { useQueryClient } from "@tanstack/react-query";
 
 const THEME_COLOR = "#D9381E";
@@ -33,6 +33,7 @@ export default function CreateBulkShiftScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const { staff, loading: loadingStaff } = useStaff();
+  const { createScheduleItems } = useSchedule();
 
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
@@ -153,10 +154,7 @@ export default function CreateBulkShiftScreen() {
       });
 
       const shiftItems: any[] = [];
-      
-      // Get my profile for organization_id
-      const { data: { user } } = await supabase.auth.getUser();
-      
+
       dates.forEach((date) => {
         const dateString = format(date, "yyyy-MM-dd");
         selectedStaff.forEach((userId) => {
@@ -171,8 +169,7 @@ export default function CreateBulkShiftScreen() {
         });
       });
 
-      const { error } = await supabase.from("schedule_items").insert(shiftItems);
-      if (error) throw error;
+      await createScheduleItems(shiftItems);
 
       // Force refresh of schedule list
       queryClient.invalidateQueries({ queryKey: ['schedule'] });

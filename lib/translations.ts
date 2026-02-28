@@ -248,6 +248,11 @@ export const translations = {
     delete_shift_title: "Delete Shift",
     delete_shift_msg: "Are you sure you want to delete this shift?",
     load_shift_error: "Could not load shift details.",
+    shift_deleted: "Shift deleted",
+    image_select_error: "Could not select image.",
+    project_id_missing: "Project ID missing",
+    no_description: "No description",
+    edit: "Edit",
     
     // Hotel
     add_hotel: "Add Hotel",
@@ -538,6 +543,11 @@ export const translations = {
     delete_shift_title: "シフトを削除",
     delete_shift_msg: "このシフトを削除してもよろしいですか？",
     load_shift_error: "シフト詳細を読み込めませんでした。",
+    shift_deleted: "シフトが削除されました",
+    image_select_error: "画像を選択できませんでした。",
+    project_id_missing: "プロジェクトIDがありません",
+    no_description: "説明なし",
+    edit: "編集",
 
     // Hotel
     add_hotel: "宿泊先を追加",

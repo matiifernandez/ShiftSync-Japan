@@ -78,7 +78,7 @@ export default function ScheduleScreen() {
   const handleDelete = async (itemId: string) => {
       try {
           await deleteScheduleItem(itemId);
-          showToast("Shift deleted", "success");
+          showToast(t('shift_deleted'), "success");
       } catch (error: any) {
           showToast(error.message, "error");
       }

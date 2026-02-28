@@ -170,7 +170,7 @@ export default function ExpenseDetailScreen() {
           headerRight: () => (
             isPending && !isEditing ? (
               <TouchableOpacity onPress={handleEditStart}>
-                <Text className="text-brand-red font-bold text-base">{t('sign_up_link') === '登録' ? '編集' : 'Edit'}</Text>
+                <Text className="text-brand-red font-bold text-base">{t('edit')}</Text>
               </TouchableOpacity>
             ) : null
           ),
@@ -250,7 +250,7 @@ export default function ExpenseDetailScreen() {
                         multiline
                     />
                 ) : (
-                    <Text className="text-lg text-brand-dark">{expense.description || "No description"}</Text>
+                    <Text className="text-lg text-brand-dark">{expense.description || t('no_description')}</Text>
                 )}
             </View>
 

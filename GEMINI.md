@@ -32,6 +32,16 @@
     - **Accesibilidad:** Adición de etiquetas (`accessibilityLabel`, `accessibilityRole`) en pantallas críticas (Login, Chat) para soporte de lectores de pantalla.
     - **Internationalization (i18n):** Implementación de detección de idioma del sistema mediante `expo-localization` como fallback inicial, asegurando que usuarios que no han configurado su perfil vean la app en su idioma preferido (inglés/japonés) desde el primer contacto.
 
+## 1.2 Resumen de la Sesión (Hitos Logrados - 15 Feb 2026)
+
+- **Corrección de Regresiones en Traducciones:**
+    - **Cobertura Total:** Se eliminaron strings hardcoded en Login, Signup, Dashboard, Travel, Expenses y Onboarding.
+    - **i18n Dinámico:** Implementación de traducción para estados de gastos (Pending, Approved, Rejected) y descripciones de la "Próxima Actividad" en el Dashboard.
+    - **Localización de Fechas:** Integración de locales de `date-fns` (enUS/ja) para formateo de fechas consistente con el idioma del usuario.
+    - **Shadowing Fix:** Resolución de un conflicto de nombres de variables en el Dashboard detectado vía Code Review (GitHub PR #6).
+- **Workflow & DevOps:**
+    - **GitHub Flow:** Adopción de ramas (`fix-translations`) y Pull Requests para revisión de cambios, utilizando `gh` CLI para la integración con GitHub.
+
 ## 2. Estado de la Arquitectura
 
 ### Backend (Supabase)

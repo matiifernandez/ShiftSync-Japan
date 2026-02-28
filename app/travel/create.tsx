@@ -6,6 +6,7 @@ import { Calendar, DateData } from "react-native-calendars";
 import { format, eachDayOfInterval, parseISO, isBefore } from "date-fns";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useStaff } from "../../hooks/useStaff";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { supabase } from "../../lib/supabase";
 
 const THEME_COLOR = "#D9381E";
@@ -14,6 +15,7 @@ export default function CreateTripScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { staff } = useStaff();
+  const { userId, organizationId } = useCurrentUser();
   
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -85,16 +87,13 @@ export default function CreateTripScreen() {
 
     setSubmitting(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase.from('profiles').select('organization_id').eq('id', user.id).single();
+      if (!userId) return;
 
       // 1. Create Project
       const { data: project, error: projError } = await supabase
         .from('projects')
         .insert({
-          organization_id: profile?.organization_id,
+          organization_id: organizationId,
           name: name,
           description: description,
           start_date: startDate,
