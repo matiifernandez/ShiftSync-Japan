@@ -3,7 +3,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { ScheduleItem } from "../types";
 
-export type ScheduleItemInsert = Omit<ScheduleItem, "id" | "created_at">;
+export type ScheduleItemInsert = Omit<ScheduleItem, "id">;
 
 export function useSchedule({ allUsers = false } = {}) {
   const queryClient = useQueryClient();
@@ -52,7 +52,7 @@ export function useSchedule({ allUsers = false } = {}) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ['schedule'] });
     }
   });
 
@@ -62,7 +62,7 @@ export function useSchedule({ allUsers = false } = {}) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ['schedule'] });
     }
   });
 
@@ -72,7 +72,7 @@ export function useSchedule({ allUsers = false } = {}) {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ['schedule'] });
     }
   });
 
