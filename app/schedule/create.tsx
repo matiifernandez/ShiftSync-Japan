@@ -17,7 +17,6 @@ import * as Haptics from 'expo-haptics';
 import { useStaff } from "../../hooks/useStaff";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useSchedule } from "../../hooks/useSchedule";
-import { useQueryClient } from "@tanstack/react-query";
 
 const THEME_COLOR = "#D9381E";
 
@@ -28,7 +27,6 @@ const SHIFT_TYPES = [
 ];
 
 export default function CreateBulkShiftScreen() {
-  const queryClient = useQueryClient();
   const router = useRouter();
   const navigation = useNavigation();
   const { t } = useTranslation();
@@ -170,9 +168,6 @@ export default function CreateBulkShiftScreen() {
       });
 
       await createScheduleItems(shiftItems);
-
-      // Force refresh of schedule list
-      queryClient.invalidateQueries({ queryKey: ['schedule'] });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert(t('success_title'), `${shiftItems.length} ${t('shifts_created')}`, [
