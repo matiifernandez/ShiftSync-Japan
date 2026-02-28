@@ -42,9 +42,9 @@ export default function CreateChatScreen() {
   };
 
   const handleStartDM = async (targetUserId: string) => {
+    if (!userId || !organizationId) return;
     setCreating(true);
     try {
-      if (!userId) return;
 
       // 1. Check if DM already exists
       // This is a complex query. We need to find a conversation of type 'direct'
@@ -114,7 +114,7 @@ export default function CreateChatScreen() {
       Alert.alert(t('error_title'), t('group_member_error'));
       return;
     }
-    if (!userId) return;
+    if (!userId || !organizationId) return;
 
     setCreating(true);
     try {

@@ -20,12 +20,14 @@ export function useCurrentUser(): CurrentUser {
 
   useEffect(() => {
     let isMounted = true;
+    let currentLoadId = 0;
 
     async function load() {
+      const loadId = ++currentLoadId;
       try {
         const { data: { user } } = await supabase.auth.getUser();
 
-        if (!isMounted) return;
+        if (!isMounted || loadId !== currentLoadId) return;
 
         setUser(user);
         if (user) {
@@ -35,14 +37,14 @@ export function useCurrentUser(): CurrentUser {
             .eq("id", user.id)
             .single();
 
-          if (!isMounted) return;
+          if (!isMounted || loadId !== currentLoadId) return;
 
           setOrganizationId(data?.organization_id ?? null);
         } else {
           setOrganizationId(null);
         }
       } finally {
-        if (isMounted) setLoading(false);
+        if (isMounted && loadId === currentLoadId) setLoading(false);
       }
     }
 
