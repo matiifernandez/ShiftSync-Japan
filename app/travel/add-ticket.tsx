@@ -60,7 +60,7 @@ export default function AddTicketScreen() {
 
     setSubmitting(true);
     try {
-      let publicUrl = null;
+      let filePath: string | null = null;
 
       // 1. Upload Image if present
       if (imageBase64) {
@@ -81,7 +81,7 @@ export default function AddTicketScreen() {
         if (uploadError) throw uploadError;
 
         // Store the file path — signed URL is generated on display
-        publicUrl = fileName;
+        filePath = fileName;
       }
 
       // 2. Create ISO Date (Mocking logic for MVP)
@@ -100,7 +100,7 @@ export default function AddTicketScreen() {
           arrival_station: arrStation,
           seat_number: seat,
           departure_time: today.toISOString(),
-          ticket_file_url: publicUrl,
+          ticket_file_url: filePath,
         });
 
       if (error) throw error;

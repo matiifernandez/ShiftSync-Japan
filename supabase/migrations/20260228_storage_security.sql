@@ -41,7 +41,9 @@ USING (
 
 -- ============================================================
 -- Avatars bucket: public read is acceptable for profile pictures.
--- Restrict uploads to the owner only.
+-- Restrict uploads/updates to the owner only.
+-- NOTE: Public buckets do not enforce RLS for writes. If the avatars
+-- bucket is set to private, both INSERT and UPDATE policies below apply.
 -- ============================================================
 
 DROP POLICY IF EXISTS "Users can upload their own avatar" ON storage.objects;
@@ -53,11 +55,30 @@ WITH CHECK (
   name LIKE auth.uid()::text || '_%'
 );
 
+DROP POLICY IF EXISTS "Users can update their own avatar" ON storage.objects;
+CREATE POLICY "Users can update their own avatar"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'avatars' AND
+  name LIKE auth.uid()::text || '_%'
+)
+WITH CHECK (
+  bucket_id = 'avatars' AND
+  name LIKE auth.uid()::text || '_%'
+);
+
 DROP POLICY IF EXISTS "Avatars are publicly viewable" ON storage.objects;
 CREATE POLICY "Avatars are publicly viewable"
 ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'avatars');
+
+-- ============================================================
+-- Index to speed up the org-scoped JOIN in the receipts SELECT policy
+-- ============================================================
+CREATE INDEX IF NOT EXISTS idx_profiles_organization_id
+  ON public.profiles (organization_id);
 
 -- ============================================================
 -- Tickets bucket: not currently used by the application.

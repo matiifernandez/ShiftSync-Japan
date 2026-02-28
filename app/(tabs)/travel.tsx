@@ -175,14 +175,19 @@ export default function TravelScreen() {
                 <TouchableOpacity 
                   onPress={async () => {
                     if (!ticket.ticket_file_url) return;
-                    // Generate a fresh signed URL if the stored value is a path, not a URL
-                    if (ticket.ticket_file_url.startsWith('http')) {
-                      Linking.openURL(ticket.ticket_file_url);
-                    } else {
-                      const { data } = await supabase.storage
-                        .from('receipts')
-                        .createSignedUrl(ticket.ticket_file_url, RECEIPT_SIGNED_URL_EXPIRY);
-                      if (data?.signedUrl) Linking.openURL(data.signedUrl);
+                    try {
+                      // Generate a fresh signed URL if the stored value is a path, not a URL
+                      if (ticket.ticket_file_url.startsWith('http')) {
+                        Linking.openURL(ticket.ticket_file_url);
+                      } else {
+                        const { data, error } = await supabase.storage
+                          .from('receipts')
+                          .createSignedUrl(ticket.ticket_file_url, RECEIPT_SIGNED_URL_EXPIRY);
+                        if (error || !data?.signedUrl) throw error ?? new Error('Could not generate URL');
+                        Linking.openURL(data.signedUrl);
+                      }
+                    } catch {
+                      Alert.alert(t('error_title'), t('load_expense_error'));
                     }
                   }}
                   className="mt-3 flex-row items-center border border-brand-red self-start px-3 py-2 rounded-xl"
