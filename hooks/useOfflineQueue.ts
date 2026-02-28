@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 const QUEUE_KEY = 'offline_upload_queue';
 

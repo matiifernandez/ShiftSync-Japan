@@ -5,6 +5,9 @@ type ScheduleNotificationFn = (title: string, body: string, seconds?: number) =>
 
 export function useGlobalRealtime(scheduleNotification: ScheduleNotificationFn) {
     const userIdRef = useRef<string | null>(null);
+    // Keep a stable ref so the effect closure always calls the latest function
+    const scheduleRef = useRef<ScheduleNotificationFn>(scheduleNotification);
+    useEffect(() => { scheduleRef.current = scheduleNotification; }, [scheduleNotification]);
 
     useEffect(() => {
         // Initial fetch
@@ -40,7 +43,7 @@ export function useGlobalRealtime(scheduleNotification: ScheduleNotificationFn) 
                 const senderName = profile?.full_name || 'Someone';
 
                 // Schedule local notification (immediate)
-                await scheduleNotification(
+                await scheduleRef.current(
                     `New message from ${senderName}`, 
                     newMessage.content_original || 'Sent an image/attachment', 
                     1
@@ -58,9 +61,9 @@ export function useGlobalRealtime(scheduleNotification: ScheduleNotificationFn) 
                 if (!userIdRef.current || (newItem && newItem.user_id !== userIdRef.current)) return;
 
                 if (payload.eventType === 'INSERT') {
-                     await scheduleNotification('New Schedule Item', 'A new shift or event has been added to your calendar.', 1);
+                     await scheduleRef.current('New Schedule Item', 'A new shift or event has been added to your calendar.', 1);
                 } else if (payload.eventType === 'UPDATE') {
-                     await scheduleNotification('Schedule Change', 'Your schedule has been updated.', 1);
+                     await scheduleRef.current('Schedule Change', 'Your schedule has been updated.', 1);
                 }
             }
         );

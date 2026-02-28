@@ -67,6 +67,7 @@ export default function AddTicketScreen() {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError) throw authError;
         if (!user) {
+          setSubmitting(false);
           Alert.alert(t('error_title'), t('missing_info'));
           return;
         }
