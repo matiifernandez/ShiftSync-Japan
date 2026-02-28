@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import { supabase } from '../lib/supabase';
+import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from '../lib/supabase';
 
 const QUEUE_KEY = 'offline_upload_queue';
 
@@ -80,7 +80,7 @@ export function useOfflineQueue() {
 
         const { data: signedUrlData, error: signedUrlError } = await supabase.storage
           .from("receipts")
-          .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year expiry
+          .createSignedUrl(fileName, RECEIPT_SIGNED_URL_EXPIRY);
         if (signedUrlError) throw signedUrlError;
         
         // 2. Insert Expense

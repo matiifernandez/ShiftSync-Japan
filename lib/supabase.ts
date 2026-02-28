@@ -30,3 +30,10 @@ AppState.addEventListener("change", (state) => {
     supabase.auth.stopAutoRefresh();
   }
 });
+
+
+/** Signed URL expiry for receipt/ticket images (7 days).
+ * TODO: Once the display layer generates URLs on-the-fly from stored file paths,
+ * reduce this to 1–24 hours for better security.
+ */
+export const RECEIPT_SIGNED_URL_EXPIRY = 60 * 60 * 24 * 7; // 7 days in seconds

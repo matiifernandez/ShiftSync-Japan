@@ -5,7 +5,7 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from "../../hooks/useTranslation";
 import { useStaff } from "../../hooks/useStaff";
-import { supabase } from "../../lib/supabase";
+import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { decode } from "../../lib/utils";
 
@@ -64,7 +64,9 @@ export default function AddTicketScreen() {
 
       // 1. Upload Image if present
       if (imageBase64) {
-        const fileName = `ticket_${Date.now()}.jpg`;
+        const { data: { user } } = await supabase.auth.getUser();
+        const userId = user?.id ?? 'unknown';
+        const fileName = `${userId}/ticket_${Date.now()}.jpg`;
         const { data, error: uploadError } = await supabase.storage
           .from('receipts')
           .upload(fileName, decode(imageBase64), {
@@ -76,7 +78,7 @@ export default function AddTicketScreen() {
         // Get Signed URL (requires 'receipts' bucket to be private in Supabase Dashboard)
         const { data: signedUrlData, error: signedUrlError } = await supabase.storage
           .from('receipts')
-          .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year expiry
+          .createSignedUrl(fileName, RECEIPT_SIGNED_URL_EXPIRY);
         if (signedUrlError) throw signedUrlError;
         
         publicUrl = signedUrlData.signedUrl;

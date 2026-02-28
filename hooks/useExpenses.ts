@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { Expense } from '../types';
+import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from '../lib/supabase';
 import { Alert } from 'react-native';
 import { useOfflineQueue, UploadTask } from './useOfflineQueue';
 
@@ -82,7 +81,7 @@ export function useExpenses() {
           
           const { data: signedUrlData, error: signedUrlError } = await supabase.storage
             .from("receipts")
-            .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year expiry
+            .createSignedUrl(fileName, RECEIPT_SIGNED_URL_EXPIRY);
           if (signedUrlError) throw signedUrlError;
           receiptUrl = signedUrlData.signedUrl;
         }
