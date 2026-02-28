@@ -100,7 +100,7 @@ export function useSchedule({ allUsers = false, enabled = true } = {}) {
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [allUsers, queryClient]);
+  }, [enabled, allUsers, queryClient]);
 
   return { 
     schedule, 
