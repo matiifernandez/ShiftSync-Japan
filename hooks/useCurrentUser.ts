@@ -19,9 +19,14 @@ export function useCurrentUser(): CurrentUser {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function load() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
+
+        if (!isMounted) return;
+
         setUser(user);
         if (user) {
           const { data } = await supabase
@@ -29,13 +34,36 @@ export function useCurrentUser(): CurrentUser {
             .select("organization_id")
             .eq("id", user.id)
             .single();
+
+          if (!isMounted) return;
+
           setOrganizationId(data?.organization_id ?? null);
+        } else {
+          setOrganizationId(null);
         }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }
+
     load();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) return;
+      if (!session) {
+        setUser(null);
+        setOrganizationId(null);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      load();
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   return { user, userId: user?.id ?? null, organizationId, loading };

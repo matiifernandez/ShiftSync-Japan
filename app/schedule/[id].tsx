@@ -18,7 +18,7 @@ export default function EditShiftScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { t } = useTranslation();
-  const { deleteScheduleItem, updateScheduleItem } = useSchedule();
+  const { deleteScheduleItem, updateScheduleItem } = useSchedule({ enabled: false });
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

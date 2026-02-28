@@ -31,7 +31,7 @@ export default function CreateBulkShiftScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const { staff, loading: loadingStaff } = useStaff();
-  const { createScheduleItems } = useSchedule();
+  const { createScheduleItems } = useSchedule({ enabled: false });
 
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);

@@ -114,10 +114,10 @@ export default function CreateChatScreen() {
       Alert.alert(t('error_title'), t('group_member_error'));
       return;
     }
+    if (!userId) return;
 
     setCreating(true);
     try {
-      if (!userId) return;
 
       const { data: conv, error: convError } = await supabase
         .from('conversations')

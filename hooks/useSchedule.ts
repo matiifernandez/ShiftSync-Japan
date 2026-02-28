@@ -5,12 +5,13 @@ import { ScheduleItem } from "../types";
 
 export type ScheduleItemInsert = Omit<ScheduleItem, "id">;
 
-export function useSchedule({ allUsers = false } = {}) {
+export function useSchedule({ allUsers = false, enabled = true } = {}) {
   const queryClient = useQueryClient();
   const queryKey = ['schedule', { allUsers }];
 
   const { data: schedule = [], isLoading: loading, refetch } = useQuery({
     queryKey,
+    enabled,
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];

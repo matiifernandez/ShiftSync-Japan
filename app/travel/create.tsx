@@ -112,8 +112,8 @@ export default function CreateTripScreen() {
       }));
 
       // Also add myself (the creator/admin) if not in list
-      if (!selectedStaffIds.includes(userId!)) {
-        memberInserts.push({ project_id: project.id, user_id: userId! });
+      if (!selectedStaffIds.includes(userId)) {
+        memberInserts.push({ project_id: project.id, user_id: userId });
       }
 
       const { error: memError } = await supabase
