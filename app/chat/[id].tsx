@@ -13,6 +13,7 @@ import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from 'expo-haptics';
 import { useChat, Message } from "../../hooks/useChat";
+import { useTranslation } from "../../hooks/useTranslation";
 import { useChatContext } from "../../context/ChatContext";
 
 export default function ChatDetailScreen() {
@@ -20,6 +21,7 @@ export default function ChatDetailScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const { id, name } = params;
+  const { locale } = useTranslation();
 
   // Get conversation metadata from context
   const { conversations } = useChatContext();
@@ -31,7 +33,7 @@ export default function ChatDetailScreen() {
     messages,
     sendMessage: sendToSupabase,
     currentUserId,
-  } = useChat(id as string);
+  } = useChat(id as string, locale);
   const [inputText, setInputText] = useState("");
 
   const handleSend = () => {

@@ -64,9 +64,13 @@ export default function AddTicketScreen() {
 
       // 1. Upload Image if present
       if (imageBase64) {
-        const { data: { user } } = await supabase.auth.getUser();
-        const userId = user?.id ?? 'unknown';
-        const fileName = `${userId}/ticket_${Date.now()}.jpg`;
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError) throw authError;
+        if (!user) {
+          Alert.alert(t('error_title'), t('missing_info'));
+          return;
+        }
+        const fileName = `${user.id}/ticket_${Date.now()}.jpg`;
         const { data, error: uploadError } = await supabase.storage
           .from('receipts')
           .upload(fileName, decode(imageBase64), {

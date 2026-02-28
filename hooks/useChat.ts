@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { Alert } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export interface Message {
   id: string;
@@ -16,18 +15,14 @@ export interface Message {
   avatar_url?: string;  // Virtual field for UI
 }
 
-export function useChat(conversationId: string) {
+export function useChat(conversationId: string, locale: string = 'en') {
   const queryClient = useQueryClient();
   const userRef = useRef<string | null>(null);
-  const languageRef = useRef<string>('en');
 
-  // 0. Initialize User Ref + detect sender language from AsyncStorage cache (same key as useTranslation)
+  // 0. Initialize User Ref
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       userRef.current = user?.id || null;
-    });
-    AsyncStorage.getItem('user_language_preference').then((lang) => {
-      if (lang) languageRef.current = lang;
     });
   }, []);
 
@@ -80,7 +75,7 @@ export function useChat(conversationId: string) {
         conversation_id: conversationId,
         sender_id: userRef.current,
         content_original: text,
-        original_language: languageRef.current
+        original_language: locale
       }).select().single();
 
       if (error) throw error;
