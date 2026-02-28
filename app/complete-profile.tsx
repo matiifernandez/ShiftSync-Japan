@@ -41,9 +41,9 @@ export default function CompleteProfileScreen() {
 
   // Form State
   const [fullName, setFullName] = useState("");
-  const [organizationId, setOrganizationId] = useState(
-    (params.orgId as string) || "00000000-0000-0000-0000-000000000000"
-  ); 
+  const [organizationId, setOrganizationId] = useState<string>(
+    (params.orgId as string) || ""
+  );
   const [language, setLanguage] = useState<"en" | "ja">("en");
   const [image, setImage] = useState<string | null>(null);
 
@@ -174,10 +174,7 @@ export default function CompleteProfileScreen() {
       Alert.alert(t('missing_info'), t('full_name_error'));
       return false;
     }
-    if (!organizationId.trim()) {
-      Alert.alert(t('missing_info'), t('org_id_error'));
-      return false;
-    }
+    // organizationId is optional at profile creation (user may not have an invite yet)
     return true;
   };
 
@@ -206,9 +203,10 @@ export default function CompleteProfileScreen() {
       const updates = {
         id: user.id,
         full_name: fullName,
-        organization_id: organizationId,
+        // Only include organization_id if we actually have one
+        ...(organizationId.trim() ? { organization_id: organizationId } : {}),
         preferred_language: language,
-        avatar_url: avatarUrl, // Now saving the real URL!
+        avatar_url: avatarUrl,
         updated_at: new Date(),
       };
 
@@ -313,21 +311,6 @@ export default function CompleteProfileScreen() {
               placeholder={t('name_placeholder')}
               value={fullName}
               onChangeText={setFullName}
-            />
-          </View>
-
-          <View>
-            <Text className="text-gray-700 font-medium mb-1">
-              {t('org_id')}
-            </Text>
-            <TextInput
-              className="bg-gray-50 p-4 rounded-xl border border-gray-200"
-              placeholder={t('org_placeholder')}
-              value={organizationId}
-              onChangeText={setOrganizationId}
-              autoCapitalize="none"
-              // If editing, maybe we should disable organization change? Usually staff can't change orgs freely.
-              // For MVP flexibility we keep it enabled, but you might want to consider `editable={!isEditing}` later.
             />
           </View>
 

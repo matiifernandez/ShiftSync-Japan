@@ -16,7 +16,7 @@ import { useTravelContext } from "../../context/TravelContext";
 import { useNotifications } from "../../hooks/useNotifications";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useRouter, useFocusEffect } from "expo-router";
-import { supabase } from "../../lib/supabase";
+import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
 
 export default function TravelScreen() {
   const router = useRouter();
@@ -173,7 +173,23 @@ export default function TravelScreen() {
               {/* VIEW TICKET BUTTON */}
               {ticket.ticket_file_url && (
                 <TouchableOpacity 
-                  onPress={() => ticket.ticket_file_url && Linking.openURL(ticket.ticket_file_url)}
+                  onPress={async () => {
+                    if (!ticket.ticket_file_url) return;
+                    try {
+                      // Generate a fresh signed URL if the stored value is a path, not a URL
+                      if (ticket.ticket_file_url.startsWith('http')) {
+                        Linking.openURL(ticket.ticket_file_url);
+                      } else {
+                        const { data, error } = await supabase.storage
+                          .from('receipts')
+                          .createSignedUrl(ticket.ticket_file_url, RECEIPT_SIGNED_URL_EXPIRY);
+                        if (error || !data?.signedUrl) throw error ?? new Error('Could not generate URL');
+                        Linking.openURL(data.signedUrl);
+                      }
+                    } catch {
+                      Alert.alert(t('error_title'), t('load_expense_error'));
+                    }
+                  }}
                   className="mt-3 flex-row items-center border border-brand-red self-start px-3 py-2 rounded-xl"
                 >
                   <Ionicons name="eye-outline" size={16} color="#D9381E" />

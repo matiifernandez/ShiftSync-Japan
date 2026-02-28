@@ -60,11 +60,18 @@ export default function AddTicketScreen() {
 
     setSubmitting(true);
     try {
-      let publicUrl = null;
+      let filePath: string | null = null;
 
       // 1. Upload Image if present
       if (imageBase64) {
-        const fileName = `ticket_${Date.now()}.jpg`;
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError) throw authError;
+        if (!user) {
+          setSubmitting(false);
+          Alert.alert(t('error_title'), t('missing_info'));
+          return;
+        }
+        const fileName = `${user.id}/ticket_${Date.now()}.jpg`;
         const { data, error: uploadError } = await supabase.storage
           .from('receipts')
           .upload(fileName, decode(imageBase64), {
@@ -73,12 +80,8 @@ export default function AddTicketScreen() {
 
         if (uploadError) throw uploadError;
 
-        // Get Public URL
-        const { data: urlData } = supabase.storage
-          .from('receipts')
-          .getPublicUrl(fileName);
-        
-        publicUrl = urlData.publicUrl;
+        // Store the file path — signed URL is generated on display
+        filePath = fileName;
       }
 
       // 2. Create ISO Date (Mocking logic for MVP)
@@ -97,7 +100,7 @@ export default function AddTicketScreen() {
           arrival_station: arrStation,
           seat_number: seat,
           departure_time: today.toISOString(),
-          ticket_file_url: publicUrl,
+          ticket_file_url: filePath,
         });
 
       if (error) throw error;

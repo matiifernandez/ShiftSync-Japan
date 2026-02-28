@@ -15,7 +15,7 @@ export interface Message {
   avatar_url?: string;  // Virtual field for UI
 }
 
-export function useChat(conversationId: string) {
+export function useChat(conversationId: string, locale: string = 'en') {
   const queryClient = useQueryClient();
   const userRef = useRef<string | null>(null);
 
@@ -75,7 +75,7 @@ export function useChat(conversationId: string) {
         conversation_id: conversationId,
         sender_id: userRef.current,
         content_original: text,
-        original_language: 'en'
+        original_language: locale
       }).select().single();
 
       if (error) throw error;

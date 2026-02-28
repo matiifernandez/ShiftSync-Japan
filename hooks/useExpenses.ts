@@ -79,9 +79,9 @@ export function useExpenses() {
             .upload(fileName, blob, { contentType: "image/jpeg" });
 
           if (uploadError) throw uploadError;
-          
-          const { data: publicUrl } = supabase.storage.from("receipts").getPublicUrl(fileName);
-          receiptUrl = publicUrl.publicUrl;
+          // Store the file path (not a signed URL) so the receipt remains accessible
+          // indefinitely. A signed URL is generated on-the-fly when displaying.
+          receiptUrl = fileName;
         }
 
         const { error } = await supabase.from("expenses").insert({

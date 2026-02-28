@@ -46,8 +46,8 @@ function Layout() {
   const params = useLocalSearchParams();
 
   // Activate global listeners for notifications
-  useNotifications();
-  // useGlobalRealtime();
+  const { scheduleNotification } = useNotifications();
+  useGlobalRealtime(scheduleNotification);
 
   // Capture pending orgId from deep links
   useEffect(() => {
