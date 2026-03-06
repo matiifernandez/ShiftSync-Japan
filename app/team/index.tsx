@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Share, FlatList, Image, ActivityIndicator
 import { Stack, useRouter } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import * as Clipboard from 'expo-clipboard';
+import { Colors } from "../../constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useOrganizationDetails } from "../../hooks/useOrganizationDetails";
@@ -42,7 +43,7 @@ export default function TeamManagementScreen() {
   if (loadingOrg || loadingStaff) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#D9381E" />
+        <ActivityIndicator size="large" color={Colors.brand.red} />
       </View>
     );
   }
@@ -60,10 +61,10 @@ export default function TeamManagementScreen() {
               accessibilityRole="button"
               accessibilityLabel="Go back"
             >
-              <Ionicons name="arrow-back" size={24} color="#D9381E" />
+              <Ionicons name="arrow-back" size={24} color={Colors.brand.red} />
             </TouchableOpacity>
           ),
-          headerTintColor: "#D9381E",
+          headerTintColor: Colors.brand.red,
           headerShadowVisible: false,
           headerStyle: { backgroundColor: "#F9FAFB" },
         }} 
@@ -74,7 +75,7 @@ export default function TeamManagementScreen() {
         {/* INVITE CODE CARD */}
         <View className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-8 items-center">
           <View className="bg-brand-red/10 w-16 h-16 rounded-full items-center justify-center mb-4">
-            <FontAwesome5 name="users" size={24} color="#D9381E" />
+            <FontAwesome5 name="users" size={24} color={Colors.brand.red} />
           </View>
           
           <Text className="text-gray-500 font-medium mb-1">{t('invite_code_label')}</Text>

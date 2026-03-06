@@ -15,6 +15,7 @@ import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
 import { Expense } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
+import { Colors } from "../../constants/Colors";
 
 const CATEGORIES = [
   { id: "transport", icon: "train" },
@@ -152,7 +153,7 @@ export default function ExpenseDetailScreen() {
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#D9381E" />
+        <ActivityIndicator size="large" color={Colors.brand.red} />
       </View>
     );
   }

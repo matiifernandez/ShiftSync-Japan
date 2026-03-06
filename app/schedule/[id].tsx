@@ -5,8 +5,9 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useSchedule } from "../../hooks/useSchedule";
+import { Colors } from "../../constants/Colors";
 
-const THEME_COLOR = "#D9381E";
+const THEME_COLOR = Colors.brand.red;
 
 const SHIFT_TYPES = [
   { id: "work_shift", labelKey: "work_shift", icon: "briefcase" },
@@ -129,13 +130,13 @@ export default function EditShiftScreen() {
           title: t('edit_shift'),
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()} className="flex-row items-center -ml-2">
-              <Ionicons name="chevron-back" size={28} color="#D9381E" />
+              <Ionicons name="chevron-back" size={28} color={Colors.brand.red} />
               <Text className="text-brand-red text-base">{t('tab_schedule')}</Text>
             </TouchableOpacity>
           ),
           headerRight: () => (
              <TouchableOpacity onPress={handleDelete}>
-                <Ionicons name="trash-outline" size={24} color="#D9381E" />
+                <Ionicons name="trash-outline" size={24} color={Colors.brand.red} />
              </TouchableOpacity>
           )
         }}

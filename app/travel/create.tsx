@@ -8,8 +8,9 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { useStaff } from "../../hooks/useStaff";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { supabase } from "../../lib/supabase";
+import { Colors } from "../../constants/Colors";
 
-const THEME_COLOR = "#D9381E";
+const THEME_COLOR = Colors.brand.red;
 
 export default function CreateTripScreen() {
   const router = useRouter();
