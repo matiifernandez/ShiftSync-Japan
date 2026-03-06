@@ -17,8 +17,9 @@ import * as Haptics from 'expo-haptics';
 import { useStaff } from "../../hooks/useStaff";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useSchedule } from "../../hooks/useSchedule";
+import { Colors } from "../../constants/Colors";
 
-const THEME_COLOR = "#D9381E";
+const THEME_COLOR = Colors.brand.red;
 
 const SHIFT_TYPES = [
   { id: "work_shift", labelKey: "work_shift", icon: "briefcase" },
@@ -194,7 +195,7 @@ export default function CreateBulkShiftScreen() {
               onPress={handleBack} 
               className="flex-row items-center -ml-2"
             >
-              <Ionicons name="chevron-back" size={28} color="#D9381E" />
+              <Ionicons name="chevron-back" size={28} color={Colors.brand.red} />
               <Text className="text-brand-red text-base -ml-1">{t('tab_schedule')}</Text>
             </TouchableOpacity>
           ),

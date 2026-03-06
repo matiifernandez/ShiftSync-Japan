@@ -11,6 +11,7 @@ import { TranslationKey } from "../../lib/translations";
 import { useConversations } from "../../hooks/useConversations";
 import { useSchedule } from "../../hooks/useSchedule";
 import { useBadgeTracker } from "../../hooks/useBadgeTracker";
+import { Colors } from "../../constants/Colors";
 
 /**
  * HomeScreen (Dashboard)
@@ -293,7 +294,7 @@ export default function HomeScreen() {
               <View className="absolute top-2 right-2 bg-brand-red w-3 h-3 rounded-full z-10" />
             )}
             <View className="bg-red-100 w-12 h-12 rounded-2xl items-center justify-center">
-              <FontAwesome5 name="calendar-check" size={22} color="#D9381E" />
+              <FontAwesome5 name="calendar-check" size={22} color={Colors.brand.red} />
             </View>
             <Text className="text-brand-dark font-bold text-lg">{t('tab_schedule')}</Text>
           </TouchableOpacity>

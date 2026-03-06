@@ -7,8 +7,9 @@ import { format, parseISO, isBefore, eachDayOfInterval } from "date-fns";
 import { useTranslation } from "../../hooks/useTranslation";
 import { supabase } from "../../lib/supabase";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Colors } from "../../constants/Colors";
 
-const THEME_COLOR = "#D9381E";
+const THEME_COLOR = Colors.brand.red;
 
 export default function AddHotelScreen() {
   const router = useRouter();
