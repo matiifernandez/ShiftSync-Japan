@@ -188,6 +188,7 @@ export const translations = {
     group_member_error: "Please select at least one member",
     group_placeholder: "e.g. Bus 1 Team",
     location_placeholder: "e.g. Kobe Office",
+    group_created: "Group created successfully!",
     
     // Chat Actions
     pin_chat: "Pin Chat",
@@ -483,6 +484,7 @@ export const translations = {
     group_member_error: "少なくとも1人のメンバーを選択してください",
     group_placeholder: "例: バス1号車チーム",
     location_placeholder: "例: 神戸オフィス",
+    group_created: "グループが作成されました！",
 
     // Chat Actions
     pin_chat: "チャットを固定",

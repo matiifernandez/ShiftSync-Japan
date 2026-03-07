@@ -10,7 +10,7 @@ import {
   Image,
 } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
-import { useRouter, Stack, useNavigation } from "expo-router";
+import { useRouter, Stack } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { format, eachDayOfInterval, parseISO, isAfter, isBefore, isEqual, startOfDay } from "date-fns";
 import * as Haptics from 'expo-haptics';
@@ -18,6 +18,7 @@ import { useStaff } from "../../hooks/useStaff";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useSchedule } from "../../hooks/useSchedule";
 import { Colors } from "../../constants/Colors";
+import { useToast } from "../../context/ToastContext";
 
 const THEME_COLOR = Colors.brand.red;
 
@@ -29,9 +30,9 @@ const SHIFT_TYPES = [
 
 export default function CreateBulkShiftScreen() {
   const router = useRouter();
-  const navigation = useNavigation();
   const { t } = useTranslation();
   const { staff, loading: loadingStaff } = useStaff();
+  const { showToast } = useToast();
   const { createScheduleItems } = useSchedule({ enabled: false });
 
   const [startDate, setStartDate] = useState<string | null>(null);
@@ -67,7 +68,7 @@ export default function CreateBulkShiftScreen() {
     const today = startOfDay(new Date());
 
     if (isBefore(selectedDate, today)) {
-      Alert.alert(t('invalid_date'), t('past_date_error'));
+      showToast(t('past_date_error'), 'error');
       return;
     }
 
@@ -137,11 +138,11 @@ export default function CreateBulkShiftScreen() {
 
   const handleCreate = async () => {
     if (!startDate) {
-      Alert.alert(t('error_title'), t('select_date_error'));
+      showToast(t('select_date_error'), 'error');
       return;
     }
     if (selectedStaff.length === 0) {
-      Alert.alert(t('error_title'), t('select_staff_error'));
+      showToast(t('select_staff_error'), 'error');
       return;
     }
 
@@ -171,12 +172,11 @@ export default function CreateBulkShiftScreen() {
       await createScheduleItems(shiftItems);
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert(t('success_title'), `${shiftItems.length} ${t('shifts_created')}`, [
-        { text: t('ok'), onPress: () => router.back() }
-      ]);
+      showToast(`${shiftItems.length} ${t('shifts_created')}`, 'success');
+      router.back();
     } catch (error: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     } finally {
       setSubmitting(false);
     }

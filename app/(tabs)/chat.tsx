@@ -18,11 +18,13 @@ import { useConversations, Conversation } from "../../hooks/useConversations";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { supabase } from "../../lib/supabase";
+import { useToast } from "../../context/ToastContext";
 
 export default function ChatScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const { userId } = useCurrentUser();
   const [search, setSearch] = useState("");
   const { conversations, loading, refreshConversations } = useConversations();
@@ -59,7 +61,7 @@ export default function ChatScreen() {
       if (error) throw error;
       refreshConversations();
     } catch (error: any) {
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     }
   };
 
@@ -86,7 +88,7 @@ export default function ChatScreen() {
               
               refreshConversations();
             } catch (error: any) {
-              Alert.alert(t('error_title'), error.message);
+              showToast(error.message, 'error');
             }
           }
         }

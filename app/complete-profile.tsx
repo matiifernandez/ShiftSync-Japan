@@ -118,7 +118,7 @@ export default function CompleteProfileScreen() {
     // Request permission first
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(t('camera_permission_title'), t('camera_permission_msg'));
+      showToast(t('camera_permission_msg'), 'error');
       return;
     }
 
@@ -171,7 +171,7 @@ export default function CompleteProfileScreen() {
   // Validation Logic
   const validateForm = () => {
     if (!fullName.trim()) {
-      Alert.alert(t('missing_info'), t('full_name_error'));
+      showToast(t('full_name_error'), 'error');
       return false;
     }
     // organizationId is optional at profile creation (user may not have an invite yet)

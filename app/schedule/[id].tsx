@@ -6,6 +6,7 @@ import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useSchedule } from "../../hooks/useSchedule";
 import { Colors } from "../../constants/Colors";
+import { useToast } from "../../context/ToastContext";
 
 const THEME_COLOR = Colors.brand.red;
 
@@ -19,6 +20,7 @@ export default function EditShiftScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const { deleteScheduleItem, updateScheduleItem } = useSchedule({ enabled: false });
 
   const [loading, setLoading] = useState(true);
@@ -55,7 +57,7 @@ export default function EditShiftScreen() {
       setNotes(data.notes || "");
       setStaffName(data.profiles?.full_name || t('unknown_staff'));
     } catch (error) {
-      Alert.alert(t('error_title'), t('load_shift_error'));
+      showToast(t('load_shift_error'), 'error');
       router.back();
     } finally {
       setLoading(false);
@@ -84,11 +86,10 @@ export default function EditShiftScreen() {
         }
       });
 
-      Alert.alert(t('success_title'), t('shift_updated'), [
-        { text: t('ok'), onPress: () => router.back() }
-      ]);
+      showToast(t('shift_updated'), 'success');
+      router.back();
     } catch (error: any) {
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     } finally {
       setSubmitting(false);
     }
@@ -109,7 +110,7 @@ export default function EditShiftScreen() {
               await deleteScheduleItem(id as string);
               router.back();
             } catch (err: any) {
-              Alert.alert(t('error_title'), err.message);
+              showToast(err.message, 'error');
               setSubmitting(false);
             }
           }

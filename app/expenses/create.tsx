@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,6 +14,7 @@ import { useRouter, Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from 'expo-haptics';
 import { useTranslation } from "../../hooks/useTranslation";
+import { useToast } from "../../context/ToastContext";
 import { Colors } from "../../constants/Colors";
 import { useExpenses } from "../../hooks/useExpenses";
 
@@ -32,6 +32,7 @@ export default function CreateExpenseScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { createExpense } = useExpenses();
+  const { showToast } = useToast();
 
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("transport");
@@ -43,7 +44,7 @@ export default function CreateExpenseScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(t('gallery_permission_title'), t('gallery_permission_msg'));
+      showToast(t('gallery_permission_msg'), 'error');
       return;
     }
 
@@ -61,13 +62,13 @@ export default function CreateExpenseScreen() {
   const handleSave = async () => {
     if (!amount || isNaN(Number(amount))) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert(t('invalid_amount_title'), t('invalid_amount_msg'));
+      showToast(t('invalid_amount_msg'), 'error');
       return;
     }
 
     if (category === "other" && !description.trim()) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert(t('description_required_title'), t('description_required_msg'));
+      showToast(t('description_required_msg'), 'error');
       return;
     }
 

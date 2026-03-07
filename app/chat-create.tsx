@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Image, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -7,6 +7,7 @@ import { useStaff } from "../hooks/useStaff";
 import { useTranslation } from "../hooks/useTranslation";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { supabase } from "../lib/supabase";
+import { useToast } from "../context/ToastContext";
 import { Colors } from "../constants/Colors";
 
 const THEME_COLOR = Colors.brand.red;
@@ -16,6 +17,7 @@ export default function CreateChatScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { staff, loading: loadingStaff } = useStaff();
+  const { showToast } = useToast();
   const { userId, organizationId } = useCurrentUser();
   
   const [mode, setMode] = useState<"dm" | "group">("dm");
@@ -46,29 +48,6 @@ export default function CreateChatScreen() {
     if (!userId || !organizationId) return;
     setCreating(true);
     try {
-
-      // 1. Check if DM already exists
-      // This is a complex query. We need to find a conversation of type 'direct'
-      // where participants include BOTH me AND targetUserId.
-      // Doing this via RPC is best, but for now we can do a quick check via existing conversations or a specific RPC.
-      // Let's assume we create a new one optimistically or checking:
-      
-      // Alternative: Just create it. If we duplicate DMs it's messy but functional for MVP.
-      // Better: Use a helper or RPC. 
-      // Let's rely on a client-side check if we had the full list, but we don't.
-      
-      // Let's try to call a stored procedure 'get_or_create_dm' if it existed.
-      // Since it doesn't, we will:
-      // A. Create new conversation 'direct'.
-      // B. Add participants.
-      // (Ideally we prevent duplicates later).
-      
-      // REALITY CHECK: For MVP, let's just create it. 
-      // If we want to be smarter: Query conversations that I am in, then check if target is in them.
-      // Too heavy for client?
-      
-      // Let's just create. Uniqueness enforcement is a backend task for 'direct' chats usually.
-      
       const { data: conv, error: convError } = await supabase
         .from('conversations')
         .insert({
@@ -100,7 +79,7 @@ export default function CreateChatScreen() {
       });
 
     } catch (error: any) {
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     } finally {
       setCreating(false);
     }
@@ -108,18 +87,17 @@ export default function CreateChatScreen() {
 
   const handleCreateGroup = async () => {
     if (!groupName.trim()) {
-      Alert.alert(t('error_title'), t('group_name_error'));
+      showToast(t('group_name_error'), 'error');
       return;
     }
     if (selectedUserIds.length === 0) {
-      Alert.alert(t('error_title'), t('group_member_error'));
+      showToast(t('group_member_error'), 'error');
       return;
     }
     if (!userId || !organizationId) return;
 
     setCreating(true);
     try {
-
       const { data: conv, error: convError } = await supabase
         .from('conversations')
         .insert({
@@ -144,13 +122,14 @@ export default function CreateChatScreen() {
 
       if (partError) throw partError;
 
+      showToast(t('group_created'), 'success');
       router.replace({
         pathname: "/chat/[id]",
         params: { id: conv.id, name: groupName }
       });
 
     } catch (error: any) {
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     } finally {
       setCreating(false);
     }

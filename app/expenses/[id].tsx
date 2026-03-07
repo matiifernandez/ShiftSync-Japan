@@ -15,6 +15,7 @@ import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
 import { Expense } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useToast } from "../../context/ToastContext";
 import { Colors } from "../../constants/Colors";
 
 const CATEGORIES = [
@@ -36,6 +37,7 @@ export default function ExpenseDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   
   const [expense, setExpense] = useState<Expense | null>(null);
   const [loading, setLoading] = useState(true);
@@ -83,7 +85,7 @@ export default function ExpenseDetailScreen() {
 
     } catch (error) {
       console.error(error);
-      Alert.alert(t('error_title'), t('load_expense_error'));
+      showToast(t('load_expense_error'), 'error');
     } finally {
       setLoading(false);
     }
@@ -102,7 +104,7 @@ export default function ExpenseDetailScreen() {
         onPress: async () => {
           setSaving(true);
           const { error } = await supabase.from("expenses").delete().eq("id", id);
-          if (error) Alert.alert(t('error_title'), error.message);
+          if (error) showToast(error.message, 'error');
           else router.back();
         } 
       }
@@ -111,11 +113,11 @@ export default function ExpenseDetailScreen() {
 
   const validateExpenseForm = () => {
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-       Alert.alert(t('invalid_amount_title'), t('invalid_amount_msg'));
+       showToast(t('invalid_amount_msg'), 'error');
        return false;
     }
     if (!category) {
-       Alert.alert(t('missing_info'), t('category_error'));
+       showToast(t('category_error'), 'error');
        return false;
     }
     return true;
@@ -140,11 +142,11 @@ export default function ExpenseDetailScreen() {
 
       if (error) throw error;
       
-      Alert.alert(t('success_title'), t('expense_updated'));
+      showToast(t('expense_updated'), 'success');
       setIsEditing(false);
       fetchExpense(); // Refresh
     } catch (error: any) {
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     } finally {
       setSaving(false);
     }

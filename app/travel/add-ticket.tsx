@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Image } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Image } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
@@ -9,6 +9,7 @@ import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { supabase } from "../../lib/supabase";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { decode } from "../../lib/utils";
+import { useToast } from "../../context/ToastContext";
 import { Colors } from "../../constants/Colors";
 
 const THEME_COLOR = Colors.brand.red;
@@ -19,6 +20,7 @@ export default function AddTicketScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { staff } = useStaff();
+  const { showToast } = useToast();
   const { user } = useCurrentUser();
   
   const [transportName, setTransportName] = useState("");
@@ -47,17 +49,17 @@ export default function AddTicketScreen() {
         setImageBase64(result.assets[0].base64 || null);
       }
     } catch (error) {
-      Alert.alert(t('error_title'), t('image_select_error'));
+      showToast(t('image_select_error'), 'error');
     }
   };
 
   const handleCreate = async () => {
     if (!transportName.trim()) {
-      Alert.alert(t('error_title'), t('transport_error'));
+      showToast(t('transport_error'), 'error');
       return;
     }
     if (!projectId) {
-      Alert.alert(t('error_title'), t('missing_info'));
+      showToast(t('missing_info'), 'error');
       return;
     }
 
@@ -69,7 +71,7 @@ export default function AddTicketScreen() {
       if (imageBase64) {
         if (!user) {
           setSubmitting(false);
-          Alert.alert(t('error_title'), t('missing_info'));
+          showToast(t('missing_info'), 'error');
           return;
         }
         const fileName = `${user.id}/ticket_${Date.now()}.jpg`;
@@ -106,12 +108,11 @@ export default function AddTicketScreen() {
 
       if (error) throw error;
 
-      Alert.alert(t('success_title'), t('ticket_added'), [
-        { text: t('ok'), onPress: () => router.back() }
-      ]);
+      showToast(t('ticket_added'), 'success');
+      router.back();
 
     } catch (error: any) {
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     } finally {
       setSubmitting(false);
     }
