@@ -7,7 +7,6 @@ import {
   Switch,
   Linking,
   ActivityIndicator,
-  Alert
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -29,7 +28,7 @@ export default function TravelScreen() {
   const { 
     trip, 
     loading, 
-...
+    projects, 
     selectedProjectId, 
     selectProject, 
     isMemberOfActiveTrip 
@@ -180,7 +179,7 @@ export default function TravelScreen() {
                         Linking.openURL(data.signedUrl);
                       }
                     } catch {
-                      showToast(t('load_expense_error'), 'error');
+                      showToast(t('load_ticket_error'), 'error');
                     }
                   }}
                   className="mt-3 flex-row items-center border border-brand-red self-start px-3 py-2 rounded-xl"
