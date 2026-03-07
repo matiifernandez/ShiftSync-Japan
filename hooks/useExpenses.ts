@@ -1,12 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { Expense } from '../types';
-import { Alert } from 'react-native';
 import { useOfflineQueue, UploadTask } from './useOfflineQueue';
+import { useToast } from '../context/ToastContext';
+import { useTranslation } from './useTranslation';
 
 export function useExpenses() {
   const queryClient = useQueryClient();
   const { queue, addToQueue } = useOfflineQueue();
+  const { showToast } = useToast();
+  const { t } = useTranslation();
 
   // 1. Fetch User Role (Needed for logic)
   const { data: userRole } = useQuery({
@@ -119,9 +122,9 @@ export function useExpenses() {
     },
     onError: (err, variables, context) => {
       if (err.message === "OFFLINE_SAVED") {
-        Alert.alert("Offline", "Expense saved locally. Will sync when online.");
+        showToast(t('offline_msg'), 'success');
       } else {
-        Alert.alert("Error", err.message);
+        showToast(err.message, 'error');
       }
       
       // We don't necessarily need to rollback if it's saved offline,
@@ -152,7 +155,7 @@ export function useExpenses() {
       if (context?.previousExpenses) {
         queryClient.setQueryData(['expenses'], context.previousExpenses);
       }
-      Alert.alert("Error", err.message);
+      showToast(err.message, 'error');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });

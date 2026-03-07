@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, Image, Share, Alert } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Image, Share } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -12,6 +12,7 @@ import { useConversations } from "../../hooks/useConversations";
 import { useSchedule } from "../../hooks/useSchedule";
 import { useBadgeTracker } from "../../hooks/useBadgeTracker";
 import { Colors } from "../../constants/Colors";
+import { useToast } from "../../context/ToastContext";
 
 /**
  * HomeScreen (Dashboard)
@@ -27,6 +28,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   
   // Context Data
   const { totalUnreadCount } = useConversations();
@@ -81,7 +83,7 @@ export default function HomeScreen() {
         title: t('invite_member')
       });
     } catch (error) {
-      Alert.alert(t('error_title'), t('share_error'));
+      showToast(t('share_error'), 'error');
     }
   };
 

@@ -250,6 +250,7 @@ export const translations = {
     delete_shift_msg: "Are you sure you want to delete this shift?",
     load_shift_error: "Could not load shift details.",
     shift_deleted: "Shift deleted",
+    send_message_error: "Could not send message.",
     
     // Hotel
     add_hotel: "Add Hotel",
@@ -276,6 +277,7 @@ export const translations = {
     everyone: "Everyone (Group Ticket)",
     transport_error: "Please enter transport name",
     ticket_added: "Ticket added successfully!",
+    load_ticket_error: "Could not load ticket file.",
     ticket_placeholder: "e.g. Shinkansen Nozomi 123",
     from_placeholder: "Tokyo",
     to_placeholder: "Osaka",
@@ -546,6 +548,7 @@ export const translations = {
     delete_shift_msg: "このシフトを削除してもよろしいですか？",
     load_shift_error: "シフト詳細を読み込めませんでした。",
     shift_deleted: "シフトが削除されました",
+    send_message_error: "メッセージを送信できませんでした。",
 
     // Hotel
     add_hotel: "宿泊先を追加",
@@ -572,6 +575,7 @@ export const translations = {
     everyone: "全員（グループチケット）",
     transport_error: "交通機関名を入力してください",
     ticket_added: "チケットが正常に追加されました！",
+    load_ticket_error: "チケットファイルを読み込めませんでした。",
     ticket_placeholder: "例: 山陽新幹線 のぞみ123号",
     from_placeholder: "東京",
     to_placeholder: "大阪",
