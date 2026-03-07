@@ -10,7 +10,7 @@ import {
   Image,
 } from "react-native";
 import { Calendar, DateData } from "react-native-calendars";
-import { useRouter, Stack, useNavigation } from "expo-router";
+import { useRouter, Stack } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { format, eachDayOfInterval, parseISO, isAfter, isBefore, isEqual, startOfDay } from "date-fns";
 import * as Haptics from 'expo-haptics';
@@ -30,7 +30,6 @@ const SHIFT_TYPES = [
 
 export default function CreateBulkShiftScreen() {
   const router = useRouter();
-  const navigation = useNavigation();
   const { t } = useTranslation();
   const { staff, loading: loadingStaff } = useStaff();
   const { showToast } = useToast();
