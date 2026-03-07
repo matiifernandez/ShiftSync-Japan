@@ -188,6 +188,7 @@ export const translations = {
     group_member_error: "Please select at least one member",
     group_placeholder: "e.g. Bus 1 Team",
     location_placeholder: "e.g. Kobe Office",
+    group_created: "Group created successfully!",
     
     // Chat Actions
     pin_chat: "Pin Chat",
@@ -274,6 +275,7 @@ export const translations = {
     transport_error: "Please enter transport name",
     ticket_added: "Ticket added successfully!",
     ticket_placeholder: "e.g. Shinkansen Nozomi 123",
+    could_not_select_image: "Could not select image.",
     from_placeholder: "Tokyo",
     to_placeholder: "Osaka",
     seat_placeholder: "12A",
@@ -478,6 +480,7 @@ export const translations = {
     group_member_error: "少なくとも1人のメンバーを選択してください",
     group_placeholder: "例: バス1号車チーム",
     location_placeholder: "例: 神戸オフィス",
+    group_created: "グループが作成されました！",
 
     // Chat Actions
     pin_chat: "チャットを固定",
@@ -564,6 +567,7 @@ export const translations = {
     transport_error: "交通機関名を入力してください",
     ticket_added: "チケットが正常に追加されました！",
     ticket_placeholder: "例: 山陽新幹線 のぞみ123号",
+    could_not_select_image: "画像を選択できませんでした。",
     from_placeholder: "東京",
     to_placeholder: "大阪",
     seat_placeholder: "12A",

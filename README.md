@@ -38,7 +38,7 @@ A comprehensive logistics and team management application designed for travel te
 
 2.  **Supabase Setup:**
     - Create a Supabase project.
-    - Run the SQL schema provided in `GEMINI.md` (or context).
+    - Run the SQL migrations found in the `supabase/migrations` folder.
     - **Crucial Tables:**
         - `project_members`: For assigning staff to trips.
         - `profiles`: Needs `expo_push_token` column for notifications.

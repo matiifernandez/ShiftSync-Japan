@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Image, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -157,7 +157,7 @@ export default function CreateChatScreen() {
 
       if (partError) throw partError;
 
-      showToast(t('group_created') || 'Group created', 'success');
+      showToast(t('group_created'), 'success');
       router.replace({
         pathname: "/chat/[id]",
         params: { id: conv.id, name: groupName }

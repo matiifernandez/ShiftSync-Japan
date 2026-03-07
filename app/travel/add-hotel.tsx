@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Calendar, DateData } from "react-native-calendars";
@@ -72,7 +72,7 @@ export default function AddHotelScreen() {
       return;
     }
     if (!projectId) {
-      showToast("Project ID missing", 'error');
+      showToast(t('missing_info'), 'error');
       return;
     }
     if (!startDate || !endDate) {

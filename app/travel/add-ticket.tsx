@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Image } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Image } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
@@ -46,7 +46,7 @@ export default function AddTicketScreen() {
         setImageBase64(result.assets[0].base64 || null);
       }
     } catch (error) {
-      showToast("Could not select image.", 'error');
+      showToast(t('could_not_select_image'), 'error');
     }
   };
 
