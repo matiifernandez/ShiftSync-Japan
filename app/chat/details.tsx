@@ -7,12 +7,14 @@ import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { Colors } from "../../constants/Colors";
+import { useToast } from "../../context/ToastContext";
 
 export default function ChatDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const { userId } = useCurrentUser();
   const [participants, setParticipants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,7 +87,7 @@ export default function ChatDetailsScreen() {
               router.dismissAll(); 
               router.replace("/(tabs)/chat");
             } catch (error: any) {
-              Alert.alert(t('error_title'), error.message);
+              showToast(error.message, 'error');
             }
           }
         }

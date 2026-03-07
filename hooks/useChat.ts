@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "../lib/supabase";
-import { Alert } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "../context/ToastContext";
 
 export interface Message {
   id: string;
@@ -17,6 +17,7 @@ export interface Message {
 
 export function useChat(conversationId: string, locale: string = 'en') {
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
   const userRef = useRef<string | null>(null);
 
   // 0. Initialize User Ref
@@ -110,7 +111,7 @@ export function useChat(conversationId: string, locale: string = 'en') {
       if (context?.previousMessages) {
         queryClient.setQueryData(['messages', conversationId], context.previousMessages);
       }
-      Alert.alert("Error", "Could not send message");
+      showToast("Could not send message", 'error');
     },
     onSettled: () => {
       // Refetch to get real ID and server data
