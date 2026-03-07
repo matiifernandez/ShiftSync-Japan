@@ -7,6 +7,7 @@ import { format, eachDayOfInterval, parseISO, isBefore } from "date-fns";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useStaff } from "../../hooks/useStaff";
 import { supabase } from "../../lib/supabase";
+import { useToast } from "../../context/ToastContext";
 
 const THEME_COLOR = "#D9381E";
 
@@ -14,6 +15,7 @@ export default function CreateTripScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { staff } = useStaff();
+  const { showToast } = useToast();
   
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -71,15 +73,15 @@ export default function CreateTripScreen() {
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      Alert.alert(t('error_title'), t('trip_name_error'));
+      showToast(t('trip_name_error'), 'error');
       return;
     }
     if (!startDate) {
-      Alert.alert(t('error_title'), t('trip_date_error'));
+      showToast(t('trip_date_error'), 'error');
       return;
     }
     if (selectedStaffIds.length === 0) {
-      Alert.alert(t('error_title'), t('trip_staff_error'));
+      showToast(t('trip_staff_error'), 'error');
       return;
     }
 
@@ -123,12 +125,11 @@ export default function CreateTripScreen() {
 
       if (memError) throw memError;
 
-      Alert.alert(t('success_title'), t('trip_created'), [
-        { text: t('ok'), onPress: () => router.back() }
-      ]);
+      showToast(t('trip_created'), 'success');
+      router.back();
 
     } catch (error: any) {
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     } finally {
       setSubmitting(false);
     }

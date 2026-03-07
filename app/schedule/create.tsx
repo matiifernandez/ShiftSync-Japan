@@ -18,6 +18,7 @@ import { useStaff } from "../../hooks/useStaff";
 import { useTranslation } from "../../hooks/useTranslation";
 import { supabase } from "../../lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "../../context/ToastContext";
 
 const THEME_COLOR = "#D9381E";
 
@@ -33,6 +34,7 @@ export default function CreateBulkShiftScreen() {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const { staff, loading: loadingStaff } = useStaff();
+  const { showToast } = useToast();
 
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
@@ -67,7 +69,7 @@ export default function CreateBulkShiftScreen() {
     const today = startOfDay(new Date());
 
     if (isBefore(selectedDate, today)) {
-      Alert.alert(t('invalid_date'), t('past_date_error'));
+      showToast(t('past_date_error'), 'error');
       return;
     }
 
@@ -137,11 +139,11 @@ export default function CreateBulkShiftScreen() {
 
   const handleCreate = async () => {
     if (!startDate) {
-      Alert.alert(t('error_title'), t('select_date_error'));
+      showToast(t('select_date_error'), 'error');
       return;
     }
     if (selectedStaff.length === 0) {
-      Alert.alert(t('error_title'), t('select_staff_error'));
+      showToast(t('select_staff_error'), 'error');
       return;
     }
 
@@ -178,12 +180,11 @@ export default function CreateBulkShiftScreen() {
       queryClient.invalidateQueries({ queryKey: ['schedule'] });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert(t('success_title'), `${shiftItems.length} ${t('shifts_created')}`, [
-        { text: t('ok'), onPress: () => router.back() }
-      ]);
+      showToast(`${shiftItems.length} ${t('shifts_created')}`, 'success');
+      router.back();
     } catch (error: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     } finally {
       setSubmitting(false);
     }

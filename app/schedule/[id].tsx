@@ -5,6 +5,7 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "../../context/ToastContext";
 
 const THEME_COLOR = "#D9381E";
 
@@ -19,6 +20,7 @@ export default function EditShiftScreen() {
   const { id } = useLocalSearchParams();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const { showToast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -54,7 +56,7 @@ export default function EditShiftScreen() {
       setNotes(data.notes || "");
       setStaffName(data.profiles?.full_name || t('unknown_staff'));
     } catch (error) {
-      Alert.alert(t('error_title'), t('load_shift_error'));
+      showToast(t('load_shift_error'), 'error');
       router.back();
     } finally {
       setLoading(false);
@@ -86,11 +88,10 @@ export default function EditShiftScreen() {
       if (error) throw error;
 
       queryClient.invalidateQueries({ queryKey: ['schedule'] });
-      Alert.alert(t('success_title'), t('shift_updated'), [
-        { text: t('ok'), onPress: () => router.back() }
-      ]);
+      showToast(t('shift_updated'), 'success');
+      router.back();
     } catch (error: any) {
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     } finally {
       setSubmitting(false);
     }
@@ -113,7 +114,7 @@ export default function EditShiftScreen() {
               queryClient.invalidateQueries({ queryKey: ['schedule'] });
               router.back();
             } catch (err: any) {
-              Alert.alert(t('error_title'), err.message);
+              showToast(err.message, 'error');
               setSubmitting(false);
             }
           }

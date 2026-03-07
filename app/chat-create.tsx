@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useStaff } from "../hooks/useStaff";
 import { useTranslation } from "../hooks/useTranslation";
 import { supabase } from "../lib/supabase";
+import { useToast } from "../context/ToastContext";
 
 const THEME_COLOR = "#D9381E";
 
@@ -14,6 +15,7 @@ export default function CreateChatScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { staff, loading: loadingStaff } = useStaff();
+  const { showToast } = useToast();
   
   const [mode, setMode] = useState<"dm" | "group">("dm");
   const [groupName, setGroupName] = useState("");
@@ -105,7 +107,7 @@ export default function CreateChatScreen() {
       });
 
     } catch (error: any) {
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     } finally {
       setCreating(false);
     }
@@ -113,11 +115,11 @@ export default function CreateChatScreen() {
 
   const handleCreateGroup = async () => {
     if (!groupName.trim()) {
-      Alert.alert(t('error_title'), t('group_name_error'));
+      showToast(t('group_name_error'), 'error');
       return;
     }
     if (selectedUserIds.length === 0) {
-      Alert.alert(t('error_title'), t('group_member_error'));
+      showToast(t('group_member_error'), 'error');
       return;
     }
 
@@ -155,13 +157,14 @@ export default function CreateChatScreen() {
 
       if (partError) throw partError;
 
+      showToast(t('group_created') || 'Group created', 'success');
       router.replace({
         pathname: "/chat/[id]",
         params: { id: conv.id, name: groupName }
       });
 
     } catch (error: any) {
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     } finally {
       setCreating(false);
     }

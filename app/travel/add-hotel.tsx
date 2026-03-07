@@ -7,6 +7,7 @@ import { format, parseISO, isBefore, eachDayOfInterval } from "date-fns";
 import { useTranslation } from "../../hooks/useTranslation";
 import { supabase } from "../../lib/supabase";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useToast } from "../../context/ToastContext";
 
 const THEME_COLOR = "#D9381E";
 
@@ -15,6 +16,7 @@ export default function AddHotelScreen() {
   const { projectId } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
@@ -66,15 +68,15 @@ export default function AddHotelScreen() {
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      Alert.alert(t('error_title'), t('hotel_name_error'));
+      showToast(t('hotel_name_error'), 'error');
       return;
     }
     if (!projectId) {
-      Alert.alert(t('error_title'), "Project ID missing");
+      showToast("Project ID missing", 'error');
       return;
     }
     if (!startDate || !endDate) {
-      Alert.alert(t('error_title'), t('select_date_error'));
+      showToast(t('select_date_error'), 'error');
       return;
     }
 
@@ -93,12 +95,11 @@ export default function AddHotelScreen() {
 
       if (error) throw error;
 
-      Alert.alert(t('success_title'), t('hotel_added'), [
-        { text: t('ok'), onPress: () => router.back() }
-      ]);
+      showToast(t('hotel_added'), 'success');
+      router.back();
 
     } catch (error: any) {
-      Alert.alert(t('error_title'), error.message);
+      showToast(error.message, 'error');
     } finally {
       setSubmitting(false);
     }
