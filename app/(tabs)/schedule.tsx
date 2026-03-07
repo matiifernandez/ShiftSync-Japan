@@ -11,8 +11,9 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { useRouter } from "expo-router";
 import { useUserRole } from "../../hooks/useUserRole";
 import { useToast } from "../../context/ToastContext";
+import { Colors } from "../../constants/Colors";
 
-const THEME_COLOR = "#D9381E";
+const THEME_COLOR = Colors.brand.red;
 
 export default function ScheduleScreen() {
   const insets = useSafeAreaInsets();
@@ -78,7 +79,7 @@ export default function ScheduleScreen() {
   const handleDelete = async (itemId: string) => {
       try {
           await deleteScheduleItem(itemId);
-          showToast("Shift deleted", "success");
+          showToast(t('shift_deleted'), "success");
       } catch (error: any) {
           showToast(error.message, "error");
       }

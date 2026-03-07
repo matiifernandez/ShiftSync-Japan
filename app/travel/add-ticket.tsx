@@ -5,11 +5,13 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from "../../hooks/useTranslation";
 import { useStaff } from "../../hooks/useStaff";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { supabase } from "../../lib/supabase";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { decode } from "../../lib/utils";
+import { Colors } from "../../constants/Colors";
 
-const THEME_COLOR = "#D9381E";
+const THEME_COLOR = Colors.brand.red;
 
 export default function AddTicketScreen() {
   const router = useRouter();
@@ -17,6 +19,7 @@ export default function AddTicketScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { staff } = useStaff();
+  const { user } = useCurrentUser();
   
   const [transportName, setTransportName] = useState("");
   const [deptStation, setDeptStation] = useState("");
@@ -44,7 +47,7 @@ export default function AddTicketScreen() {
         setImageBase64(result.assets[0].base64 || null);
       }
     } catch (error) {
-      Alert.alert(t('error_title'), "Could not select image.");
+      Alert.alert(t('error_title'), t('image_select_error'));
     }
   };
 
@@ -64,8 +67,6 @@ export default function AddTicketScreen() {
 
       // 1. Upload Image if present
       if (imageBase64) {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError) throw authError;
         if (!user) {
           setSubmitting(false);
           Alert.alert(t('error_title'), t('missing_info'));

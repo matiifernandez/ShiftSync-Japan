@@ -3,12 +3,15 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "../lib/supabase";
 import { ScheduleItem } from "../types";
 
-export function useSchedule({ allUsers = false } = {}) {
+export type ScheduleItemInsert = Omit<ScheduleItem, "id">;
+
+export function useSchedule({ allUsers = false, enabled = true } = {}) {
   const queryClient = useQueryClient();
   const queryKey = ['schedule', { allUsers }];
 
   const { data: schedule = [], isLoading: loading, refetch } = useQuery({
     queryKey,
+    enabled,
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
@@ -44,18 +47,40 @@ export function useSchedule({ allUsers = false } = {}) {
     }
   });
 
+  const createMutation = useMutation({
+    mutationFn: async (items: ScheduleItemInsert[]) => {
+      const { error } = await supabase.from("schedule_items").insert(items);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['schedule'] });
+    }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<ScheduleItem> }) => {
+      const { error } = await supabase.from("schedule_items").update(updates).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['schedule'] });
+    }
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from('schedule_items').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ['schedule'] });
     }
   });
 
-  // Realtime Subscription
+  // Realtime Subscription — only active when data fetching is enabled
   useEffect(() => {
+    if (!enabled) return;
+
     const subscription = supabase
       .channel("schedule_updates")
       .on(
@@ -75,12 +100,16 @@ export function useSchedule({ allUsers = false } = {}) {
     return () => {
       supabase.removeChannel(subscription);
     };
-  }, [allUsers, queryClient]);
+  }, [enabled, allUsers, queryClient]);
 
   return { 
     schedule, 
     loading, 
     refreshSchedule: refetch,
+    createScheduleItems: createMutation.mutateAsync,
+    isCreating: createMutation.isPending,
+    updateScheduleItem: updateMutation.mutateAsync,
+    isUpdating: updateMutation.isPending,
     deleteScheduleItem: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending
   };

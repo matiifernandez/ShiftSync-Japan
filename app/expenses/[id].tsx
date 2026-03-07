@@ -15,6 +15,7 @@ import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
 import { Expense } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
+import { Colors } from "../../constants/Colors";
 
 const CATEGORIES = [
   { id: "transport", icon: "train" },
@@ -152,7 +153,7 @@ export default function ExpenseDetailScreen() {
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#D9381E" />
+        <ActivityIndicator size="large" color={Colors.brand.red} />
       </View>
     );
   }
@@ -170,7 +171,7 @@ export default function ExpenseDetailScreen() {
           headerRight: () => (
             isPending && !isEditing ? (
               <TouchableOpacity onPress={handleEditStart}>
-                <Text className="text-brand-red font-bold text-base">{t('sign_up_link') === '登録' ? '編集' : 'Edit'}</Text>
+                <Text className="text-brand-red font-bold text-base">{t('edit')}</Text>
               </TouchableOpacity>
             ) : null
           ),
@@ -250,7 +251,7 @@ export default function ExpenseDetailScreen() {
                         multiline
                     />
                 ) : (
-                    <Text className="text-lg text-brand-dark">{expense.description || "No description"}</Text>
+                    <Text className="text-lg text-brand-dark">{expense.description || t('no_description')}</Text>
                 )}
             </View>
 

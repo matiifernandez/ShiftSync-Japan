@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -13,8 +13,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { format } from "date-fns";
 import { useTravelContext } from "../../context/TravelContext";
+import { Colors } from "../../constants/Colors";
 import { useNotifications } from "../../hooks/useNotifications";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useUserRole } from "../../hooks/useUserRole";
 import { useRouter, useFocusEffect } from "expo-router";
 import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
 
@@ -31,19 +33,8 @@ export default function TravelScreen() {
     isMemberOfActiveTrip 
   } = useTravelContext();
   const { scheduleNotification } = useNotifications();
+  const { role: userRole } = useUserRole();
   const [remindMe, setRemindMe] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function getRole() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-        setUserRole(data?.role || 'staff');
-      }
-    }
-    getRole();
-  }, []);
 
   const handleOpenMaps = (url?: string) => {
     if (url) {
@@ -70,7 +61,7 @@ export default function TravelScreen() {
         style={{ paddingTop: insets.top }}
         className="flex-1 bg-gray-50 justify-center items-center"
       >
-        <ActivityIndicator size="large" color="#D9381E" />
+        <ActivityIndicator size="large" color={Colors.brand.red} />
       </View>
     );
   }
@@ -144,7 +135,7 @@ export default function TravelScreen() {
             className="bg-white rounded-2xl p-5 mb-4 shadow-sm border border-gray-100 flex-row items-center"
           >
             <View className="w-10 items-center justify-center mr-4">
-              <FontAwesome5 name="train" size={24} color="#D9381E" />
+              <FontAwesome5 name="train" size={24} color={Colors.brand.red} />
               <Text className="text-brand-dark font-bold text-xs mt-1">
                 {format(new Date(ticket.departure_time), "HH:mm")}
               </Text>
@@ -192,7 +183,7 @@ export default function TravelScreen() {
                   }}
                   className="mt-3 flex-row items-center border border-brand-red self-start px-3 py-2 rounded-xl"
                 >
-                  <Ionicons name="eye-outline" size={16} color="#D9381E" />
+                  <Ionicons name="eye-outline" size={16} color={Colors.brand.red} />
                   <Text className="text-brand-red font-bold text-xs ml-2">
                     {t('view_ticket')}
                   </Text>
@@ -231,7 +222,7 @@ export default function TravelScreen() {
           >
             <View className="p-5 flex-row items-center">
               <View className="w-10 items-center justify-center mr-4">
-                <FontAwesome5 name="hotel" size={22} color="#D9381E" />
+                <FontAwesome5 name="hotel" size={22} color={Colors.brand.red} />
               </View>
               <View className="flex-1">
                 <Text className="text-base font-bold text-brand-dark mb-1">
@@ -265,7 +256,7 @@ export default function TravelScreen() {
             <Switch
               value={remindMe}
               onValueChange={handleToggleReminder}
-              trackColor={{ false: "#E5E7EB", true: "#D9381E" }}
+              trackColor={{ false: "#E5E7EB", true: Colors.brand.red }}
               thumbColor={"#FFFFFF"}
             />
           </View>
@@ -282,13 +273,13 @@ export default function TravelScreen() {
             position: "absolute",
             bottom: 20,
             right: 20,
-            backgroundColor: "#D9381E",
+            backgroundColor: Colors.brand.red,
             width: 56,
             height: 56,
             borderRadius: 28,
             alignItems: "center",
             justifyContent: "center",
-            shadowColor: "#D9381E",
+            shadowColor: Colors.brand.red,
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 8,
