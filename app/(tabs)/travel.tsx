@@ -19,15 +19,17 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { useUserRole } from "../../hooks/useUserRole";
 import { useRouter, useFocusEffect } from "expo-router";
 import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
+import { useToast } from "../../context/ToastContext";
 
 export default function TravelScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const { 
     trip, 
     loading, 
-    projects, 
+...
     selectedProjectId, 
     selectProject, 
     isMemberOfActiveTrip 
@@ -178,7 +180,7 @@ export default function TravelScreen() {
                         Linking.openURL(data.signedUrl);
                       }
                     } catch {
-                      Alert.alert(t('error_title'), t('load_expense_error'));
+                      showToast(t('load_expense_error'), 'error');
                     }
                   }}
                   className="mt-3 flex-row items-center border border-brand-red self-start px-3 py-2 rounded-xl"
