@@ -49,7 +49,7 @@ export default function AddTicketScreen() {
         setImageBase64(result.assets[0].base64 || null);
       }
     } catch (error) {
-      showToast(t('could_not_select_image'), 'error');
+      showToast(t('image_select_error'), 'error');
     }
   };
 
