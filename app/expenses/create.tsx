@@ -13,9 +13,10 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter, Stack } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import * as Haptics from 'expo-haptics';
-import { useExpenses } from "../../hooks/useExpenses";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useToast } from "../../context/ToastContext";
+import { Colors } from "../../constants/Colors";
+import { useExpenses } from "../../hooks/useExpenses";
 
 const CATEGORIES = [
   { id: "transport", icon: "train" },
@@ -133,7 +134,7 @@ export default function CreateExpenseScreen() {
               <FontAwesome5
                 name={cat.icon}
                 size={14}
-                color={category === cat.id ? "#D9381E" : "#9CA3AF"}
+                color={category === cat.id ? Colors.brand.red : "#9CA3AF"}
               />
               <Text
                 className={`ml-2 font-bold ${

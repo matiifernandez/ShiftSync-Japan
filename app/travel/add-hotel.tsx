@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Calendar, DateData } from "react-native-calendars";
@@ -8,8 +8,9 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { supabase } from "../../lib/supabase";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useToast } from "../../context/ToastContext";
+import { Colors } from "../../constants/Colors";
 
-const THEME_COLOR = "#D9381E";
+const THEME_COLOR = Colors.brand.red;
 
 export default function AddHotelScreen() {
   const router = useRouter();
@@ -72,7 +73,7 @@ export default function AddHotelScreen() {
       return;
     }
     if (!projectId) {
-      showToast(t('missing_info'), 'error');
+      showToast(t('project_id_missing'), 'error');
       return;
     }
     if (!startDate || !endDate) {

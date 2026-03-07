@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter, Stack, useFocusEffect } from "expo-router";
 import { format, parseISO } from "date-fns";
+import { Colors } from "../../constants/Colors";
 import { enUS, ja } from "date-fns/locale";
 import { useExpenses } from "../../hooks/useExpenses";
 import { Expense } from "../../types";
@@ -218,7 +219,7 @@ export default function ExpensesScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 20, paddingTop: 10 }}
           refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={refreshExpenses} tintColor="#D9381E" />
+            <RefreshControl refreshing={loading} onRefresh={refreshExpenses} tintColor={Colors.brand.red} />
           }
           ListEmptyComponent={
             !loading ? (
@@ -243,7 +244,7 @@ export default function ExpensesScreen() {
           )}
           contentContainerStyle={{ paddingBottom: 100 }}
           refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={refreshExpenses} tintColor="#D9381E" />
+            <RefreshControl refreshing={loading} onRefresh={refreshExpenses} tintColor={Colors.brand.red} />
           }
           ListEmptyComponent={
             !loading ? (
@@ -263,13 +264,13 @@ export default function ExpensesScreen() {
           position: "absolute",
           bottom: insets.bottom + 20,
           right: 20,
-          backgroundColor: "#D9381E",
+          backgroundColor: Colors.brand.red,
           width: 56,
           height: 56,
           borderRadius: 28,
           alignItems: "center",
           justifyContent: "center",
-          shadowColor: "#D9381E",
+          shadowColor: Colors.brand.red,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.3,
           shadowRadius: 8,

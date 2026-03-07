@@ -5,12 +5,14 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from "../../hooks/useTranslation";
 import { useStaff } from "../../hooks/useStaff";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { supabase } from "../../lib/supabase";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { decode } from "../../lib/utils";
 import { useToast } from "../../context/ToastContext";
+import { Colors } from "../../constants/Colors";
 
-const THEME_COLOR = "#D9381E";
+const THEME_COLOR = Colors.brand.red;
 
 export default function AddTicketScreen() {
   const router = useRouter();
@@ -19,6 +21,7 @@ export default function AddTicketScreen() {
   const { t } = useTranslation();
   const { staff } = useStaff();
   const { showToast } = useToast();
+  const { user } = useCurrentUser();
   
   const [transportName, setTransportName] = useState("");
   const [deptStation, setDeptStation] = useState("");
@@ -66,8 +69,6 @@ export default function AddTicketScreen() {
 
       // 1. Upload Image if present
       if (imageBase64) {
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        if (authError) throw authError;
         if (!user) {
           setSubmitting(false);
           showToast(t('missing_info'), 'error');

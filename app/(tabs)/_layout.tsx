@@ -1,5 +1,6 @@
 import React from "react";
 import { Tabs } from "expo-router";
+import { Colors } from "../../constants/Colors";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useNotifications } from "../../hooks/useNotifications";
@@ -21,7 +22,7 @@ export default function TabLayout() {
           height: 90, // Taller tab bar for modern look
           paddingTop: 10,
         },
-        tabBarActiveTintColor: "#D9381E", // Brand Red
+        tabBarActiveTintColor: Colors.brand.red, // Brand Red
         tabBarInactiveTintColor: "#9CA3AF", // Gray
         tabBarLabelStyle: {
           fontSize: 12,

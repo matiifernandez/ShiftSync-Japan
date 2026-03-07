@@ -5,12 +5,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { Colors } from "../../constants/Colors";
 
 export default function ChatDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const { userId } = useCurrentUser();
   const [participants, setParticipants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [conversationName, setConversationName] = useState("");
@@ -68,14 +71,13 @@ export default function ChatDetailsScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (!user) return;
+              if (!userId) return;
 
               const { error } = await supabase
                 .from('conversation_participants')
                 .delete()
                 .eq('conversation_id', id)
-                .eq('user_id', user.id);
+                .eq('user_id', userId);
 
               if (error) throw error;
 
@@ -101,7 +103,7 @@ export default function ChatDetailsScreen() {
         className="flex-row items-center px-4 py-3 border-b border-gray-100 bg-white"
       >
         <TouchableOpacity onPress={() => router.back()} className="p-2 mr-2">
-          <Ionicons name="chevron-back" size={28} color="#D9381E" />
+          <Ionicons name="chevron-back" size={28} color={Colors.brand.red} />
         </TouchableOpacity>
         <Text className="text-lg font-bold text-brand-dark flex-1 text-center mr-10">
           {t('group_info')}
@@ -110,7 +112,7 @@ export default function ChatDetailsScreen() {
 
       {loading ? (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator color="#D9381E" />
+          <ActivityIndicator color={Colors.brand.red} />
         </View>
       ) : (
         <View className="flex-1">
@@ -149,7 +151,7 @@ export default function ChatDetailsScreen() {
               onPress={handleLeaveGroup}
               className="flex-row items-center justify-center p-4 bg-red-50 rounded-2xl"
             >
-              <Ionicons name="log-out-outline" size={20} color="#D9381E" />
+              <Ionicons name="log-out-outline" size={20} color={Colors.brand.red} />
               <Text className="ml-2 text-brand-red font-bold">{t('leave_group')}</Text>
             </TouchableOpacity>
           </View>

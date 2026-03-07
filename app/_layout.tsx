@@ -17,6 +17,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { ToastProvider } from "../context/ToastContext";
 import Toast from "../components/Toast";
+import { Colors } from "../constants/Colors";
 
 // Initialize Sentry
 Sentry.init({
@@ -83,6 +84,7 @@ function Layout() {
     initSession();
 
     // 2. Listen for changes (login, logout, auto-refresh)
+    // Also invalidates the currentUser cache so useCurrentUser stays fresh
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       // Handle TOKEN_REFRESHED explicitly if needed, but session update covers it
       if (event === 'SIGNED_OUT') {
@@ -91,6 +93,7 @@ function Layout() {
       } else {
          setSession(session);
       }
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
     });
 
     return () => subscription.unsubscribe();
@@ -141,7 +144,7 @@ function Layout() {
   if (!initialized) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#D9381E" />
+        <ActivityIndicator size="large" color={Colors.brand.red} />
       </View>
     );
   }

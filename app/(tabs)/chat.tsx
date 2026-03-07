@@ -13,8 +13,10 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { Colors } from "../../constants/Colors";
 import { useConversations, Conversation } from "../../hooks/useConversations";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { supabase } from "../../lib/supabase";
 import { useToast } from "../../context/ToastContext";
 
@@ -23,6 +25,7 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const { userId } = useCurrentUser();
   const [search, setSearch] = useState("");
   const { conversations, loading, refreshConversations } = useConversations();
 
@@ -47,14 +50,13 @@ export default function ChatScreen() {
 
   const handleTogglePin = async (conversationId: string, currentStatus: boolean) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!userId) return;
 
       const { error } = await supabase
         .from('conversation_participants')
         .update({ is_pinned: !currentStatus })
         .eq('conversation_id', conversationId)
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       if (error) throw error;
       refreshConversations();
@@ -74,14 +76,13 @@ export default function ChatScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              const { data: { user } } = await supabase.auth.getUser();
-              if (!user) return;
+              if (!userId) return;
               
               const { error } = await supabase
                 .from('conversation_participants')
                 .delete()
                 .eq('conversation_id', conversationId)
-                .eq('user_id', user.id);
+                .eq('user_id', userId);
                 
               if (error) throw error;
               
@@ -135,7 +136,7 @@ export default function ChatScreen() {
             </Text>
             <View className="flex-row items-center">
               {item.is_pinned && (
-                <Ionicons name="pin" size={14} color="#D9381E" style={{ marginRight: 6, transform: [{ rotate: '45deg' }] }} />
+                <Ionicons name="pin" size={14} color={Colors.brand.red} style={{ marginRight: 6, transform: [{ rotate: '45deg' }] }} />
               )}
               <Text className="text-gray-400 text-xs">{timeDisplay}</Text>
             </View>
@@ -155,7 +156,7 @@ export default function ChatScreen() {
       <View className="px-6 py-4">
         <Text className="text-3xl font-bold text-brand-dark mb-4">{t('messages_title')}</Text>
         <View className="bg-gray-100 flex-row items-center px-4 py-3 rounded-2xl">
-          <Ionicons name="search" size={20} color="#D9381E" />
+          <Ionicons name="search" size={20} color={Colors.brand.red} />
           <TextInput
             className="flex-1 ml-3 text-brand-dark text-base"
             placeholder={t('search_placeholder')}
@@ -168,7 +169,7 @@ export default function ChatScreen() {
 
       {loading && conversations.length === 0 ? (
         <View className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color="#D9381E" />
+            <ActivityIndicator size="large" color={Colors.brand.red} />
         </View>
       ) : (
         <FlatList
@@ -184,7 +185,7 @@ export default function ChatScreen() {
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
             refreshControl={
-                <RefreshControl refreshing={loading} onRefresh={refreshConversations} tintColor="#D9381E" />
+                <RefreshControl refreshing={loading} onRefresh={refreshConversations} tintColor={Colors.brand.red} />
             }
             ListEmptyComponent={
             <View className="flex-1 items-center justify-center mt-20">
@@ -202,13 +203,13 @@ export default function ChatScreen() {
           position: "absolute",
           bottom: 20,
           right: 20,
-          backgroundColor: "#D9381E",
+          backgroundColor: Colors.brand.red,
           width: 56,
           height: 56,
           borderRadius: 28,
           alignItems: "center",
           justifyContent: "center",
-          shadowColor: "#D9381E",
+          shadowColor: Colors.brand.red,
           shadowOffset: { width: 0, height: 4 },
           shadowOpacity: 0.3,
           shadowRadius: 8,

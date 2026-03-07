@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useStaff } from "../hooks/useStaff";
 import { useTranslation } from "../hooks/useTranslation";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 import { supabase } from "../lib/supabase";
 import { useToast } from "../context/ToastContext";
+import { Colors } from "../constants/Colors";
 
-const THEME_COLOR = "#D9381E";
+const THEME_COLOR = Colors.brand.red;
 
 export default function CreateChatScreen() {
   const router = useRouter();
@@ -16,23 +18,17 @@ export default function CreateChatScreen() {
   const { t } = useTranslation();
   const { staff, loading: loadingStaff } = useStaff();
   const { showToast } = useToast();
+  const { userId, organizationId } = useCurrentUser();
   
   const [mode, setMode] = useState<"dm" | "group">("dm");
   const [groupName, setGroupName] = useState("");
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [creating, setCreating] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setCurrentUserId(user.id);
-    });
-  }, []);
 
   // Filter staff based on search and exclude self
   const filteredStaff = staff.filter(user => 
-    user.id !== currentUserId &&
+    user.id !== userId &&
     user.full_name?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -49,37 +45,13 @@ export default function CreateChatScreen() {
   };
 
   const handleStartDM = async (targetUserId: string) => {
+    if (!userId || !organizationId) return;
     setCreating(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // 1. Check if DM already exists
-      // This is a complex query. We need to find a conversation of type 'direct'
-      // where participants include BOTH me AND targetUserId.
-      // Doing this via RPC is best, but for now we can do a quick check via existing conversations or a specific RPC.
-      // Let's assume we create a new one optimistically or checking:
-      
-      // Alternative: Just create it. If we duplicate DMs it's messy but functional for MVP.
-      // Better: Use a helper or RPC. 
-      // Let's rely on a client-side check if we had the full list, but we don't.
-      
-      // Let's try to call a stored procedure 'get_or_create_dm' if it existed.
-      // Since it doesn't, we will:
-      // A. Create new conversation 'direct'.
-      // B. Add participants.
-      // (Ideally we prevent duplicates later).
-      
-      // REALITY CHECK: For MVP, let's just create it. 
-      // If we want to be smarter: Query conversations that I am in, then check if target is in them.
-      // Too heavy for client?
-      
-      // Let's just create. Uniqueness enforcement is a backend task for 'direct' chats usually.
-      
       const { data: conv, error: convError } = await supabase
         .from('conversations')
         .insert({
-          organization_id: staff.find(s => s.id === targetUserId)?.organization_id, // We assume same org
+          organization_id: organizationId,
           type: 'direct',
           name: 'Direct Message' // Placeholder, usually hidden for DMs
         })
@@ -90,7 +62,7 @@ export default function CreateChatScreen() {
 
       // Add participants
       const participants = [
-        { conversation_id: conv.id, user_id: user.id },
+        { conversation_id: conv.id, user_id: userId },
         { conversation_id: conv.id, user_id: targetUserId }
       ];
 
@@ -122,21 +94,14 @@ export default function CreateChatScreen() {
       showToast(t('group_member_error'), 'error');
       return;
     }
+    if (!userId || !organizationId) return;
 
     setCreating(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // 1. Create Conversation
-      // We need organization_id. Let's take it from the first selected user or my own profile.
-      // Ideally we fetch my profile.
-      const { data: myProfile } = await supabase.from('profiles').select('organization_id').eq('id', user.id).single();
-      
       const { data: conv, error: convError } = await supabase
         .from('conversations')
         .insert({
-          organization_id: myProfile?.organization_id,
+          organization_id: organizationId,
           type: 'group',
           name: groupName
         })
@@ -147,7 +112,7 @@ export default function CreateChatScreen() {
 
       // 2. Add Participants (Me + Selected)
       const participants = [
-        { conversation_id: conv.id, user_id: user.id },
+        { conversation_id: conv.id, user_id: userId },
         ...selectedUserIds.map(uid => ({ conversation_id: conv.id, user_id: uid }))
       ];
 
