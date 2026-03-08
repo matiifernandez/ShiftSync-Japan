@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import { useUserRole } from "../../hooks/useUserRole";
 import { useToast } from "../../context/ToastContext";
 import { Colors } from "../../constants/Colors";
+import { FAB } from "../../components/FAB";
 
 const THEME_COLOR = Colors.brand.red;
 
@@ -300,30 +301,12 @@ export default function ScheduleScreen() {
 
       {/* ADMIN ADD BUTTON */}
       {isAdmin && (
-        <TouchableOpacity
+        <FAB 
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             router.push("/schedule/create");
-          }}
-          style={{
-            position: "absolute",
-            bottom: 20,
-            right: 20,
-            backgroundColor: THEME_COLOR,
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            alignItems: "center",
-            justifyContent: "center",
-            shadowColor: THEME_COLOR,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 5,
-          }}
-        >
-          <Ionicons name="add" size={32} color="white" />
-        </TouchableOpacity>
+          }} 
+        />
       )}
     </View>
   );

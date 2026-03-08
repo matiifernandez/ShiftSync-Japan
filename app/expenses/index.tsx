@@ -1,152 +1,103 @@
-import React, { useCallback, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
   FlatList,
-  SectionList,
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Image,
+  SectionList,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-import { useRouter, Stack, useFocusEffect } from "expo-router";
-import { format, parseISO } from "date-fns";
-import { Colors } from "../../constants/Colors";
-import { enUS, ja } from "date-fns/locale";
+import { Ionicons } from "@expo/vector-icons";
+import { Stack, useRouter } from "expo-router";
 import { useExpenses } from "../../hooks/useExpenses";
-import { Expense } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
+import { Expense } from "../../types";
+import { format, parseISO } from "date-fns";
+import { useUserRole } from "../../hooks/useUserRole";
+import { Colors } from "../../constants/Colors";
+import { FAB } from "../../components/FAB";
 
+/**
+ * ExpensesScreen
+ * 
+ * Displays a list of expenses for the current user (Staff) or all expenses (Admin).
+ * Features:
+ * - Admin tabs: "Pending" and "History"
+ * - Pull-to-refresh
+ * - Inline Approval/Rejection for Admins
+ * - Floating Action Button to create new expenses
+ */
 export default function ExpensesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { t, locale } = useTranslation();
-  const { expenses, loading, refreshExpenses, userRole, updateExpenseStatus } = useExpenses();
+  const { t } = useTranslation();
+  const { expenses, loading, refreshExpenses, updateExpenseStatus } = useExpenses();
+  const { role: userRole, isAdmin } = useUserRole();
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
 
-  const dateLocale = useMemo(() => locale === 'ja' ? ja : enUS, [locale]);
-
-  // React Query handles fetching automatically
-
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "approved":
-        return "bg-green-100 text-green-700 border-green-200";
-      case "rejected":
-        return "bg-red-100 text-red-700 border-red-200";
-      default:
-        return "bg-yellow-100 text-yellow-700 border-yellow-200";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-        case "approved": return t('status_approved');
-        case "rejected": return t('status_rejected');
-        default: return t('status_pending');
-    }
-  }
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "transport": return "train";
-      case "accommodation": return "hotel";
-      case "fuel": return "gas-pump";
-      case "parking": return "parking";
-      case "meals": return "utensils";
-      default: return "receipt";
-    }
-  };
-
-  // Filter Data
-  const pendingExpenses = useMemo(() => 
-    expenses.filter(e => e.status === 'pending'), 
-  [expenses]);
-
+  // Filter logic
+  const pendingExpenses = expenses.filter(e => e.status === 'pending');
+  
   const historyExpenses = useMemo(() => {
-    const history = expenses.filter(e => e.status !== 'pending');
-    
-    // Group by Month
-    const grouped: { title: string; data: Expense[] }[] = [];
-    history.forEach(item => {
-      const month = format(parseISO(item.created_at), 'MMMM yyyy', { locale: dateLocale });
-      const existing = grouped.find(g => g.title === month);
-      if (existing) {
-        existing.data.push(item);
-      } else {
-        grouped.push({ title: month, data: [item] });
-      }
+    const historical = expenses.filter(e => e.status !== 'pending');
+    // Group by month
+    const groups: { [key: string]: Expense[] } = {};
+    historical.forEach(e => {
+      const month = format(parseISO(e.created_at), 'MMMM yyyy');
+      if (!groups[month]) groups[month] = [];
+      groups[month].push(e);
     });
-    return grouped;
-  }, [expenses, dateLocale]);
+    return Object.keys(groups).map(month => ({
+      title: month,
+      data: groups[month]
+    }));
+  }, [expenses]);
 
   const renderExpenseItem = ({ item }: { item: Expense }) => {
     const isPending = item.status === "pending";
-    const isAdmin = userRole === "admin";
-    const isOptimistic = item.id.startsWith("temp-");
+    const dateStr = format(parseISO(item.created_at), "MMM d, yyyy");
 
     return (
-      <TouchableOpacity 
-        activeOpacity={0.9}
-        onPress={() => router.push({ pathname: "/expenses/[id]", params: { id: item.id } })}
-        disabled={isOptimistic} // Disable interaction while syncing
-        className={`bg-white rounded-2xl p-4 mb-3 shadow-sm border ${isOptimistic ? 'border-yellow-300 opacity-70' : 'border-gray-100'}`}
+      <TouchableOpacity
+        onPress={() => router.push(`/expenses/${item.id}`)}
+        className="bg-white p-4 rounded-2xl mb-4 shadow-sm border border-gray-100"
       >
-        <View className="flex-row justify-between items-start mb-3">
-          <View className="flex-row items-center">
-            <View className={`w-10 h-10 ${isOptimistic ? 'bg-yellow-50' : 'bg-gray-100'} rounded-full items-center justify-center mr-3`}>
-              {isOptimistic ? (
-                <Ionicons name="cloud-upload-outline" size={18} color="#D97706" />
-              ) : (
-                <FontAwesome5
-                  name={getCategoryIcon(item.category)}
-                  size={18}
-                  color="#4B5563"
-                />
-              )}
-            </View>
-            <View>
-              <Text className="text-brand-dark font-bold text-lg">
-                ¥{item.amount.toLocaleString()}
-              </Text>
-              <Text className="text-gray-500 text-xs capitalize">
-                {t(('cat_' + item.category) as any)} • {format(parseISO(item.created_at), 'MMM d', { locale: dateLocale })}
-              </Text>
-            </View>
+        <View className="flex-row justify-between items-start mb-2">
+          <View className="flex-1">
+            <Text className="text-brand-dark font-bold text-lg">¥{item.amount.toLocaleString()}</Text>
+            <Text className="text-gray-500 text-xs">{dateStr}</Text>
           </View>
-          <View
-            className={`px-3 py-1 rounded-full border ${isOptimistic ? 'bg-yellow-100 border-yellow-200' : getStatusColor(item.status)}`}
-          >
-            <Text className={`text-[10px] font-bold uppercase ${isOptimistic ? 'text-yellow-700' : ''}`}>
-              {isOptimistic ? t('syncing') : getStatusLabel(item.status)}
+          <View className={`px-3 py-1 rounded-full ${
+            item.status === 'approved' ? 'bg-green-100' : 
+            item.status === 'rejected' ? 'bg-red-100' : 'bg-yellow-100'
+          }`}>
+            <Text className={`text-[10px] font-bold uppercase ${
+              item.status === 'approved' ? 'text-green-700' : 
+              item.status === 'rejected' ? 'text-red-700' : 'text-yellow-700'
+            }`}>
+              {t(('status_' + item.status) as any)}
             </Text>
           </View>
         </View>
 
-        {item.description ? (
-          <Text className="text-gray-600 text-sm mb-3" numberOfLines={1}>
-            {item.description}
-          </Text>
-        ) : null}
+        <View className="flex-row items-center mb-2">
+          <View className="bg-gray-100 px-2 py-1 rounded-md mr-2">
+            <Text className="text-gray-600 text-[10px] font-bold uppercase">{t(('cat_' + item.category) as any)}</Text>
+          </View>
+          <Text className="text-gray-400 text-xs" numberOfLines={1}>{item.description || t('no_description')}</Text>
+        </View>
 
-        {/* Profile info for Admin */}
-        {item.profiles && isAdmin && (
-          <View className="flex-row items-center pt-2 border-t border-gray-50 mt-1">
-            <View className="w-5 h-5 bg-gray-200 rounded-full items-center justify-center overflow-hidden mr-2">
-              {item.profiles.avatar_url ? (
-                <Image source={{ uri: item.profiles.avatar_url }} className="w-full h-full" />
-              ) : (
-                <Ionicons name="person" size={10} color="#9CA3AF" />
-              )}
-            </View>
-            <Text className="text-gray-400 text-xs">{item.profiles.full_name}</Text>
+        {/* User Info (Admin Only) */}
+        {isAdmin && item.profiles && (
+          <View className="flex-row items-center mt-1">
+            <Ionicons name="person-outline" size={12} color="#9CA3AF" />
+            <Text className="text-gray-400 text-[10px] ml-1">{item.profiles.full_name}</Text>
           </View>
         )}
 
-        {/* ADMIN ACTIONS (Only in Pending Tab) */}
+        {/* Admin Quick Actions */}
         {isAdmin && isPending && (
           <View className="flex-row gap-3 pt-3 border-t border-gray-100 mt-3">
             <TouchableOpacity
@@ -258,27 +209,10 @@ export default function ExpensesScreen() {
       )}
 
       {/* ADD BUTTON */}
-      <TouchableOpacity
-        onPress={() => router.push("/expenses/create")}
-        style={{
-          position: "absolute",
-          bottom: insets.bottom + 20,
-          right: 20,
-          backgroundColor: Colors.brand.red,
-          width: 56,
-          height: 56,
-          borderRadius: 28,
-          alignItems: "center",
-          justifyContent: "center",
-          shadowColor: Colors.brand.red,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-          elevation: 5,
-        }}
-      >
-        <Ionicons name="add" size={32} color="white" />
-      </TouchableOpacity>
+      <FAB 
+        onPress={() => router.push("/expenses/create")} 
+        style={{ bottom: insets.bottom + 20 }}
+      />
     </View>
   );
 }
