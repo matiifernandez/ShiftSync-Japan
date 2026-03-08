@@ -15,7 +15,6 @@ import { useExpenses } from "../../hooks/useExpenses";
 import { useTranslation } from "../../hooks/useTranslation";
 import { Expense } from "../../types";
 import { format, parseISO } from "date-fns";
-import { useUserRole } from "../../hooks/useUserRole";
 import { Colors } from "../../constants/Colors";
 import { FAB } from "../../components/FAB";
 
@@ -32,10 +31,11 @@ import { FAB } from "../../components/FAB";
 export default function ExpensesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { t } = useTranslation();
-  const { expenses, loading, refreshExpenses, updateExpenseStatus } = useExpenses();
-  const { role: userRole, isAdmin } = useUserRole();
+  const { t, dateLocale } = useTranslation();
+  const { expenses, loading, userRole, refreshExpenses, updateExpenseStatus } = useExpenses();
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
+
+  const isAdmin = userRole === 'admin';
 
   // Filter logic
   const pendingExpenses = expenses.filter(e => e.status === 'pending');
@@ -43,31 +43,36 @@ export default function ExpensesScreen() {
   const historyExpenses = useMemo(() => {
     const historical = expenses.filter(e => e.status !== 'pending');
     // Group by month
-    const groups: { [key: string]: Expense[] } = {};
+    const grouped: { title: string; data: Expense[] }[] = [];
+    
     historical.forEach(e => {
-      const month = format(parseISO(e.created_at), 'MMMM yyyy');
-      if (!groups[month]) groups[month] = [];
-      groups[month].push(e);
+      const month = format(parseISO(e.created_at), 'MMMM yyyy', { locale: dateLocale });
+      const existing = grouped.find(g => g.title === month);
+      if (existing) {
+        existing.data.push(e);
+      } else {
+        grouped.push({ title: month, data: [e] });
+      }
     });
-    return Object.keys(groups).map(month => ({
-      title: month,
-      data: groups[month]
-    }));
-  }, [expenses]);
+    return grouped;
+  }, [expenses, dateLocale]);
 
   const renderExpenseItem = ({ item }: { item: Expense }) => {
     const isPending = item.status === "pending";
-    const dateStr = format(parseISO(item.created_at), "MMM d, yyyy");
+    const isOptimistic = item.id.startsWith("temp-");
+    const dateStr = format(parseISO(item.created_at), "MMM d, yyyy", { locale: dateLocale });
 
     return (
       <TouchableOpacity
+        activeOpacity={0.9}
         onPress={() => router.push(`/expenses/${item.id}`)}
-        className="bg-white p-4 rounded-2xl mb-4 shadow-sm border border-gray-100"
+        disabled={isOptimistic}
+        className={`bg-white p-4 rounded-2xl mb-4 shadow-sm border ${isOptimistic ? 'border-yellow-300 opacity-70' : 'border-gray-100'}`}
       >
         <View className="flex-row justify-between items-start mb-2">
           <View className="flex-1">
             <Text className="text-brand-dark font-bold text-lg">¥{item.amount.toLocaleString()}</Text>
-            <Text className="text-gray-500 text-xs">{dateStr}</Text>
+            <Text className="text-gray-500 text-xs">{dateStr} {isOptimistic && `(${t('syncing')})`}</Text>
           </View>
           <View className={`px-3 py-1 rounded-full ${
             item.status === 'approved' ? 'bg-green-100' : 
@@ -98,7 +103,7 @@ export default function ExpensesScreen() {
         )}
 
         {/* Admin Quick Actions */}
-        {isAdmin && isPending && (
+        {isAdmin && isPending && !isOptimistic && (
           <View className="flex-row gap-3 pt-3 border-t border-gray-100 mt-3">
             <TouchableOpacity
               onPress={() => updateExpenseStatus(item.id, "rejected")}
@@ -141,7 +146,7 @@ export default function ExpensesScreen() {
       />
 
       {/* ADMIN TABS */}
-      {userRole === 'admin' && (
+      {isAdmin && (
         <View className="flex-row px-5 mb-2">
           <TouchableOpacity 
             onPress={() => setActiveTab('pending')}
@@ -165,7 +170,7 @@ export default function ExpensesScreen() {
       {/* CONTENT */}
       {activeTab === 'pending' ? (
         <FlatList
-          data={userRole === 'admin' ? pendingExpenses : expenses}
+          data={isAdmin ? pendingExpenses : expenses}
           renderItem={renderExpenseItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 20, paddingTop: 10 }}
@@ -212,6 +217,7 @@ export default function ExpensesScreen() {
       <FAB 
         onPress={() => router.push("/expenses/create")} 
         style={{ bottom: insets.bottom + 20 }}
+        accessibilityLabel={t('new_expense')}
       />
     </View>
   );

@@ -1,14 +1,15 @@
 import React from "react";
-import { TouchableOpacity, StyleSheet, ViewStyle } from "react-native";
+import { TouchableOpacity, StyleSheet, ViewStyle, StyleProp } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "../constants/Colors";
 
 interface FABProps {
   onPress: () => void;
+  accessibilityLabel: string;
   iconName?: keyof typeof Ionicons.glyphMap;
   iconSize?: number;
   backgroundColor?: string;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 /**
@@ -19,6 +20,7 @@ interface FABProps {
  */
 export const FAB: React.FC<FABProps> = ({ 
   onPress, 
+  accessibilityLabel,
   iconName = "add", 
   iconSize = 32,
   backgroundColor = Colors.brand.red,
@@ -33,6 +35,9 @@ export const FAB: React.FC<FABProps> = ({
         style
       ]}
       activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
     >
       <Ionicons name={iconName} size={iconSize} color="white" />
     </TouchableOpacity>

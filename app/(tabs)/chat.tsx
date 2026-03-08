@@ -202,6 +202,7 @@ export default function ChatScreen() {
         onPress={() => router.push("/chat-create")} 
         iconName="create-outline" 
         iconSize={28}
+        accessibilityLabel={t('new_chat')}
       />
     </View>
   );

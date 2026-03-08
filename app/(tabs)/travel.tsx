@@ -269,7 +269,10 @@ export default function TravelScreen() {
 
       {/* ADMIN ADD BUTTON */}
       {userRole === 'admin' && (
-        <FAB onPress={() => router.push("/travel/create")} />
+        <FAB 
+          onPress={() => router.push("/travel/create")} 
+          accessibilityLabel={t('create_itinerary')}
+        />
       )}
     </View>
   );

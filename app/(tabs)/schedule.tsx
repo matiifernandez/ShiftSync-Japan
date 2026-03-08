@@ -306,6 +306,7 @@ export default function ScheduleScreen() {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             router.push("/schedule/create");
           }} 
+          accessibilityLabel={t('create_shifts')}
         />
       )}
     </View>
