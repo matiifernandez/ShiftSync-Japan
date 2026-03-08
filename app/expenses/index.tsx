@@ -16,7 +16,6 @@ import { enUS, ja } from "date-fns/locale";
 import { useExpenses } from "../../hooks/useExpenses";
 import { Expense } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
-import { Colors } from "../../constants/Colors";
 import { FAB } from "../../components/FAB";
 
 /**
@@ -56,12 +55,18 @@ export default function ExpensesScreen() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "transport": return "train";
-      case "hotel": return "hotel";
+      case "hotel":
+      case "accommodation": return "hotel";
       case "fuel": return "gas-pump";
       case "parking": return "parking";
       case "meals": return "utensils";
       default: return "receipt";
     }
+  };
+
+  const getCategoryLabel = (category: string) => {
+    const normalized = category === 'accommodation' ? 'hotel' : category;
+    return t(`cat_${normalized}` as any);
   };
 
   // Filter logic
@@ -113,7 +118,7 @@ export default function ExpensesScreen() {
             <View>
               <Text className="text-brand-dark font-bold text-lg">¥{item.amount.toLocaleString()}</Text>
               <Text className="text-gray-500 text-xs capitalize">
-                {t(('cat_' + item.category) as any)} • {format(parseISO(item.created_at), 'MMM d', { locale: dateLocale })}
+                {getCategoryLabel(item.category)} • {format(parseISO(item.created_at), 'MMM d', { locale: dateLocale })}
               </Text>
             </View>
           </View>
