@@ -16,6 +16,8 @@ import { enUS, ja } from "date-fns/locale";
 import { useExpenses } from "../../hooks/useExpenses";
 import { Expense } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
+import { TranslationKey } from "../../lib/translations";
+import { Colors } from "../../constants/Colors";
 import { FAB } from "../../components/FAB";
 
 /**
@@ -65,8 +67,18 @@ export default function ExpensesScreen() {
   };
 
   const getCategoryLabel = (category: string) => {
-    const normalized = category === 'accommodation' ? 'hotel' : category;
-    return t(`cat_${normalized}` as any);
+    let key: TranslationKey = "cat_other";
+    
+    switch (category) {
+      case "transport": key = "cat_transport"; break;
+      case "hotel":
+      case "accommodation": key = "cat_hotel"; break;
+      case "fuel": key = "cat_fuel"; break;
+      case "parking": key = "cat_parking"; break;
+      case "meals": key = "cat_meals"; break;
+    }
+    
+    return t(key);
   };
 
   // Filter logic
