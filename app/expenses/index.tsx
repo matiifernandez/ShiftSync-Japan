@@ -38,7 +38,10 @@ export default function ExpensesScreen() {
   const isAdmin = userRole === 'admin';
 
   // Filter logic
-  const pendingExpenses = expenses.filter(e => e.status === 'pending');
+  const pendingExpenses = useMemo(
+    () => expenses.filter(e => e.status === 'pending'),
+    [expenses]
+  );
   
   const historyExpenses = useMemo(() => {
     const historical = expenses.filter(e => e.status !== 'pending');
