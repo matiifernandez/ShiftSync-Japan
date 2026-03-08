@@ -31,8 +31,8 @@ export const FAB: React.FC<FABProps> = ({
       onPress={onPress}
       style={[
         styles.fab, 
-        { backgroundColor, shadowColor: backgroundColor },
-        style
+        style,
+        { backgroundColor, shadowColor: backgroundColor }
       ]}
       activeOpacity={0.8}
       accessibilityRole="button"
