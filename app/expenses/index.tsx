@@ -3,18 +3,19 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
   SectionList,
+  TouchableOpacity,
+  RefreshControl,
+  Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
-import { Stack, useRouter } from "expo-router";
-import { useExpenses } from "../../hooks/useExpenses";
-import { useTranslation } from "../../hooks/useTranslation";
-import { Expense } from "../../types";
+import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import { useRouter, Stack } from "expo-router";
 import { format, parseISO } from "date-fns";
+import { enUS, ja } from "date-fns/locale";
+import { useExpenses } from "../../hooks/useExpenses";
+import { Expense } from "../../types";
+import { useTranslation } from "../../hooks/useTranslation";
 import { Colors } from "../../constants/Colors";
 import { FAB } from "../../components/FAB";
 
@@ -22,26 +23,51 @@ import { FAB } from "../../components/FAB";
  * ExpensesScreen
  * 
  * Displays a list of expenses for the current user (Staff) or all expenses (Admin).
- * Features:
- * - Admin tabs: "Pending" and "History"
- * - Pull-to-refresh
- * - Inline Approval/Rejection for Admins
- * - Floating Action Button to create new expenses
  */
 export default function ExpensesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { t, dateLocale } = useTranslation();
+  const { t, locale } = useTranslation();
   const { expenses, loading, userRole, refreshExpenses, updateExpenseStatus } = useExpenses();
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
 
+  const dateLocale = useMemo(() => locale === 'ja' ? ja : enUS, [locale]);
   const isAdmin = userRole === 'admin';
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "approved":
+        return "bg-green-100 text-green-700 border-green-200";
+      case "rejected":
+        return "bg-red-100 text-red-700 border-red-200";
+      default:
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+        case "approved": return t('status_approved');
+        case "rejected": return t('status_rejected');
+        default: return t('status_pending');
+    }
+  }
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "transport": return "train";
+      case "hotel": return "hotel";
+      case "fuel": return "gas-pump";
+      case "parking": return "parking";
+      case "meals": return "utensils";
+      default: return "receipt";
+    }
+  };
+
   // Filter logic
-  const pendingExpenses = useMemo(
-    () => expenses.filter(e => e.status === 'pending'),
-    [expenses]
-  );
+  const pendingExpenses = useMemo(() => 
+    expenses.filter(e => e.status === 'pending'), 
+  [expenses]);
   
   const historyExpenses = useMemo(() => {
     const historical = expenses.filter(e => e.status !== 'pending');
@@ -63,7 +89,6 @@ export default function ExpensesScreen() {
   const renderExpenseItem = ({ item }: { item: Expense }) => {
     const isPending = item.status === "pending";
     const isOptimistic = item.id.startsWith("temp-");
-    const dateStr = format(parseISO(item.created_at), "MMM d, yyyy", { locale: dateLocale });
 
     return (
       <TouchableOpacity
@@ -72,36 +97,52 @@ export default function ExpensesScreen() {
         disabled={isOptimistic}
         className={`bg-white p-4 rounded-2xl mb-4 shadow-sm border ${isOptimistic ? 'border-yellow-300 opacity-70' : 'border-gray-100'}`}
       >
-        <View className="flex-row justify-between items-start mb-2">
-          <View className="flex-1">
-            <Text className="text-brand-dark font-bold text-lg">¥{item.amount.toLocaleString()}</Text>
-            <Text className="text-gray-500 text-xs">{dateStr} {isOptimistic && `(${t('syncing')})`}</Text>
+        <View className="flex-row justify-between items-start mb-3">
+          <View className="flex-row items-center">
+            <View className={`w-10 h-10 ${isOptimistic ? 'bg-yellow-50' : 'bg-gray-100'} rounded-full items-center justify-center mr-3`}>
+              {isOptimistic ? (
+                <Ionicons name="cloud-upload-outline" size={18} color="#D97706" />
+              ) : (
+                <FontAwesome5
+                  name={getCategoryIcon(item.category)}
+                  size={18}
+                  color="#4B5563"
+                />
+              )}
+            </View>
+            <View>
+              <Text className="text-brand-dark font-bold text-lg">¥{item.amount.toLocaleString()}</Text>
+              <Text className="text-gray-500 text-xs capitalize">
+                {t(('cat_' + item.category) as any)} • {format(parseISO(item.created_at), 'MMM d', { locale: dateLocale })}
+              </Text>
+            </View>
           </View>
-          <View className={`px-3 py-1 rounded-full ${
-            item.status === 'approved' ? 'bg-green-100' : 
-            item.status === 'rejected' ? 'bg-red-100' : 'bg-yellow-100'
-          }`}>
-            <Text className={`text-[10px] font-bold uppercase ${
-              item.status === 'approved' ? 'text-green-700' : 
-              item.status === 'rejected' ? 'text-red-700' : 'text-yellow-700'
-            }`}>
-              {t(('status_' + item.status) as any)}
+          <View
+            className={`px-3 py-1 rounded-full border ${isOptimistic ? 'bg-yellow-100 border-yellow-200' : getStatusColor(item.status)}`}
+          >
+            <Text className={`text-[10px] font-bold uppercase ${isOptimistic ? 'text-yellow-700' : ''}`}>
+              {isOptimistic ? t('syncing') : getStatusLabel(item.status)}
             </Text>
           </View>
         </View>
 
-        <View className="flex-row items-center mb-2">
-          <View className="bg-gray-100 px-2 py-1 rounded-md mr-2">
-            <Text className="text-gray-600 text-[10px] font-bold uppercase">{t(('cat_' + item.category) as any)}</Text>
-          </View>
-          <Text className="text-gray-400 text-xs" numberOfLines={1}>{item.description || t('no_description')}</Text>
-        </View>
+        {item.description ? (
+          <Text className="text-gray-600 text-sm mb-3" numberOfLines={1}>
+            {item.description}
+          </Text>
+        ) : null}
 
-        {/* User Info (Admin Only) */}
-        {isAdmin && item.profiles && (
-          <View className="flex-row items-center mt-1">
-            <Ionicons name="person-outline" size={12} color="#9CA3AF" />
-            <Text className="text-gray-400 text-[10px] ml-1">{item.profiles.full_name}</Text>
+        {/* Profile info for Admin */}
+        {item.profiles && isAdmin && (
+          <View className="flex-row items-center pt-2 border-t border-gray-50 mt-1">
+            <View className="w-5 h-5 bg-gray-200 rounded-full items-center justify-center overflow-hidden mr-2">
+              {item.profiles.avatar_url ? (
+                <Image source={{ uri: item.profiles.avatar_url }} className="w-full h-full" />
+              ) : (
+                <Ionicons name="person" size={10} color="#9CA3AF" />
+              )}
+            </View>
+            <Text className="text-gray-400 text-xs">{item.profiles.full_name}</Text>
           </View>
         )}
 

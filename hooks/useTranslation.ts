@@ -3,7 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Localization from 'expo-localization';
 import { translations, TranslationKey } from '../lib/translations';
 import { supabase } from '../lib/supabase';
-import { enUS, ja } from 'date-fns/locale';
 
 const LANGUAGE_KEY = 'user_language_preference';
 
@@ -93,7 +92,5 @@ export function useTranslation() {
     return translations[locale][key] || key;
   }, [locale]);
 
-  const dateLocale = locale === 'ja' ? ja : enUS;
-
-  return { t, locale, changeLanguage, dateLocale };
+  return { t, locale, changeLanguage };
 }
