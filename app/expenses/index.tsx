@@ -1,35 +1,39 @@
-import React, { useCallback, useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
   FlatList,
   SectionList,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
   Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-import { useRouter, Stack, useFocusEffect } from "expo-router";
+import { useRouter, Stack } from "expo-router";
 import { format, parseISO } from "date-fns";
-import { Colors } from "../../constants/Colors";
 import { enUS, ja } from "date-fns/locale";
 import { useExpenses } from "../../hooks/useExpenses";
 import { Expense } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
+import { TranslationKey } from "../../lib/translations";
+import { Colors } from "../../constants/Colors";
+import { FAB } from "../../components/FAB";
 
+/**
+ * ExpensesScreen
+ * 
+ * Displays a list of expenses for the current user (Staff) or all expenses (Admin).
+ */
 export default function ExpensesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t, locale } = useTranslation();
-  const { expenses, loading, refreshExpenses, userRole, updateExpenseStatus } = useExpenses();
+  const { expenses, loading, userRole, refreshExpenses, updateExpenseStatus } = useExpenses();
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
 
   const dateLocale = useMemo(() => locale === 'ja' ? ja : enUS, [locale]);
-
-  // React Query handles fetching automatically
-
+  const isAdmin = userRole === 'admin';
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -53,6 +57,7 @@ export default function ExpensesScreen() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "transport": return "train";
+      case "hotel":
       case "accommodation": return "hotel";
       case "fuel": return "gas-pump";
       case "parking": return "parking";
@@ -61,23 +66,38 @@ export default function ExpensesScreen() {
     }
   };
 
-  // Filter Data
+  const getCategoryLabel = (category: string) => {
+    let key: TranslationKey = "cat_other";
+    
+    switch (category) {
+      case "transport": key = "cat_transport"; break;
+      case "hotel":
+      case "accommodation": key = "cat_hotel"; break;
+      case "fuel": key = "cat_fuel"; break;
+      case "parking": key = "cat_parking"; break;
+      case "meals": key = "cat_meals"; break;
+    }
+    
+    return t(key);
+  };
+
+  // Filter logic
   const pendingExpenses = useMemo(() => 
     expenses.filter(e => e.status === 'pending'), 
   [expenses]);
-
+  
   const historyExpenses = useMemo(() => {
-    const history = expenses.filter(e => e.status !== 'pending');
-    
-    // Group by Month
+    const historical = expenses.filter(e => e.status !== 'pending');
+    // Group by month
     const grouped: { title: string; data: Expense[] }[] = [];
-    history.forEach(item => {
-      const month = format(parseISO(item.created_at), 'MMMM yyyy', { locale: dateLocale });
+    
+    historical.forEach(e => {
+      const month = format(parseISO(e.created_at), 'MMMM yyyy', { locale: dateLocale });
       const existing = grouped.find(g => g.title === month);
       if (existing) {
-        existing.data.push(item);
+        existing.data.push(e);
       } else {
-        grouped.push({ title: month, data: [item] });
+        grouped.push({ title: month, data: [e] });
       }
     });
     return grouped;
@@ -85,15 +105,14 @@ export default function ExpensesScreen() {
 
   const renderExpenseItem = ({ item }: { item: Expense }) => {
     const isPending = item.status === "pending";
-    const isAdmin = userRole === "admin";
     const isOptimistic = item.id.startsWith("temp-");
 
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         activeOpacity={0.9}
-        onPress={() => router.push({ pathname: "/expenses/[id]", params: { id: item.id } })}
-        disabled={isOptimistic} // Disable interaction while syncing
-        className={`bg-white rounded-2xl p-4 mb-3 shadow-sm border ${isOptimistic ? 'border-yellow-300 opacity-70' : 'border-gray-100'}`}
+        onPress={() => router.push(`/expenses/${item.id}`)}
+        disabled={isOptimistic}
+        className={`bg-white p-4 rounded-2xl mb-4 shadow-sm border ${isOptimistic ? 'border-yellow-300 opacity-70' : 'border-gray-100'}`}
       >
         <View className="flex-row justify-between items-start mb-3">
           <View className="flex-row items-center">
@@ -109,11 +128,9 @@ export default function ExpensesScreen() {
               )}
             </View>
             <View>
-              <Text className="text-brand-dark font-bold text-lg">
-                ¥{item.amount.toLocaleString()}
-              </Text>
+              <Text className="text-brand-dark font-bold text-lg">¥{item.amount.toLocaleString()}</Text>
               <Text className="text-gray-500 text-xs capitalize">
-                {t(('cat_' + item.category) as any)} • {format(parseISO(item.created_at), 'MMM d', { locale: dateLocale })}
+                {getCategoryLabel(item.category)} • {format(parseISO(item.created_at), 'MMM d', { locale: dateLocale })}
               </Text>
             </View>
           </View>
@@ -146,8 +163,8 @@ export default function ExpensesScreen() {
           </View>
         )}
 
-        {/* ADMIN ACTIONS (Only in Pending Tab) */}
-        {isAdmin && isPending && (
+        {/* Admin Quick Actions */}
+        {isAdmin && isPending && !isOptimistic && (
           <View className="flex-row gap-3 pt-3 border-t border-gray-100 mt-3">
             <TouchableOpacity
               onPress={() => updateExpenseStatus(item.id, "rejected")}
@@ -190,7 +207,7 @@ export default function ExpensesScreen() {
       />
 
       {/* ADMIN TABS */}
-      {userRole === 'admin' && (
+      {isAdmin && (
         <View className="flex-row px-5 mb-2">
           <TouchableOpacity 
             onPress={() => setActiveTab('pending')}
@@ -214,7 +231,7 @@ export default function ExpensesScreen() {
       {/* CONTENT */}
       {activeTab === 'pending' ? (
         <FlatList
-          data={userRole === 'admin' ? pendingExpenses : expenses}
+          data={isAdmin ? pendingExpenses : expenses}
           renderItem={renderExpenseItem}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 20, paddingTop: 10 }}
@@ -258,27 +275,11 @@ export default function ExpensesScreen() {
       )}
 
       {/* ADD BUTTON */}
-      <TouchableOpacity
-        onPress={() => router.push("/expenses/create")}
-        style={{
-          position: "absolute",
-          bottom: insets.bottom + 20,
-          right: 20,
-          backgroundColor: Colors.brand.red,
-          width: 56,
-          height: 56,
-          borderRadius: 28,
-          alignItems: "center",
-          justifyContent: "center",
-          shadowColor: Colors.brand.red,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-          elevation: 5,
-        }}
-      >
-        <Ionicons name="add" size={32} color="white" />
-      </TouchableOpacity>
+      <FAB 
+        onPress={() => router.push("/expenses/create")} 
+        style={{ bottom: insets.bottom + 20 }}
+        accessibilityLabel={t('new_expense')}
+      />
     </View>
   );
 }

@@ -19,6 +19,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { supabase } from "../../lib/supabase";
 import { useToast } from "../../context/ToastContext";
+import { FAB } from "../../components/FAB";
 
 export default function ChatScreen() {
   const router = useRouter();
@@ -197,27 +198,12 @@ export default function ChatScreen() {
       )}
 
       {/* NEW CHAT FAB */}
-      <TouchableOpacity
-        onPress={() => router.push("/chat-create")}
-        style={{
-          position: "absolute",
-          bottom: 20,
-          right: 20,
-          backgroundColor: Colors.brand.red,
-          width: 56,
-          height: 56,
-          borderRadius: 28,
-          alignItems: "center",
-          justifyContent: "center",
-          shadowColor: Colors.brand.red,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-          elevation: 5,
-        }}
-      >
-        <Ionicons name="create-outline" size={28} color="white" />
-      </TouchableOpacity>
+      <FAB 
+        onPress={() => router.push("/chat-create")} 
+        iconName="create-outline" 
+        iconSize={28}
+        accessibilityLabel={t('new_chat')}
+      />
     </View>
   );
 }

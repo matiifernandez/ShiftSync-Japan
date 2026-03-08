@@ -19,6 +19,7 @@ import { useUserRole } from "../../hooks/useUserRole";
 import { useRouter, useFocusEffect } from "expo-router";
 import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
 import { useToast } from "../../context/ToastContext";
+import { FAB } from "../../components/FAB";
 
 export default function TravelScreen() {
   const router = useRouter();
@@ -268,27 +269,10 @@ export default function TravelScreen() {
 
       {/* ADMIN ADD BUTTON */}
       {userRole === 'admin' && (
-        <TouchableOpacity
-          onPress={() => router.push("/travel/create")}
-          style={{
-            position: "absolute",
-            bottom: 20,
-            right: 20,
-            backgroundColor: Colors.brand.red,
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            alignItems: "center",
-            justifyContent: "center",
-            shadowColor: Colors.brand.red,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 5,
-          }}
-        >
-          <Ionicons name="add" size={32} color="white" />
-        </TouchableOpacity>
+        <FAB 
+          onPress={() => router.push("/travel/create")} 
+          accessibilityLabel={t('create_itinerary')}
+        />
       )}
     </View>
   );
