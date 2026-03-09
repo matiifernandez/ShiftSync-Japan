@@ -294,6 +294,7 @@ export default function ScheduleScreen() {
               message={t('no_events')} 
               iconSize={48}
               iconColor="#D1D5DB"
+              containerClass="items-center justify-center mt-10"
             />
           )}
           <View className="h-10" />

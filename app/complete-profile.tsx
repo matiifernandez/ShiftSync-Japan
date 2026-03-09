@@ -235,7 +235,7 @@ export default function CompleteProfileScreen() {
           <View>
             <Text className="text-gray-700 font-medium mb-1">{t('full_name')}</Text>
             <FormInput
-              icon="person-outline"
+              containerClass="bg-gray-50 p-4 rounded-xl border border-gray-200"
               placeholder={t('name_placeholder')}
               value={fullName}
               onChangeText={setFullName}

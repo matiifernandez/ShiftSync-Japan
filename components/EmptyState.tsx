@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View, Text, ViewStyle, StyleProp } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface EmptyStateProps {
@@ -8,6 +8,8 @@ interface EmptyStateProps {
   iconColor?: string;
   iconSize?: number;
   iconContainerClass?: string;
+  containerClass?: string;
+  style?: StyleProp<ViewStyle>;
 }
 
 /**
@@ -20,7 +22,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   message, 
   iconColor = "#E5E7EB",
   iconSize = 64,
-  iconContainerClass
+  iconContainerClass,
+  containerClass = "items-center justify-center py-20 px-6",
+  style
 }) => {
   const iconElement = (
     <Ionicons 
@@ -33,7 +37,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   );
 
   return (
-    <View className="items-center justify-center py-20 px-6">
+    <View className={containerClass} style={style}>
       {iconContainerClass ? (
         <View className={iconContainerClass}>
           {iconElement}
