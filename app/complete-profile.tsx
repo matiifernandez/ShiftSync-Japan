@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Alert,
   Image,
@@ -19,6 +18,7 @@ import { useToast } from "../context/ToastContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { Colors } from "../constants/Colors";
+import { FormInput } from "../components/FormInput";
 
 /**
  * CompleteProfileScreen
@@ -234,8 +234,8 @@ export default function CompleteProfileScreen() {
         <View className="space-y-4">
           <View>
             <Text className="text-gray-700 font-medium mb-1">{t('full_name')}</Text>
-            <TextInput
-              className="bg-gray-50 p-4 rounded-xl border border-gray-200"
+            <FormInput
+              containerClass="bg-gray-50 p-4 rounded-xl border border-gray-200"
               placeholder={t('name_placeholder')}
               value={fullName}
               onChangeText={setFullName}

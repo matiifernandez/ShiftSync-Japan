@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../hooks/useTranslation";
 import Logo from "../components/Logo";
 import { useToast } from "../context/ToastContext";
+import { FormInput } from "../components/FormInput";
 
 /**
  * SignUpScreen
@@ -102,48 +103,39 @@ export default function SignUpScreen() {
           
           <View className="mb-4">
             <Text className="text-gray-600 mb-2 ml-1 font-medium">{t('email_label')}</Text>
-            <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3.5">
-              <Ionicons name="mail-outline" size={20} color="#9CA3AF" />
-              <TextInput
-                className="flex-1 ml-3 text-gray-800 text-base"
-                placeholder="name@company.com"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                accessibilityLabel="Email address input"
-              />
-            </View>
+            <FormInput
+              icon="mail-outline"
+              placeholder="name@company.com"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              accessibilityLabel="Email address input"
+            />
           </View>
 
           <View className="mb-4">
             <Text className="text-gray-600 mb-2 ml-1 font-medium">{t('password_label')}</Text>
-            <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3.5">
-              <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" />
-              <TextInput
-                className="flex-1 ml-3 text-gray-800 text-base"
-                placeholder="••••••••"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                accessibilityLabel="Password input"
-              />
-            </View>
+            <FormInput
+              icon="lock-closed-outline"
+              placeholder="••••••••"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              accessibilityLabel="Password input"
+            />
           </View>
 
           <View className="mb-8">
             <Text className="text-gray-600 mb-2 ml-1 font-medium">{t('confirm_password')}</Text>
-            <View className="flex-row items-center bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3.5">
-              <Ionicons name="shield-checkmark-outline" size={20} color="#9CA3AF" />
-              <TextInput
-                className="flex-1 ml-3 text-gray-800 text-base"
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                secureTextEntry
-                accessibilityLabel="Confirm password input"
-              />
-            </View>
+            <FormInput
+              icon="shield-checkmark-outline"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              secureTextEntry
+              accessibilityLabel="Confirm password input"
+            />
           </View>
 
           <TouchableOpacity

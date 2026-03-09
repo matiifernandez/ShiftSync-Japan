@@ -19,6 +19,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { TranslationKey } from "../../lib/translations";
 import { Colors } from "../../constants/Colors";
 import { FAB } from "../../components/FAB";
+import { EmptyState } from "../../components/EmptyState";
 
 /**
  * ExpensesScreen
@@ -240,12 +241,13 @@ export default function ExpensesScreen() {
           }
           ListEmptyComponent={
             !loading ? (
-            <View className="items-center justify-center py-20">
-              <View className="bg-green-50 w-20 h-20 rounded-full items-center justify-center">
-                <Ionicons name="checkmark-done" size={40} color="#15803D" />
-              </View>
-              <Text className="text-gray-400 mt-4 text-lg font-medium">{t('all_caught_up')}</Text>
-            </View>
+              <EmptyState 
+                icon="checkmark-done" 
+                message={t('all_caught_up')} 
+                iconColor="#15803D"
+                iconSize={40}
+                iconContainerClass="bg-green-50 w-20 h-20 rounded-full items-center justify-center"
+              />
             ) : null
           }
         />
@@ -265,10 +267,10 @@ export default function ExpensesScreen() {
           }
           ListEmptyComponent={
             !loading ? (
-              <View className="items-center justify-center mt-20">
-                <Ionicons name="time-outline" size={64} color="#E5E7EB" />
-                <Text className="text-gray-400 mt-4 text-lg font-medium">{t('no_history')}</Text>
-              </View>
+              <EmptyState 
+                icon="time-outline" 
+                message={t('no_history')} 
+              />
             ) : null
           }
         />

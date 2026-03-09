@@ -18,6 +18,7 @@ import { useConversations, Conversation } from "../../hooks/useConversations";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useToast } from "../../context/ToastContext";
 import { FAB } from "../../components/FAB";
+import { EmptyState } from "../../components/EmptyState";
 
 export default function ChatScreen() {
   const router = useRouter();
@@ -173,10 +174,10 @@ export default function ChatScreen() {
                 <RefreshControl refreshing={loading} onRefresh={refreshConversations} tintColor={Colors.brand.red} />
             }
             ListEmptyComponent={
-            <View className="flex-1 items-center justify-center mt-20">
-                <Ionicons name="chatbubbles-outline" size={64} color="#E5E7EB" />
-                <Text className="text-gray-400 mt-4 text-lg">{t('no_conversations')}</Text>
-            </View>
+              <EmptyState 
+                icon="chatbubbles-outline" 
+                message={t('no_conversations')} 
+              />
             }
         />
       )}

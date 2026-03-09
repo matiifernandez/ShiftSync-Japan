@@ -13,6 +13,7 @@ import { useUserRole } from "../../hooks/useUserRole";
 import { useToast } from "../../context/ToastContext";
 import { Colors } from "../../constants/Colors";
 import { FAB } from "../../components/FAB";
+import { EmptyState } from "../../components/EmptyState";
 
 const THEME_COLOR = Colors.brand.red;
 
@@ -288,12 +289,13 @@ export default function ScheduleScreen() {
               );
             })
           ) : (
-            <View className="items-center justify-center mt-10">
-              <Ionicons name="calendar-outline" size={48} color="#D1D5DB" />
-              <Text className="text-gray-400 mt-2 font-medium">
-                {t('no_events')}
-              </Text>
-            </View>
+            <EmptyState 
+              icon="calendar-outline" 
+              message={t('no_events')} 
+              iconSize={48}
+              iconColor="#D1D5DB"
+              containerClass="items-center justify-center mt-10"
+            />
           )}
           <View className="h-10" />
         </ScrollView>
