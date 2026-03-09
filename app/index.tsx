@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, Image, Alert, ActivityIndicator, Keyboard
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
-import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../hooks/useTranslation";
 import Logo from "../components/Logo";
 import { useToast } from "../context/ToastContext";

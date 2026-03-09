@@ -5,6 +5,8 @@ import { Ionicons } from "@expo/vector-icons";
 interface EmptyStateProps {
   icon: keyof typeof Ionicons.glyphMap;
   message: string;
+  iconColor?: string;
+  iconContainerClass?: string;
 }
 
 /**
@@ -12,10 +14,23 @@ interface EmptyStateProps {
  * 
  * Displays a centered icon and message when a list or view has no data.
  */
-export const EmptyState: React.FC<EmptyStateProps> = ({ icon, message }) => {
+export const EmptyState: React.FC<EmptyStateProps> = ({ 
+  icon, 
+  message, 
+  iconColor = "#E5E7EB",
+  iconContainerClass
+}) => {
   return (
     <View className="items-center justify-center py-20 px-6">
-      <Ionicons name={icon} size={64} color="#E5E7EB" />
+      <View className={iconContainerClass}>
+        <Ionicons 
+          name={icon} 
+          size={iconContainerClass ? 40 : 64} 
+          color={iconColor} 
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no-hide-descendants"
+        />
+      </View>
       <Text className="text-gray-400 mt-4 text-center text-lg font-medium">
         {message}
       </Text>
