@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useRouter, Stack, useLocalSearchParams } from "expo-router";
+import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useToast } from "../../context/ToastContext";
 import { Colors } from "../../constants/Colors";
@@ -38,7 +39,7 @@ export default function ExpenseDetailScreen() {
   const { showToast } = useToast();
   const { updateExpense, deleteExpense } = useExpenses();
   
-  const { data: expense, isLoading: loading } = useExpense(id as string);
+  const { data: expense, isLoading: loading, error } = useExpense(id as string);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -47,6 +48,14 @@ export default function ExpenseDetailScreen() {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<string | null>(null);
+
+  // Handle errors
+  useEffect(() => {
+    if (error) {
+      showToast(t('load_expense_error'), 'error');
+      router.back();
+    }
+  }, [error]);
 
   // Initialize form state when expense data is loaded
   useEffect(() => {

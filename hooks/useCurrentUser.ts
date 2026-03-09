@@ -80,7 +80,6 @@ export function useCurrentUser() {
     onSuccess: (data) => {
       queryClient.setQueryData(['current-user'], data);
       queryClient.invalidateQueries({ queryKey: ['current-user'] });
-      queryClient.invalidateQueries({ queryKey: ['user-role'] });
       
       if (data.preferred_language) {
         changeLanguage(data.preferred_language as 'en' | 'ja');
@@ -95,6 +94,11 @@ export function useCurrentUser() {
 
   return {
     profile: profile ?? null,
+    // Backward-compatible fields
+    userId: profile?.id ?? null,
+    organizationId: profile?.organization_id ?? null,
+    user: profile ?? null,
+    role: profile?.role ?? null,
     loading,
     refreshProfile: refetch,
     updateProfile: (updates: Partial<Profile> & { imageUri?: string }) => 

@@ -25,7 +25,6 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { showToast } = useToast();
-  const { userId } = useCurrentUser();
   const [search, setSearch] = useState("");
   const { 
     conversations, 

@@ -4,6 +4,7 @@ import { Expense } from '../types';
 import { useOfflineQueue, UploadTask } from './useOfflineQueue';
 import { useToast } from '../context/ToastContext';
 import { useTranslation } from './useTranslation';
+import { useCurrentUser } from './useCurrentUser';
 
 /**
  * useExpenses hook
@@ -14,23 +15,13 @@ export function useExpenses() {
   const { queue, addToQueue } = useOfflineQueue();
   const { showToast } = useToast();
   const { t } = useTranslation();
-
-  // 1. Fetch Current User Profile (to get organization_id)
-  const { data: userProfile } = useQuery({
-    queryKey: ['current-user-profile'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
-      const { data } = await supabase.from('profiles').select('role, organization_id').eq('id', user.id).single();
-      return data;
-    }
-  });
+  const { profile: userProfile } = useCurrentUser();
 
   const userRole = userProfile?.role || 'staff';
   const isAdmin = userRole === 'admin';
   const orgId = userProfile?.organization_id;
 
-  // 2. Fetch Expenses List (Filtered by Organization)
+  // 1. Fetch Expenses List (Filtered by Organization)
   const { data: serverExpenses = [], isLoading: loading, refetch } = useQuery({
     queryKey: ['expenses', orgId],
     queryFn: async () => {
@@ -71,7 +62,7 @@ export function useExpenses() {
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
-  // 3. Mutations
+  // 2. Mutations
   const createMutation = useMutation({
     mutationFn: async ({ data, imageUri }: { data: Partial<Expense>; imageUri?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -125,7 +116,7 @@ export function useExpenses() {
         }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses', orgId] });
     }
   });
 
@@ -138,8 +129,8 @@ export function useExpenses() {
       if (error) throw error;
     },
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      queryClient.invalidateQueries({ queryKey: ['expense', id] });
+      queryClient.invalidateQueries({ queryKey: ['expenses', orgId] });
+      queryClient.invalidateQueries({ queryKey: ['expense', orgId, id] });
       showToast(t('expense_updated'), 'success');
     },
     onError: (err: any) => showToast(err.message, 'error')
@@ -151,7 +142,7 @@ export function useExpenses() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses', orgId] });
       showToast(t('expense_deleted'), 'success');
     },
     onError: (err: any) => showToast(err.message, 'error')
@@ -163,23 +154,25 @@ export function useExpenses() {
       if (error) throw error;
     },
     onMutate: async ({ id, status }) => {
-      await queryClient.cancelQueries({ queryKey: ['expenses'] });
-      const previousExpenses = queryClient.getQueryData<Expense[]>(['expenses']);
+      await queryClient.cancelQueries({ queryKey: ['expenses', orgId] });
+      const previousExpenses = queryClient.getQueryData<Expense[]>(['expenses', orgId]);
 
-      queryClient.setQueryData<Expense[]>(['expenses'], (old) => 
-        old?.map(e => e.id === id ? { ...e, status } : e)
-      );
+      if (previousExpenses) {
+        queryClient.setQueryData<Expense[]>(['expenses', orgId], (old) => 
+          old?.map(e => e.id === id ? { ...e, status } : e)
+        );
+      }
 
       return { previousExpenses };
     },
     onError: (err, variables, context) => {
       if (context?.previousExpenses) {
-        queryClient.setQueryData(['expenses'], context.previousExpenses);
+        queryClient.setQueryData(['expenses', orgId], context.previousExpenses);
       }
       showToast(err.message, 'error');
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses', orgId] });
     }
   });
 
@@ -210,22 +203,11 @@ export function useExpenses() {
  */
 export function useExpense(id: string) {
   const { queue } = useOfflineQueue();
-
-  // We need orgId to scope the query
-  const { data: userProfile } = useQuery({
-    queryKey: ['current-user-profile'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
-      const { data } = await supabase.from('profiles').select('organization_id').eq('id', user.id).single();
-      return data;
-    }
-  });
-
+  const { profile: userProfile } = useCurrentUser();
   const orgId = userProfile?.organization_id;
 
   return useQuery({
-    queryKey: ['expense', id],
+    queryKey: ['expense', orgId, id],
     queryFn: async () => {
       if (!orgId) throw new Error("No organization assigned");
 

@@ -46,27 +46,39 @@ export default function CompleteProfileScreen() {
 
   // Load profile data into form state
   useEffect(() => {
-    if (profile) {
-      setIsEditing(true);
-      setFullName(profile.full_name || "");
-      if (profile.organization_id) {
-        setOrganizationId(profile.organization_id);
-      }
-      if (profile.preferred_language) {
-        setLanguage(profile.preferred_language as "en" | "ja");
-      }
-      if (profile.avatar_url) {
-        setImage(profile.avatar_url);
-      }
-    } else if (!profileLoading) {
-      // New user, check storage for pending invite
-      AsyncStorage.getItem("@pending_org_id").then(pendingOrgId => {
+    async function initForm() {
+      if (profile) {
+        setIsEditing(true);
+        setFullName(profile.full_name || "");
+        
+        if (profile.organization_id) {
+          setOrganizationId(profile.organization_id);
+        } else {
+          // Profile exists but no orgId, check for pending invite
+          const pendingOrgId = await AsyncStorage.getItem("@pending_org_id");
+          if (pendingOrgId) {
+            setOrganizationId(pendingOrgId);
+            await AsyncStorage.removeItem("@pending_org_id");
+          }
+        }
+
+        if (profile.preferred_language) {
+          setLanguage(profile.preferred_language as "en" | "ja");
+        }
+        if (profile.avatar_url) {
+          setImage(profile.avatar_url);
+        }
+      } else if (!profileLoading) {
+        // New user, check storage for pending invite
+        const pendingOrgId = await AsyncStorage.getItem("@pending_org_id");
         if (pendingOrgId) {
           setOrganizationId(pendingOrgId);
-          AsyncStorage.removeItem("@pending_org_id");
+          await AsyncStorage.removeItem("@pending_org_id");
         }
-      });
+      }
     }
+    
+    initForm();
   }, [profile, profileLoading]);
 
   // Effect to update orgId if params change (deep link)

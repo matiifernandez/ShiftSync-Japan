@@ -85,7 +85,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       if (!user) return;
 
       const { error } = await supabase
-        .from('conversation_members')
+        .from('conversation_participants')
         .update({ is_pinned: isPinned })
         .eq('conversation_id', id)
         .eq('user_id', user.id);
@@ -104,7 +104,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       if (!user) return;
 
       const { error } = await supabase
-        .from('conversation_members')
+        .from('conversation_participants')
         .delete()
         .eq('conversation_id', id)
         .eq('user_id', user.id);
