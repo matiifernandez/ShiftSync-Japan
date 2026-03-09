@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from '../lib/supabase';
 import { Expense } from '../types';
 import { useOfflineQueue, UploadTask } from './useOfflineQueue';
 import { useToast } from '../context/ToastContext';
@@ -15,14 +15,14 @@ export function useExpenses() {
   const { queue, addToQueue } = useOfflineQueue();
   const { showToast } = useToast();
   const { t } = useTranslation();
-  const { profile: userProfile } = useCurrentUser();
+  const { profile: userProfile, loading: profileLoading } = useCurrentUser();
 
   const userRole = userProfile?.role || 'staff';
   const isAdmin = userRole === 'admin';
   const orgId = userProfile?.organization_id;
 
   // 1. Fetch Expenses List (Filtered by Organization)
-  const { data: serverExpenses = [], isLoading: loading, refetch } = useQuery({
+  const { data: serverExpenses = [], isLoading: expensesLoading, refetch } = useQuery({
     queryKey: ['expenses', orgId],
     queryFn: async () => {
       if (!orgId) return [];
@@ -193,7 +193,7 @@ export function useExpenses() {
 
   return {
     expenses,
-    loading,
+    loading: profileLoading || expensesLoading,
     userRole,
     isAdmin,
     refreshExpenses: refetch,
@@ -215,21 +215,24 @@ export function useExpenses() {
 /**
  * useExpense hook
  * Fetches a single expense by ID, scoped by organization.
+ * Also resolves receipt signed URL if needed.
  */
 export function useExpense(id: string) {
   const { queue } = useOfflineQueue();
-  const { profile: userProfile } = useCurrentUser();
+  const { profile: userProfile, loading: profileLoading } = useCurrentUser();
   const orgId = userProfile?.organization_id;
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['expense', orgId, id],
     queryFn: async () => {
       if (!orgId) throw new Error("No organization assigned");
 
       // 1. Check if it's an offline expense in the queue
       const offlineTask = queue.find(t => t.id === id);
+      let expense: Expense;
+
       if (offlineTask) {
-        return {
+        expense = {
             id: offlineTask.id,
             user_id: 'me',
             created_at: new Date(offlineTask.createdAt).toISOString(),
@@ -244,19 +247,43 @@ export function useExpense(id: string) {
                 avatar_url: undefined
             }
         } as Expense;
+      } else {
+        // 2. Fetch from Server, scoped by orgId
+        const { data, error } = await supabase
+          .from("expenses")
+          .select("*, profiles:user_id(full_name, avatar_url)")
+          .eq("id", id)
+          .eq("organization_id", orgId)
+          .single();
+
+        if (error) throw error;
+        expense = data as Expense;
       }
 
-      // 2. Fetch from Server, scoped by orgId
-      const { data, error } = await supabase
-        .from("expenses")
-        .select("*, profiles:user_id(full_name, avatar_url)")
-        .eq("id", id)
-        .eq("organization_id", orgId)
-        .single();
+      // 3. Resolve Receipt URL (Internal Helper Logic)
+      let resolvedReceiptUrl = expense.receipt_url;
+      if (expense.receipt_url && !expense.receipt_url.startsWith('http')) {
+        const { data: signed, error: signedError } = await supabase.storage
+          .from('receipts')
+          .createSignedUrl(expense.receipt_url, RECEIPT_SIGNED_URL_EXPIRY);
+        
+        if (signedError) {
+            console.error("Error generating signed URL", signedError);
+        } else {
+            resolvedReceiptUrl = signed?.signedUrl ?? expense.receipt_url;
+        }
+      }
 
-      if (error) throw error;
-      return data as Expense;
+      return {
+        ...expense,
+        receipt_url: resolvedReceiptUrl
+      };
     },
     enabled: !!id && !!orgId
   });
+
+  return {
+    ...query,
+    isLoading: profileLoading || query.isLoading
+  };
 }

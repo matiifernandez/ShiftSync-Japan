@@ -11,7 +11,6 @@ import {
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useRouter, Stack, useLocalSearchParams } from "expo-router";
-import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useToast } from "../../context/ToastContext";
 import { Colors } from "../../constants/Colors";
@@ -47,7 +46,6 @@ export default function ExpenseDetailScreen() {
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [image, setImage] = useState<string | null>(null);
 
   // Handle errors
   useEffect(() => {
@@ -63,19 +61,6 @@ export default function ExpenseDetailScreen() {
       setAmount(String(expense.amount));
       setCategory(expense.category);
       setDescription(expense.description || "");
-      
-      // Handle receipt image URL
-      if (expense.receipt_url) {
-        if (expense.receipt_url.startsWith('http')) {
-          setImage(expense.receipt_url);
-        } else {
-          // It's a storage path, we need a signed URL
-          supabase.storage
-            .from('receipts')
-            .createSignedUrl(expense.receipt_url, RECEIPT_SIGNED_URL_EXPIRY)
-            .then(({ data }) => setImage(data?.signedUrl ?? null));
-        }
-      }
     }
   }, [expense]);
 
@@ -241,10 +226,10 @@ export default function ExpenseDetailScreen() {
 
             <View>
                 <Text className="text-gray-500 font-bold mb-2 uppercase text-xs">{t('receipt')}</Text>
-                {image ? (
+                {expense.receipt_url ? (
                     <TouchableOpacity activeOpacity={0.9}>
                         <Image 
-                            source={{ uri: image }} 
+                            source={{ uri: expense.receipt_url }} 
                             className="w-full h-64 bg-gray-100 rounded-xl border border-gray-200" 
                             resizeMode="contain" 
                         />

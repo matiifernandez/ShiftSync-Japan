@@ -18,6 +18,7 @@ import { useTranslation } from "../hooks/useTranslation";
 import { useToast } from "../context/ToastContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCurrentUser } from "../hooks/useCurrentUser";
+import { Colors } from "../constants/Colors";
 
 /**
  * CompleteProfileScreen
@@ -169,7 +170,7 @@ export default function CompleteProfileScreen() {
   if (profileLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#ef4444" />
+        <ActivityIndicator size="large" color={Colors.brand.red} />
       </View>
     );
   }

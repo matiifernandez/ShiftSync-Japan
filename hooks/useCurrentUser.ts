@@ -69,7 +69,7 @@ export function useCurrentUser() {
         ...profileUpdates,
         id: user.id,
         avatar_url: avatarUrl,
-        updated_at: new Date(),
+        updated_at: new Date().toISOString(),
       };
 
       const { error } = await supabase.from("profiles").upsert(finalUpdates);
