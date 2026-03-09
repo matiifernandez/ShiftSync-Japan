@@ -245,6 +245,7 @@ export default function ExpensesScreen() {
                 icon="checkmark-done" 
                 message={t('all_caught_up')} 
                 iconColor="#15803D"
+                iconSize={40}
                 iconContainerClass="bg-green-50 w-20 h-20 rounded-full items-center justify-center"
               />
             ) : null

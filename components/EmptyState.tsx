@@ -6,6 +6,7 @@ interface EmptyStateProps {
   icon: keyof typeof Ionicons.glyphMap;
   message: string;
   iconColor?: string;
+  iconSize?: number;
   iconContainerClass?: string;
 }
 
@@ -18,19 +19,28 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   icon, 
   message, 
   iconColor = "#E5E7EB",
+  iconSize = 64,
   iconContainerClass
 }) => {
+  const iconElement = (
+    <Ionicons 
+      name={icon} 
+      size={iconSize} 
+      color={iconColor} 
+      accessibilityElementsHidden={true}
+      importantForAccessibility="no-hide-descendants"
+    />
+  );
+
   return (
     <View className="items-center justify-center py-20 px-6">
-      <View className={iconContainerClass}>
-        <Ionicons 
-          name={icon} 
-          size={iconContainerClass ? 40 : 64} 
-          color={iconColor} 
-          accessibilityElementsHidden={true}
-          importantForAccessibility="no-hide-descendants"
-        />
-      </View>
+      {iconContainerClass ? (
+        <View className={iconContainerClass}>
+          {iconElement}
+        </View>
+      ) : (
+        iconElement
+      )}
       <Text className="text-gray-400 mt-4 text-center text-lg font-medium">
         {message}
       </Text>
