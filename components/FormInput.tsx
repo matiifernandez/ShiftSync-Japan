@@ -1,10 +1,10 @@
 import React from "react";
-import { View, TextInput, TextInputProps, StyleSheet } from "react-native";
+import { View, TextInput, TextInputProps } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors } from "../constants/Colors";
 
 interface FormInputProps extends TextInputProps {
   icon: keyof typeof Ionicons.glyphMap;
+  iconColor?: string;
   accessibilityLabel?: string;
 }
 
@@ -15,6 +15,7 @@ interface FormInputProps extends TextInputProps {
  */
 export const FormInput: React.FC<FormInputProps> = ({ 
   icon, 
+  iconColor = "#9CA3AF",
   accessibilityLabel,
   ...props 
 }) => {
@@ -26,7 +27,7 @@ export const FormInput: React.FC<FormInputProps> = ({
       <Ionicons 
         name={icon} 
         size={20} 
-        color={Colors.brand.red} 
+        color={iconColor} 
         style={{ marginRight: 12 }} 
       />
       <TextInput
