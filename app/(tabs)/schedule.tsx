@@ -292,6 +292,8 @@ export default function ScheduleScreen() {
             <EmptyState 
               icon="calendar-outline" 
               message={t('no_events')} 
+              iconSize={48}
+              iconColor="#D1D5DB"
             />
           )}
           <View className="h-10" />
