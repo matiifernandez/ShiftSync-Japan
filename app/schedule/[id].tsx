@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Alert } from "react-native";
 import { useRouter, useLocalSearchParams, Stack } from "expo-router";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useSchedule } from "../../hooks/useSchedule";
 import { Colors } from "../../constants/Colors";
@@ -21,9 +20,9 @@ export default function EditShiftScreen() {
   const { id } = useLocalSearchParams();
   const { t } = useTranslation();
   const { showToast } = useToast();
-  const { deleteScheduleItem, updateScheduleItem } = useSchedule({ enabled: false });
+  const { deleteScheduleItem, updateScheduleItem, getScheduleItem } = useSchedule({ enabled: false });
 
-  const [loading, setLoading] = useState(true);
+  const { data: shift, isLoading: loading } = getScheduleItem(id as string);
   const [submitting, setSubmitting] = useState(false);
   
   // Form State
@@ -36,33 +35,16 @@ export default function EditShiftScreen() {
   const [staffName, setStaffName] = useState("");
 
   useEffect(() => {
-    fetchShiftDetails();
-  }, [id]);
-
-  const fetchShiftDetails = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("schedule_items")
-        .select("*, profiles(full_name)")
-        .eq("id", id)
-        .single();
-
-      if (error) throw error;
-
-      setDate(data.date);
-      setStartTime(data.start_time || "");
-      setEndTime(data.end_time || "");
-      setLocationName(data.location_name || "");
-      setShiftType(data.type);
-      setNotes(data.notes || "");
-      setStaffName(data.profiles?.full_name || t('unknown_staff'));
-    } catch (error) {
-      showToast(t('load_shift_error'), 'error');
-      router.back();
-    } finally {
-      setLoading(false);
+    if (shift) {
+      setDate(shift.date);
+      setStartTime(shift.start_time || "");
+      setEndTime(shift.end_time || "");
+      setLocationName(shift.location_name || "");
+      setShiftType(shift.type);
+      setNotes(shift.notes || "");
+      setStaffName(shift.profiles?.full_name || t('unknown_staff'));
     }
-  };
+  }, [shift, t]);
 
   const validateTime = (val: string, setter: (v: string) => void) => {
     const clean = val.replace(/[^0-9]/g, '');

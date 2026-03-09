@@ -17,6 +17,8 @@ interface ChatContextType {
   loading: boolean;
   totalUnreadCount: number;
   refreshConversations: (isBackground?: boolean) => Promise<void>;
+  pinConversation: (id: string, isPinned: boolean) => Promise<void>;
+  deleteConversation: (id: string) => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -77,6 +79,44 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     0
   );
 
+  const pinConversation = async (id: string, isPinned: boolean) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('conversation_participants')
+        .update({ is_pinned: isPinned })
+        .eq('conversation_id', id)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      fetchConversations(true);
+    } catch (error) {
+      console.error("Error pinning conversation:", error);
+      throw error;
+    }
+  };
+
+  const deleteConversation = async (id: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('conversation_participants')
+        .delete()
+        .eq('conversation_id', id)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      fetchConversations(true);
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      throw error;
+    }
+  };
+
   return (
     <ChatContext.Provider
       value={{
@@ -84,6 +124,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         loading,
         totalUnreadCount,
         refreshConversations: fetchConversations,
+        pinConversation,
+        deleteConversation
       }}
     >
       {children}

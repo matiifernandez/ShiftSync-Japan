@@ -16,8 +16,6 @@ import { useRouter } from "expo-router";
 import { Colors } from "../../constants/Colors";
 import { useConversations, Conversation } from "../../hooks/useConversations";
 import { useTranslation } from "../../hooks/useTranslation";
-import { useCurrentUser } from "../../hooks/useCurrentUser";
-import { supabase } from "../../lib/supabase";
 import { useToast } from "../../context/ToastContext";
 import { FAB } from "../../components/FAB";
 
@@ -26,9 +24,14 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   const { showToast } = useToast();
-  const { userId } = useCurrentUser();
   const [search, setSearch] = useState("");
-  const { conversations, loading, refreshConversations } = useConversations();
+  const { 
+    conversations, 
+    loading, 
+    refreshConversations,
+    pinConversation,
+    deleteConversation 
+  } = useConversations();
 
   const handleOptions = (item: Conversation) => {
     Alert.alert(
@@ -42,7 +45,7 @@ export default function ChatScreen() {
         {
           text: t('delete_chat'),
           style: "destructive",
-          onPress: () => handleDeleteConversation(item.id),
+          onPress: () => handleDeleteChat(item.id),
         },
         { text: t('cancel'), style: "cancel" },
       ]
@@ -51,22 +54,13 @@ export default function ChatScreen() {
 
   const handleTogglePin = async (conversationId: string, currentStatus: boolean) => {
     try {
-      if (!userId) return;
-
-      const { error } = await supabase
-        .from('conversation_participants')
-        .update({ is_pinned: !currentStatus })
-        .eq('conversation_id', conversationId)
-        .eq('user_id', userId);
-
-      if (error) throw error;
-      refreshConversations();
+      await pinConversation(conversationId, !currentStatus);
     } catch (error: any) {
       showToast(error.message, 'error');
     }
   };
 
-  const handleDeleteConversation = (conversationId: string) => {
+  const handleDeleteChat = (conversationId: string) => {
     Alert.alert(
       t('delete_chat_title'),
       t('delete_chat_msg'),
@@ -77,17 +71,7 @@ export default function ChatScreen() {
           style: "destructive",
           onPress: async () => {
             try {
-              if (!userId) return;
-              
-              const { error } = await supabase
-                .from('conversation_participants')
-                .delete()
-                .eq('conversation_id', conversationId)
-                .eq('user_id', userId);
-                
-              if (error) throw error;
-              
-              refreshConversations();
+              await deleteConversation(conversationId);
             } catch (error: any) {
               showToast(error.message, 'error');
             }
