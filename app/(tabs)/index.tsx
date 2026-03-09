@@ -4,7 +4,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import * as Linking from "expo-linking";
-import { supabase } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useTravelContext } from "../../context/TravelContext";
 import { TranslationKey } from "../../lib/translations";
@@ -13,6 +12,7 @@ import { useSchedule } from "../../hooks/useSchedule";
 import { useBadgeTracker } from "../../hooks/useBadgeTracker";
 import { Colors } from "../../constants/Colors";
 import { useToast } from "../../context/ToastContext";
+import { useCurrentUser } from "../../hooks/useCurrentUser";
 
 /**
  * HomeScreen (Dashboard)
@@ -35,35 +35,13 @@ export default function HomeScreen() {
   const { trip } = useTravelContext();
   const { schedule } = useSchedule();
   const { hasNewTravel, hasNewSchedule, markTravelVisited, markScheduleVisited } = useBadgeTracker();
+  const { profile } = useCurrentUser();
   
-  // Local State
-  const [userName, setUserName] = useState("User");
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [orgId, setOrgId] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<"admin" | "staff" | null>(null);
-
-  // 1. Load User Profile on Mount
-  useEffect(() => {
-    async function loadProfile() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name, avatar_url, organization_id, role")
-          .eq("id", user.id)
-          .single();
-
-        if (profile) {
-          const firstName = profile.full_name ? profile.full_name.split(" ")[0] : "User";
-          setUserName(firstName);
-          setAvatarUrl(profile.avatar_url);
-          setOrgId(profile.organization_id);
-          setUserRole(profile.role as "admin" | "staff");
-        }
-      }
-    }
-    loadProfile();
-  }, []);
+  // Memoized values from profile
+  const userName = useMemo(() => profile?.full_name ? profile.full_name.split(" ")[0] : "User", [profile]);
+  const avatarUrl = profile?.avatar_url;
+  const orgId = profile?.organization_id;
+  const userRole = profile?.role;
 
   // 2. Handle Admin Invite Action
   const handleInvite = async () => {

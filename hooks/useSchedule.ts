@@ -102,9 +102,27 @@ export function useSchedule({ allUsers = false, enabled = true } = {}) {
     };
   }, [enabled, allUsers, queryClient]);
 
+  const getScheduleItem = (id: string) => {
+    return useQuery({
+      queryKey: ["schedule-item", id],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from("schedule_items")
+          .select("*, profiles(full_name)")
+          .eq("id", id)
+          .single();
+
+        if (error) throw error;
+        return data;
+      },
+      enabled: !!id,
+    });
+  };
+
   return { 
     schedule, 
     loading, 
+    getScheduleItem,
     refreshSchedule: refetch,
     createScheduleItems: createMutation.mutateAsync,
     isCreating: createMutation.isPending,

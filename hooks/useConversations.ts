@@ -6,7 +6,14 @@ import { useChatContext } from "../context/ChatContext";
 export type { Conversation } from "../context/ChatContext";
 
 export function useConversations() {
-  const { conversations, loading, totalUnreadCount, refreshConversations } = useChatContext();
+  const { 
+    conversations, 
+    loading, 
+    totalUnreadCount, 
+    refreshConversations,
+    pinConversation,
+    deleteConversation
+  } = useChatContext();
 
   // Keep the focus effect logic here, as it's UI-specific
   useFocusEffect(
@@ -20,6 +27,8 @@ export function useConversations() {
       conversations, 
       loading, 
       totalUnreadCount,
-      refreshConversations: () => refreshConversations(false) 
+      refreshConversations: () => refreshConversations(false),
+      pinConversation,
+      deleteConversation
   };
 }
