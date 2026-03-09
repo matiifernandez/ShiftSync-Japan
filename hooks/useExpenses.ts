@@ -22,7 +22,9 @@ export function useExpenses() {
     }
   });
 
-  // 2. Fetch Expenses
+  const isAdmin = userRole === 'admin';
+
+  // 2. Fetch Expenses List
   const { data: serverExpenses = [], isLoading: loading, refetch } = useQuery({
     queryKey: ['expenses'],
     queryFn: async () => {
@@ -38,7 +40,6 @@ export function useExpenses() {
   });
 
   // Combine Server + Offline Queue
-  // We map offline tasks to the Expense structure
   const offlineExpenses: Expense[] = queue.map((task: UploadTask) => ({
     id: task.id, // temp-ID
     user_id: 'me',
@@ -60,7 +61,29 @@ export function useExpenses() {
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
-  // 3. Create Expense Mutation
+  // 3. Single Expense Query
+  const getExpense = (id: string) => {
+    return useQuery({
+      queryKey: ['expense', id],
+      queryFn: async () => {
+        // Check if it's an offline expense
+        const offline = offlineExpenses.find(e => e.id === id);
+        if (offline) return offline;
+
+        const { data, error } = await supabase
+          .from("expenses")
+          .select("*, profiles:user_id(full_name)")
+          .eq("id", id)
+          .single();
+
+        if (error) throw error;
+        return data as Expense;
+      },
+      enabled: !!id
+    });
+  };
+
+  // 4. Mutations
   const createMutation = useMutation({
     mutationFn: async ({ data, imageUri }: { data: Partial<Expense>; imageUri?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -82,8 +105,6 @@ export function useExpenses() {
             .upload(fileName, blob, { contentType: "image/jpeg" });
 
           if (uploadError) throw uploadError;
-          // Store the file path (not a signed URL) so the receipt remains accessible
-          // indefinitely. A signed URL is generated on-the-fly when displaying.
           receiptUrl = fileName;
         }
 
@@ -98,7 +119,6 @@ export function useExpenses() {
         if (error) throw error;
 
       } catch (error) {
-        // If upload/insert fails (likely offline), add to queue
         console.log("Create failed, adding to offline queue...", error);
         
         await addToQueue({
@@ -108,34 +128,42 @@ export function useExpenses() {
           createdAt: Date.now()
         });
 
-        // Throw special error to handle UI feedback
         throw new Error("OFFLINE_SAVED");
       }
-    },
-    onMutate: async ({ data, imageUri }) => {
-      // We rely on 'queue' state for persistent offline items, 
-      // but we can still use optimistic updates for immediate feedback before the queue state updates.
-      await queryClient.cancelQueries({ queryKey: ['expenses'] });
-      const previousExpenses = queryClient.getQueryData<Expense[]>(['expenses']);
-
-      return { previousExpenses };
-    },
-    onError: (err, variables, context) => {
-      if (err.message === "OFFLINE_SAVED") {
-        showToast(t('offline_msg'), 'success');
-      } else {
-        showToast(err.message, 'error');
-      }
-      
-      // We don't necessarily need to rollback if it's saved offline,
-      // because the 'queue' state will pick it up shortly.
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
     }
   });
 
-  // 4. Update Status Mutation (Approve/Reject)
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Expense> }) => {
+      const { error } = await supabase
+        .from("expenses")
+        .update({ ...data, status: 'pending' }) // Reset to pending if edited
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      queryClient.invalidateQueries({ queryKey: ['expense', id] });
+      showToast(t('expense_updated'), 'success');
+    },
+    onError: (err: any) => showToast(err.message, 'error')
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("expenses").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
+      showToast(t('expense_deleted'), 'success');
+    },
+    onError: (err: any) => showToast(err.message, 'error')
+  });
+
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
       const { error } = await supabase.from('expenses').update({ status }).eq('id', id);
@@ -166,17 +194,20 @@ export function useExpenses() {
     expenses,
     loading,
     userRole,
+    isAdmin,
+    getExpense,
     refreshExpenses: refetch,
     createExpense: async (data: Partial<Expense>, imageUri?: string) => {
       try {
         await createMutation.mutateAsync({ data, imageUri });
         return true;
       } catch (e: any) {
-        // If it was saved offline, return true as if success
         if (e.message === "OFFLINE_SAVED") return true;
         return false;
       }
     },
+    updateExpense: (id: string, data: Partial<Expense>) => updateMutation.mutateAsync({ id, data }),
+    deleteExpense: (id: string) => deleteMutation.mutateAsync(id),
     updateExpenseStatus: (id: string, status: 'approved' | 'rejected') => updateStatusMutation.mutateAsync({ id, status })
   };
 }

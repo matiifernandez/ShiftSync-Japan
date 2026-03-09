@@ -9,14 +9,13 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
-import { Expense } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useToast } from "../../context/ToastContext";
 import { Colors } from "../../constants/Colors";
+import { useExpenses } from "../../hooks/useExpenses";
 
 const CATEGORIES = [
   { id: "transport", icon: "train" },
@@ -38,9 +37,9 @@ export default function ExpenseDetailScreen() {
   const { id } = useLocalSearchParams();
   const { t } = useTranslation();
   const { showToast } = useToast();
+  const { getExpense, updateExpense, deleteExpense } = useExpenses();
   
-  const [expense, setExpense] = useState<Expense | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: expense, isLoading: loading } = getExpense(id as string);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -50,46 +49,27 @@ export default function ExpenseDetailScreen() {
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<string | null>(null);
 
+  // Initialize form state when expense data is loaded
   useEffect(() => {
-    fetchExpense();
-  }, [id]);
-
-  async function fetchExpense() {
-    try {
-      const { data, error } = await supabase
-        .from("expenses")
-        .select("*, profiles:user_id(full_name)")
-        .eq("id", id)
-        .single();
-
-      if (error) throw error;
+    if (expense) {
+      setAmount(String(expense.amount));
+      setCategory(expense.category);
+      setDescription(expense.description || "");
       
-      setExpense(data);
-      // Init form state
-      setAmount(String(data.amount));
-      setCategory(data.category);
-      setDescription(data.description || "");
-
-      // Generate a fresh signed URL from the stored file path.
-      // Legacy records (pre-migration) may already contain a full https:// URL — use as-is.
-      if (data.receipt_url) {
-        if (data.receipt_url.startsWith('http')) {
-          setImage(data.receipt_url);
+      // Handle receipt image URL
+      if (expense.receipt_url) {
+        if (expense.receipt_url.startsWith('http')) {
+          setImage(expense.receipt_url);
         } else {
-          const { data: signed } = await supabase.storage
+          // It's a storage path, we need a signed URL
+          supabase.storage
             .from('receipts')
-            .createSignedUrl(data.receipt_url, RECEIPT_SIGNED_URL_EXPIRY);
-          setImage(signed?.signedUrl ?? null);
+            .createSignedUrl(expense.receipt_url, RECEIPT_SIGNED_URL_EXPIRY)
+            .then(({ data }) => setImage(data?.signedUrl ?? null));
         }
       }
-
-    } catch (error) {
-      console.error(error);
-      showToast(t('load_expense_error'), 'error');
-    } finally {
-      setLoading(false);
     }
-  }
+  }, [expense]);
 
   // Handlers
   const handleEditStart = useCallback(() => setIsEditing(true), []);
@@ -103,9 +83,14 @@ export default function ExpenseDetailScreen() {
         style: "destructive", 
         onPress: async () => {
           setSaving(true);
-          const { error } = await supabase.from("expenses").delete().eq("id", id);
-          if (error) showToast(error.message, 'error');
-          else router.back();
+          try {
+            await deleteExpense(id as string);
+            router.back();
+          } catch (error) {
+            // Error handled by hook
+          } finally {
+            setSaving(false);
+          }
         } 
       }
     ]);
@@ -128,25 +113,14 @@ export default function ExpenseDetailScreen() {
 
     setSaving(true);
     try {
-      const updates = {
+      await updateExpense(id as string, {
         amount: Number(amount),
         category,
         description,
-        status: 'pending' // Re-submit for approval if edited
-      };
-
-      const { error } = await supabase
-        .from("expenses")
-        .update(updates)
-        .eq("id", id);
-
-      if (error) throw error;
-      
-      showToast(t('expense_updated'), 'success');
+      });
       setIsEditing(false);
-      fetchExpense(); // Refresh
-    } catch (error: any) {
-      showToast(error.message, 'error');
+    } catch (error) {
+      // Error handled by hook
     } finally {
       setSaving(false);
     }

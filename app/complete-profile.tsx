@@ -7,6 +7,7 @@ import {
   Alert,
   Image,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
@@ -16,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "../hooks/useTranslation";
 import { useToast } from "../context/ToastContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useCurrentUser } from "../hooks/useCurrentUser";
 
 /**
  * CompleteProfileScreen
@@ -23,21 +25,16 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
  * Handles user profile creation and editing.
  * - For new users: acts as an onboarding step to set name, org, and photo.
  * - For existing users: allows editing profile details.
- * 
- * Key Features:
- * - Image Upload to Supabase Storage
- * - Organization ID handling (deep link params vs stored pending ID)
- * - Localization preference setting
  */
 export default function CompleteProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { changeLanguage, t } = useTranslation();
+  const { t } = useTranslation();
   const { showToast } = useToast();
+  const { profile, loading: profileLoading, updateProfile, isUpdating } = useCurrentUser();
   
-  const [loading, setLoading] = useState(false);
-  const [isEditing, setIsEditing] = useState(false); // To distinguish between Onboarding vs Editing
+  const [isEditing, setIsEditing] = useState(false);
 
   // Form State
   const [fullName, setFullName] = useState("");
@@ -47,58 +44,37 @@ export default function CompleteProfileScreen() {
   const [language, setLanguage] = useState<"en" | "ja">("en");
   const [image, setImage] = useState<string | null>(null);
 
-  // Effect to update orgId if params change (e.g. late deep link)
+  // Load profile data into form state
+  useEffect(() => {
+    if (profile) {
+      setIsEditing(true);
+      setFullName(profile.full_name || "");
+      if (profile.organization_id) {
+        setOrganizationId(profile.organization_id);
+      }
+      if (profile.preferred_language) {
+        setLanguage(profile.preferred_language as "en" | "ja");
+      }
+      if (profile.avatar_url) {
+        setImage(profile.avatar_url);
+      }
+    } else if (!profileLoading) {
+      // New user, check storage for pending invite
+      AsyncStorage.getItem("@pending_org_id").then(pendingOrgId => {
+        if (pendingOrgId) {
+          setOrganizationId(pendingOrgId);
+          AsyncStorage.removeItem("@pending_org_id");
+        }
+      });
+    }
+  }, [profile, profileLoading]);
+
+  // Effect to update orgId if params change (deep link)
   useEffect(() => {
     if (params.orgId) {
       setOrganizationId(params.orgId as string);
     }
   }, [params.orgId]);
-
-  // Load existing profile on mount
-  useEffect(() => {
-    async function loadProfile() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-
-        if (profile) {
-          setIsEditing(true); // If profile exists, we are in Edit Mode
-          setFullName(profile.full_name || "");
-          // Only overwrite org ID if it exists in DB, otherwise keep the current state (params or default)
-          if (profile.organization_id) {
-             setOrganizationId(profile.organization_id);
-          } else {
-             // If profile has no orgId, check for pending invite in storage
-             const pendingOrgId = await AsyncStorage.getItem("@pending_org_id");
-             if (pendingOrgId) {
-                setOrganizationId(pendingOrgId);
-                await AsyncStorage.removeItem("@pending_org_id");
-             }
-          }
-          
-          if (profile.preferred_language) setLanguage(profile.preferred_language as "en" | "ja");
-          if (profile.avatar_url) setImage(profile.avatar_url);
-        } else {
-            // New user, no profile yet. Check storage for pending invite
-            const pendingOrgId = await AsyncStorage.getItem("@pending_org_id");
-            if (pendingOrgId) {
-                setOrganizationId(pendingOrgId);
-                await AsyncStorage.removeItem("@pending_org_id");
-            }
-        }
-      } catch (error) {
-        console.log("Error loading profile:", error);
-      }
-    }
-
-    loadProfile();
-  }, []);
 
   // Handler for closing/going back
   const handleClose = useCallback(() => {
@@ -113,9 +89,7 @@ export default function CompleteProfileScreen() {
   const handleSetEnglish = useCallback(() => setLanguage("en"), []);
   const handleSetJapanese = useCallback(() => setLanguage("ja"), []);
 
-  // 1. Function to pick an image from gallery
   const pickImage = async () => {
-    // Request permission first
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       showToast(t('camera_permission_msg'), 'error');
@@ -125,8 +99,8 @@ export default function CompleteProfileScreen() {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
-      aspect: [1, 1], // Square crop (perfect for avatars)
-      quality: 0.5, // Compress a bit to save data
+      aspect: [1, 1],
+      quality: 0.5,
     });
 
     if (!result.canceled) {
@@ -134,101 +108,32 @@ export default function CompleteProfileScreen() {
     }
   };
 
-  // 2. Function to upload image to Supabase Storage
-  const uploadImage = async (uri: string, userId: string) => {
-    try {
-      // 1. Convert local file URI to ArrayBuffer (Binary)
-      const response = await fetch(uri);
-      const blob = await response.arrayBuffer();
-
-      // 2. Define file path: avatars/USER_ID.jpg
-      // Using time to avoid cache issues on updates
-      const fileName = `${userId}_${new Date().getTime()}.jpg`;
-      const filePath = `${fileName}`;
-
-      // 3. Upload to Supabase
-      const { data, error } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, blob, {
-          contentType: "image/jpeg",
-          upsert: true,
-        });
-
-      if (error) throw error;
-
-      // 4. Get Public URL
-      const { data: publicUrlData } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(filePath);
-
-      return publicUrlData.publicUrl;
-    } catch (error) {
-      console.error("Upload error:", error);
-      throw error;
-    }
-  };
-
-  // Validation Logic
   const validateForm = () => {
     if (!fullName.trim()) {
       showToast(t('full_name_error'), 'error');
       return false;
     }
-    // organizationId is optional at profile creation (user may not have an invite yet)
     return true;
   };
 
-  // 3. Function to save profile to Supabase
   const handleSaveProfile = async () => {
     if (!validateForm()) return;
 
-    setLoading(true);
-
     try {
-      // Get current authenticated user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) throw new Error("No user found");
-
-      let avatarUrl = image;
-
-      // If user selected an image (local URI), upload it first
-      // If it's already a remote URL, we keep it as is
-      if (image && !image.startsWith("http")) {
-        avatarUrl = await uploadImage(image, user.id);
-      }
-
-      const updates = {
-        id: user.id,
+      await updateProfile({
         full_name: fullName,
-        // Only include organization_id if we actually have one
-        ...(organizationId.trim() ? { organization_id: organizationId } : {}),
+        organization_id: organizationId.trim() || undefined,
         preferred_language: language,
-        avatar_url: avatarUrl,
-        updated_at: new Date(),
-      };
-
-      // Upsert: Update if exists, Insert if new
-      const { error } = await supabase.from("profiles").upsert(updates);
-
-      if (error) throw error;
-
-      // Update app language globally
-      changeLanguage(language);
-
-      showToast(t('profile_updated'), "success");
+        imageUri: image || undefined,
+      });
       
       // Delay navigation slightly to let user see toast
       setTimeout(() => {
         router.replace("/(tabs)");
       }, 1000);
       
-    } catch (error: any) {
-      showToast(error.message, "error");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      // Error handled by hook
     }
   };
 
@@ -245,6 +150,14 @@ export default function CompleteProfileScreen() {
       },
     ]);
   };
+
+  if (profileLoading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-white">
+        <ActivityIndicator size="large" color="#ef4444" />
+      </View>
+    );
+  }
 
   return (
     <View 
@@ -277,7 +190,6 @@ export default function CompleteProfileScreen() {
                 </TouchableOpacity>
             )}
         </View>
-
 
         {/* PHOTO PICKER */}
         <View className="items-center mb-8">
@@ -359,14 +271,18 @@ export default function CompleteProfileScreen() {
         {/* ACTIONS */}
         <TouchableOpacity
           onPress={handleSaveProfile}
-          disabled={loading}
+          disabled={isUpdating}
           className={`mt-10 w-full p-4 rounded-xl items-center shadow-md ${
-            loading ? "bg-gray-400" : "bg-brand-red"
+            isUpdating ? "bg-gray-400" : "bg-brand-red"
           }`}
         >
-          <Text className="text-white font-bold text-lg">
-            {loading ? t('saving') : isEditing ? t('save_changes') : t('complete_setup')}
-          </Text>
+          {isUpdating ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-white font-bold text-lg">
+              {isEditing ? t('save_changes') : t('complete_setup')}
+            </Text>
+          )}
         </TouchableOpacity>
         
         {isEditing && (
