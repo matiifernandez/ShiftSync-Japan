@@ -5,37 +5,47 @@ import { useOfflineQueue, UploadTask } from './useOfflineQueue';
 import { useToast } from '../context/ToastContext';
 import { useTranslation } from './useTranslation';
 
+/**
+ * useExpenses hook
+ * Manages the list of expenses, creation, and status updates.
+ */
 export function useExpenses() {
   const queryClient = useQueryClient();
   const { queue, addToQueue } = useOfflineQueue();
   const { showToast } = useToast();
   const { t } = useTranslation();
 
-  // 1. Fetch User Role (Needed for logic)
-  const { data: userRole } = useQuery({
-    queryKey: ['user-role'],
+  // 1. Fetch Current User Profile (to get organization_id)
+  const { data: userProfile } = useQuery({
+    queryKey: ['current-user-profile'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
-      const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-      return data?.role || 'staff';
+      const { data } = await supabase.from('profiles').select('role, organization_id').eq('id', user.id).single();
+      return data;
     }
   });
 
+  const userRole = userProfile?.role || 'staff';
   const isAdmin = userRole === 'admin';
+  const orgId = userProfile?.organization_id;
 
-  // 2. Fetch Expenses List
+  // 2. Fetch Expenses List (Filtered by Organization)
   const { data: serverExpenses = [], isLoading: loading, refetch } = useQuery({
-    queryKey: ['expenses'],
+    queryKey: ['expenses', orgId],
     queryFn: async () => {
+      if (!orgId) return [];
+      
       const { data, error } = await supabase
         .from('expenses')
         .select('*, profiles:user_id(full_name, avatar_url)')
+        .eq('organization_id', orgId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data as Expense[];
     },
+    enabled: !!orgId,
     staleTime: 1000 * 60 * 5 // 5 minutes
   });
 
@@ -49,7 +59,7 @@ export function useExpenses() {
     description: task.expenseData.description,
     status: 'pending',
     receipt_url: task.imageUri, // Local URI
-    organization_id: 'offline', // Placeholder
+    organization_id: orgId || 'offline',
     profiles: {
       full_name: 'Me (Offline)',
       avatar_url: undefined
@@ -61,36 +71,12 @@ export function useExpenses() {
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
-  // 3. Single Expense Query
-  const getExpense = (id: string) => {
-    return useQuery({
-      queryKey: ['expense', id],
-      queryFn: async () => {
-        // Check if it's an offline expense
-        const offline = offlineExpenses.find(e => e.id === id);
-        if (offline) return offline;
-
-        const { data, error } = await supabase
-          .from("expenses")
-          .select("*, profiles:user_id(full_name)")
-          .eq("id", id)
-          .single();
-
-        if (error) throw error;
-        return data as Expense;
-      },
-      enabled: !!id
-    });
-  };
-
-  // 4. Mutations
+  // 3. Mutations
   const createMutation = useMutation({
     mutationFn: async ({ data, imageUri }: { data: Partial<Expense>; imageUri?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
-
-      const { data: profile } = await supabase.from('profiles').select('organization_id').eq('id', user.id).single();
-      if (!profile?.organization_id) throw new Error("No organization assigned");
+      if (!orgId) throw new Error("No organization assigned");
 
       let receiptUrl = null;
 
@@ -111,7 +97,7 @@ export function useExpenses() {
         const { error } = await supabase.from("expenses").insert({
           ...data,
           user_id: user.id,
-          organization_id: profile.organization_id,
+          organization_id: orgId,
           receipt_url: receiptUrl,
           status: "pending"
         });
@@ -130,6 +116,13 @@ export function useExpenses() {
 
         throw new Error("OFFLINE_SAVED");
       }
+    },
+    onError: (err: any) => {
+        if (err.message === "OFFLINE_SAVED") {
+            showToast(t('offline_msg'), 'success');
+        } else {
+            showToast(err.message, 'error');
+        }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
@@ -195,7 +188,6 @@ export function useExpenses() {
     loading,
     userRole,
     isAdmin,
-    getExpense,
     refreshExpenses: refetch,
     createExpense: async (data: Partial<Expense>, imageUri?: string) => {
       try {
@@ -210,4 +202,64 @@ export function useExpenses() {
     deleteExpense: (id: string) => deleteMutation.mutateAsync(id),
     updateExpenseStatus: (id: string, status: 'approved' | 'rejected') => updateStatusMutation.mutateAsync({ id, status })
   };
+}
+
+/**
+ * useExpense hook
+ * Fetches a single expense by ID, scoped by organization.
+ */
+export function useExpense(id: string) {
+  const { queue } = useOfflineQueue();
+
+  // We need orgId to scope the query
+  const { data: userProfile } = useQuery({
+    queryKey: ['current-user-profile'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+      const { data } = await supabase.from('profiles').select('organization_id').eq('id', user.id).single();
+      return data;
+    }
+  });
+
+  const orgId = userProfile?.organization_id;
+
+  return useQuery({
+    queryKey: ['expense', id],
+    queryFn: async () => {
+      if (!orgId) throw new Error("No organization assigned");
+
+      // 1. Check if it's an offline expense in the queue
+      const offlineTask = queue.find(t => t.id === id);
+      if (offlineTask) {
+        return {
+            id: offlineTask.id,
+            user_id: 'me',
+            created_at: new Date(offlineTask.createdAt).toISOString(),
+            amount: offlineTask.expenseData.amount,
+            category: offlineTask.expenseData.category,
+            description: offlineTask.expenseData.description,
+            status: 'pending',
+            receipt_url: offlineTask.imageUri,
+            organization_id: orgId,
+            profiles: {
+                full_name: 'Me (Offline)',
+                avatar_url: undefined
+            }
+        } as Expense;
+      }
+
+      // 2. Fetch from Server, scoped by orgId
+      const { data, error } = await supabase
+        .from("expenses")
+        .select("*, profiles:user_id(full_name, avatar_url)")
+        .eq("id", id)
+        .eq("organization_id", orgId)
+        .single();
+
+      if (error) throw error;
+      return data as Expense;
+    },
+    enabled: !!id && !!orgId
+  });
 }

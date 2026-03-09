@@ -11,11 +11,10 @@ import {
 } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useRouter, Stack, useLocalSearchParams } from "expo-router";
-import { supabase, RECEIPT_SIGNED_URL_EXPIRY } from "../../lib/supabase";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useToast } from "../../context/ToastContext";
 import { Colors } from "../../constants/Colors";
-import { useExpenses } from "../../hooks/useExpenses";
+import { useExpenses, useExpense } from "../../hooks/useExpenses";
 
 const CATEGORIES = [
   { id: "transport", icon: "train" },
@@ -37,9 +36,9 @@ export default function ExpenseDetailScreen() {
   const { id } = useLocalSearchParams();
   const { t } = useTranslation();
   const { showToast } = useToast();
-  const { getExpense, updateExpense, deleteExpense } = useExpenses();
+  const { updateExpense, deleteExpense } = useExpenses();
   
-  const { data: expense, isLoading: loading } = getExpense(id as string);
+  const { data: expense, isLoading: loading } = useExpense(id as string);
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 

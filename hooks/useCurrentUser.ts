@@ -12,7 +12,7 @@ export function useCurrentUser() {
   // 1. Fetch Current Profile
   const { data: profile, isLoading: loading, refetch } = useQuery({
     queryKey: ['current-user'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Profile | null> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
@@ -22,8 +22,15 @@ export function useCurrentUser() {
         .eq('id', user.id)
         .single();
       
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows returned"
-      return data as Profile;
+      if (error) {
+        // PGRST116 is "no rows returned" – treat as "no profile"
+        if (error.code === 'PGRST116') {
+          return null;
+        }
+        throw error;
+      }
+      
+      return (data ?? null) as Profile | null;
     }
   });
 
@@ -73,7 +80,7 @@ export function useCurrentUser() {
     onSuccess: (data) => {
       queryClient.setQueryData(['current-user'], data);
       queryClient.invalidateQueries({ queryKey: ['current-user'] });
-      queryClient.invalidateQueries({ queryKey: ['user-role'] }); // Invalidate role too just in case
+      queryClient.invalidateQueries({ queryKey: ['user-role'] });
       
       if (data.preferred_language) {
         changeLanguage(data.preferred_language as 'en' | 'ja');
@@ -87,7 +94,7 @@ export function useCurrentUser() {
   });
 
   return {
-    profile,
+    profile: profile ?? null,
     loading,
     refreshProfile: refetch,
     updateProfile: (updates: Partial<Profile> & { imageUri?: string }) => 
