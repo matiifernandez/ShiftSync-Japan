@@ -106,10 +106,22 @@ export function useSchedule({ allUsers = false, enabled = true } = {}) {
     return useQuery({
       queryKey: ["schedule-item", id],
       queryFn: async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('organization_id')
+          .eq('id', user.id)
+          .single();
+        
+        if (!profile?.organization_id) throw new Error("No organization assigned");
+
         const { data, error } = await supabase
           .from("schedule_items")
-          .select("*, profiles(full_name)")
+          .select("*, profiles!inner(full_name, organization_id)")
           .eq("id", id)
+          .eq("profiles.organization_id", profile.organization_id)
           .single();
 
         if (error) throw error;

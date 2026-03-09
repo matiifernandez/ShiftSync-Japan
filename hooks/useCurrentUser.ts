@@ -11,7 +11,7 @@ export function useCurrentUser() {
 
   // 1. Fetch Current Profile
   const { data: profile, isLoading: loading, refetch } = useQuery({
-    queryKey: ['current-user'],
+    queryKey: ['currentUser'],
     queryFn: async (): Promise<Profile | null> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
@@ -78,8 +78,8 @@ export function useCurrentUser() {
       return finalUpdates;
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(['current-user'], data);
-      queryClient.invalidateQueries({ queryKey: ['current-user'] });
+      queryClient.setQueryData(['currentUser'], data);
+      queryClient.invalidateQueries({ queryKey: ['currentUser'] });
       
       if (data.preferred_language) {
         changeLanguage(data.preferred_language as 'en' | 'ja');

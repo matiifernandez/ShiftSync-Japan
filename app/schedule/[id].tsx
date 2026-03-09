@@ -44,7 +44,7 @@ export default function EditShiftScreen() {
       setNotes(shift.notes || "");
       setStaffName(shift.profiles?.full_name || t('unknown_staff'));
     }
-  }, [shift]);
+  }, [shift, t]);
 
   const validateTime = (val: string, setter: (v: string) => void) => {
     const clean = val.replace(/[^0-9]/g, '');

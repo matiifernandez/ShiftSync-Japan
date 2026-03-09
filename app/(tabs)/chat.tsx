@@ -16,7 +16,6 @@ import { useRouter } from "expo-router";
 import { Colors } from "../../constants/Colors";
 import { useConversations, Conversation } from "../../hooks/useConversations";
 import { useTranslation } from "../../hooks/useTranslation";
-import { useCurrentUser } from "../../hooks/useCurrentUser";
 import { useToast } from "../../context/ToastContext";
 import { FAB } from "../../components/FAB";
 

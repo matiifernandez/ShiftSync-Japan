@@ -132,11 +132,14 @@ export default function CompleteProfileScreen() {
     if (!validateForm()) return;
 
     try {
+      const isRemote = image?.startsWith('http');
+      
       await updateProfile({
         full_name: fullName,
         organization_id: organizationId.trim() || undefined,
         preferred_language: language,
-        imageUri: image || undefined,
+        avatar_url: isRemote ? image : undefined,
+        imageUri: !isRemote ? (image || undefined) : undefined,
       });
       
       // Delay navigation slightly to let user see toast

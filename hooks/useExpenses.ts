@@ -100,7 +100,7 @@ export function useExpenses() {
         
         await addToQueue({
           id: `temp-${Date.now()}`,
-          expenseData: data,
+          expenseData: { ...data, organization_id: orgId },
           imageUri: imageUri || '',
           createdAt: Date.now()
         });
@@ -122,10 +122,13 @@ export function useExpenses() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Expense> }) => {
+      if (!orgId) throw new Error("No organization assigned");
+      
       const { error } = await supabase
         .from("expenses")
         .update({ ...data, status: 'pending' }) // Reset to pending if edited
-        .eq("id", id);
+        .eq("id", id)
+        .eq("organization_id", orgId);
       if (error) throw error;
     },
     onSuccess: (_, { id }) => {
@@ -138,7 +141,13 @@ export function useExpenses() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("expenses").delete().eq("id", id);
+      if (!orgId) throw new Error("No organization assigned");
+
+      const { error } = await supabase
+        .from("expenses")
+        .delete()
+        .eq("id", id)
+        .eq("organization_id", orgId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -150,7 +159,13 @@ export function useExpenses() {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
-      const { error } = await supabase.from('expenses').update({ status }).eq('id', id);
+      if (!orgId) throw new Error("No organization assigned");
+
+      const { error } = await supabase
+        .from('expenses')
+        .update({ status })
+        .eq('id', id)
+        .eq('organization_id', orgId);
       if (error) throw error;
     },
     onMutate: async ({ id, status }) => {
