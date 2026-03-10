@@ -101,7 +101,7 @@ export default function HomeScreen() {
     // Add Schedule Items
     if (schedule) {
       schedule.forEach(s => {
-        let itemDate = parseLocalDate(s.date);
+        const itemDate = parseLocalDate(s.date);
         // Include items from today onwards
         if (itemDate >= today) {
              candidates.push({

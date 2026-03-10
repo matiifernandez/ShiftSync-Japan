@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import { Project, LogisticsTicket, Accommodation } from '../types';
+import { LogisticsTicket, Accommodation } from '../types';
 import { parseLocalDate } from '../lib/utils';
 
 export interface TripDetails {
