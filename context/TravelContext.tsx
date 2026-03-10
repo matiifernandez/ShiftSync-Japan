@@ -8,6 +8,8 @@ export interface TripDetails {
   name: string;
   dates: string;
   description?: string;
+  start_date?: string;
+  end_date?: string;
   tickets: LogisticsTicket[];
   accommodations: Accommodation[];
 }
@@ -16,6 +18,7 @@ export interface SimpleProject {
   id: string;
   name: string;
   start_date: string;
+  end_date?: string;
 }
 
 interface TravelContextType {
@@ -47,7 +50,7 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const { data: membership } = await supabase.from('project_members').select('project_id').eq('user_id', user.id);
       const myIds = membership?.map(m => m.project_id) || [];
 
-      let query = supabase.from('projects').select('id, name, start_date').eq('organization_id', profile.organization_id);
+      let query = supabase.from('projects').select('id, name, start_date, end_date').eq('organization_id', profile.organization_id);
       if (profile.role !== 'admin') {
         if (myIds.length === 0) return [];
         query = query.in('id', myIds);
@@ -58,10 +61,13 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   });
 
-  // Auto-select first project
+  // Auto-select first active project
   useEffect(() => {
     if (!selectedProjectId && projectsData && projectsData.length > 0) {
-      setSelectedProjectId(projectsData[0].id);
+      // Prefer an active project whose end_date hasn't passed
+      const today = new Date().toISOString().split('T')[0];
+      const active = projectsData.find(p => !p.end_date || p.end_date >= today);
+      setSelectedProjectId(active?.id || projectsData[0].id);
     }
   }, [projectsData, selectedProjectId]);
 
@@ -93,6 +99,8 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         name: projRes.data.name,
         description: projRes.data.description,
         dates: `${projRes.data.start_date || '?'} - ${projRes.data.end_date || '?'}`,
+        start_date: projRes.data.start_date,
+        end_date: projRes.data.end_date,
         tickets,
         accommodations: (accRes.data || []) as Accommodation[],
       } as TripDetails;
