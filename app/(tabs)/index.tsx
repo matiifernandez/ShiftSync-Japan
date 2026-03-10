@@ -13,6 +13,7 @@ import { useBadgeTracker } from "../../hooks/useBadgeTracker";
 import { Colors } from "../../constants/Colors";
 import { useToast } from "../../context/ToastContext";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { parseLocalDate } from "../../lib/utils";
 
 /**
  * HomeScreen (Dashboard)
@@ -100,7 +101,7 @@ export default function HomeScreen() {
     // Add Schedule Items
     if (schedule) {
       schedule.forEach(s => {
-        let itemDate = new Date(s.date);
+        let itemDate = parseLocalDate(s.date);
         // Include items from today onwards
         if (itemDate >= today) {
              candidates.push({
@@ -120,7 +121,7 @@ export default function HomeScreen() {
     // Fallback if no future specific events but inside a trip
     if (candidates.length === 0) {
         const tripIsActive = trip?.end_date 
-          ? new Date(trip.end_date) >= today 
+          ? parseLocalDate(trip.end_date) >= today 
           : !!trip;
 
         if (trip && tripIsActive) {

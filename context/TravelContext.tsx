@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo } from '
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { Project, LogisticsTicket, Accommodation } from '../types';
+import { parseLocalDate } from '../lib/utils';
 
 export interface TripDetails {
   id: string;
@@ -65,8 +66,14 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (!selectedProjectId && projectsData && projectsData.length > 0) {
       // Prefer an active project whose end_date hasn't passed
-      const today = new Date().toISOString().split('T')[0];
-      const active = projectsData.find(p => !p.end_date || p.end_date >= today);
+      const now = new Date();
+      const todayAtMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      const active = projectsData.find(p => {
+        if (!p.end_date) return true;
+        return parseLocalDate(p.end_date) >= todayAtMidnight;
+      });
+      
       setSelectedProjectId(active?.id || projectsData[0].id);
     }
   }, [projectsData, selectedProjectId]);

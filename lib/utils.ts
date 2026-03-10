@@ -43,3 +43,13 @@ export const decode = (base64: string): ArrayBuffer => {
 
   return arraybuffer;
 };
+
+/**
+ * Parses a YYYY-MM-DD string into a Date object at local midnight.
+ * Avoids the UTC-shift bug when using new Date('YYYY-MM-DD').
+ */
+export const parseLocalDate = (dateStr: string): Date => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
