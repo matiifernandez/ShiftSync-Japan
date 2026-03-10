@@ -43,3 +43,23 @@ export const decode = (base64: string): ArrayBuffer => {
 
   return arraybuffer;
 };
+
+/**
+ * Parses a YYYY-MM-DD string into a Date object at local midnight.
+ * Avoids the UTC-shift bug when using new Date('YYYY-MM-DD').
+ * Throws an error if the input is not a valid YYYY-MM-DD string.
+ */
+export const parseLocalDate = (dateStr: string): Date => {
+  if (typeof dateStr !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    throw new Error(`parseLocalDate: expected 'YYYY-MM-DD' string, got '${dateStr}'`);
+  }
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  
+  // Final validation to catch cases like 2026-02-31 (which JS converts to March)
+  if (isNaN(date.getTime()) || date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
+    throw new Error(`parseLocalDate: invalid calendar date '${dateStr}'`);
+  }
+  
+  return date;
+};

@@ -1,13 +1,16 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
-import { Project, LogisticsTicket, Accommodation } from '../types';
+import { LogisticsTicket, Accommodation } from '../types';
+import { parseLocalDate } from '../lib/utils';
 
 export interface TripDetails {
   id: string;
   name: string;
   dates: string;
   description?: string;
+  start_date?: string;
+  end_date?: string;
   tickets: LogisticsTicket[];
   accommodations: Accommodation[];
 }
@@ -16,6 +19,7 @@ export interface SimpleProject {
   id: string;
   name: string;
   start_date: string;
+  end_date?: string;
 }
 
 interface TravelContextType {
@@ -47,7 +51,7 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const { data: membership } = await supabase.from('project_members').select('project_id').eq('user_id', user.id);
       const myIds = membership?.map(m => m.project_id) || [];
 
-      let query = supabase.from('projects').select('id, name, start_date').eq('organization_id', profile.organization_id);
+      let query = supabase.from('projects').select('id, name, start_date, end_date').eq('organization_id', profile.organization_id);
       if (profile.role !== 'admin') {
         if (myIds.length === 0) return [];
         query = query.in('id', myIds);
@@ -58,10 +62,19 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   });
 
-  // Auto-select first project
+  // Auto-select first active project
   useEffect(() => {
     if (!selectedProjectId && projectsData && projectsData.length > 0) {
-      setSelectedProjectId(projectsData[0].id);
+      // Prefer an active project whose end_date hasn't passed
+      const now = new Date();
+      const todayAtMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      const active = projectsData.find(p => {
+        if (!p.end_date) return true;
+        return parseLocalDate(p.end_date) >= todayAtMidnight;
+      });
+      
+      setSelectedProjectId(active?.id || projectsData[0].id);
     }
   }, [projectsData, selectedProjectId]);
 
@@ -93,6 +106,8 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         name: projRes.data.name,
         description: projRes.data.description,
         dates: `${projRes.data.start_date || '?'} - ${projRes.data.end_date || '?'}`,
+        start_date: projRes.data.start_date,
+        end_date: projRes.data.end_date,
         tickets,
         accommodations: (accRes.data || []) as Accommodation[],
       } as TripDetails;

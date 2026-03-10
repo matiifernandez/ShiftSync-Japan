@@ -13,6 +13,7 @@ import { useBadgeTracker } from "../../hooks/useBadgeTracker";
 import { Colors } from "../../constants/Colors";
 import { useToast } from "../../context/ToastContext";
 import { useCurrentUser } from "../../hooks/useCurrentUser";
+import { parseLocalDate } from "../../lib/utils";
 
 /**
  * HomeScreen (Dashboard)
@@ -77,15 +78,17 @@ export default function HomeScreen() {
   // Combines Tickets and Schedule Items to find the nearest future event
   const nextActivity = useMemo(() => {
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const candidates: any[] = [];
 
     // Add Travel Tickets
     if (trip && trip.tickets) {
       trip.tickets.forEach(ticket => {
-        if (new Date(ticket.departure_time) > now) {
+        const depTime = new Date(ticket.departure_time);
+        if (depTime > now) {
           candidates.push({
             type: 'ticket',
-            date: new Date(ticket.departure_time),
+            date: depTime,
             title: ticket.transport_name || t('tab_travel'),
             location: `${ticket.departure_station || '?'} → ${ticket.arrival_station || '?'}`,
             detail: ticket.seat_number ? `${t('seat')} ${ticket.seat_number}` : t('tab_travel'),
@@ -98,9 +101,9 @@ export default function HomeScreen() {
     // Add Schedule Items
     if (schedule) {
       schedule.forEach(s => {
-        let itemDate = new Date(s.date);
+        const itemDate = parseLocalDate(s.date);
         // Include items from today onwards
-        if (itemDate >= new Date(now.setHours(0,0,0,0))) {
+        if (itemDate >= today) {
              candidates.push({
                 type: 'shift',
                 date: itemDate,
@@ -117,7 +120,11 @@ export default function HomeScreen() {
 
     // Fallback if no future specific events but inside a trip
     if (candidates.length === 0) {
-        if (trip) {
+        const tripIsActive = trip?.end_date 
+          ? parseLocalDate(trip.end_date) >= today 
+          : !!trip;
+
+        if (trip && tripIsActive) {
             return {
                 title: trip.name,
                 location: trip.dates,
