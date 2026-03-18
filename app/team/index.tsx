@@ -80,7 +80,7 @@ export default function TeamManagementScreen() {
           
           <Text className="text-gray-500 font-medium mb-1">{t('invite_code_label')}</Text>
           <Text className="text-4xl font-bold text-brand-dark tracking-widest mb-6">
-            {organization?.invite_code || t('invite_code_placeholder')}
+            {organization?.invite_code || t('invite_code_missing')}
           </Text>
 
           <View className="flex-row gap-3 w-full">

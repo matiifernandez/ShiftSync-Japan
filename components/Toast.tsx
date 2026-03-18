@@ -66,7 +66,13 @@ export default function Toast() {
         accessibilityRole="alert"
         accessibilityLabel={`${typeLabel} ${t('toast_notification')}: ${message}`}
       >
-        <Ionicons name={icons[type]} size={24} color="white" />
+        <Ionicons
+          name={icons[type]}
+          size={24}
+          color="white"
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no"
+        />
         <Text className="text-white font-medium ml-3 flex-1 text-base">
           {message}
         </Text>

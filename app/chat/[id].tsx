@@ -159,6 +159,7 @@ export default function ChatDetailScreen() {
           onPress={() => isGroup && router.push({ pathname: "/chat/details", params: { id: id as string } })}
           accessibilityRole={isGroup ? "button" : "text"}
           accessibilityLabel={headerA11yLabel}
+          accessibilityHint={isGroup ? t('tap_for_info') : undefined}
         >
           <Text className="text-xl font-bold text-brand-dark" numberOfLines={1}>
             {chatName}
