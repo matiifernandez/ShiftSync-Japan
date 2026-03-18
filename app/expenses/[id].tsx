@@ -15,15 +15,16 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { useToast } from "../../context/ToastContext";
 import { Colors } from "../../constants/Colors";
 import { useExpenses, useExpense } from "../../hooks/useExpenses";
+import { Expense } from "../../types";
 
 const CATEGORIES = [
   { id: "transport", icon: "train" },
-  { id: "hotel", icon: "hotel" },
+  { id: "accommodation", icon: "hotel" },
   { id: "fuel", icon: "gas-pump" },
   { id: "parking", icon: "parking" },
   { id: "meals", icon: "utensils" },
   { id: "other", icon: "receipt" },
-];
+] as const;
 
 /**
  * ExpenseDetailScreen
@@ -44,7 +45,7 @@ export default function ExpenseDetailScreen() {
 
   // Form State for Editing
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState<Expense["category"]>("transport");
   const [description, setDescription] = useState("");
 
   // Handle errors

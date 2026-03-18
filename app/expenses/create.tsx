@@ -17,15 +17,16 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { useToast } from "../../context/ToastContext";
 import { Colors } from "../../constants/Colors";
 import { useExpenses } from "../../hooks/useExpenses";
+import { Expense } from "../../types";
 
 const CATEGORIES = [
   { id: "transport", icon: "train" },
-  { id: "hotel", icon: "hotel" },
+  { id: "accommodation", icon: "hotel" },
   { id: "fuel", icon: "gas-pump" },
   { id: "parking", icon: "parking" },
   { id: "meals", icon: "utensils" },
   { id: "other", icon: "receipt" },
-];
+] as const;
 
 export default function CreateExpenseScreen() {
   const insets = useSafeAreaInsets();
@@ -35,7 +36,7 @@ export default function CreateExpenseScreen() {
   const { showToast } = useToast();
 
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState("transport");
+  const [category, setCategory] = useState<Expense["category"]>("transport");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -76,7 +77,7 @@ export default function CreateExpenseScreen() {
     const success = await createExpense(
       {
         amount: Number(amount),
-        category: category as any,
+        category,
         description,
         paid_by: "employee", // Default for now
         currency: "JPY",
