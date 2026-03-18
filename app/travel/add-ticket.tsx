@@ -167,7 +167,7 @@ export default function AddTicketScreen() {
                 <Text className="text-brand-dark font-bold mb-2">{t('time_format')}</Text>
                 <TextInput
                     className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
-                    placeholder="09:00"
+                    placeholder={t('time_placeholder')}
                     value={deptTime}
                     onChangeText={setDeptTime}
                     keyboardType="numbers-and-punctuation"

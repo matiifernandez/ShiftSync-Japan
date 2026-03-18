@@ -39,7 +39,7 @@ export default function CreateOrgScreen() {
         onPress={() => router.back()} 
         className="mt-2 mb-6 w-10"
         accessibilityRole="button"
-        accessibilityLabel="Go back"
+        accessibilityLabel={t('go_back')}
       >
         <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
       </TouchableOpacity>
@@ -57,7 +57,7 @@ export default function CreateOrgScreen() {
             value={name}
             onChangeText={setName}
             autoFocus
-            accessibilityLabel="Workspace name input"
+            accessibilityLabel={t('company_name_label')}
         />
       </View>
 
@@ -66,7 +66,7 @@ export default function CreateOrgScreen() {
         disabled={loading}
         className={`w-full bg-brand-red py-4 rounded-xl items-center mt-4 ${loading ? 'opacity-70' : ''}`}
         accessibilityRole="button"
-        accessibilityLabel="Create Workspace"
+        accessibilityLabel={t('create_action')}
         accessibilityState={{ disabled: loading }}
       >
         {loading ? (

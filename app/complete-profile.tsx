@@ -260,7 +260,7 @@ export default function CompleteProfileScreen() {
                     language === "en" ? "text-brand-red" : "text-gray-500"
                   }`}
                 >
-                  🇺🇸 English
+                  {t('language_english')}
                 </Text>
               </TouchableOpacity>
 
@@ -277,7 +277,7 @@ export default function CompleteProfileScreen() {
                     language === "ja" ? "text-brand-red" : "text-gray-500"
                   }`}
                 >
-                  🇯🇵 日本語
+                  {t('language_japanese')}
                 </Text>
               </TouchableOpacity>
             </View>

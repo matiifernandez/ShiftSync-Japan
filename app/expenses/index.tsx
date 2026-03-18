@@ -129,7 +129,7 @@ export default function ExpensesScreen() {
               )}
             </View>
             <View>
-              <Text className="text-brand-dark font-bold text-lg">¥{item.amount.toLocaleString()}</Text>
+              <Text className="text-brand-dark font-bold text-lg">{t('currency_symbol')}{item.amount.toLocaleString()}</Text>
               <Text className="text-gray-500 text-xs capitalize">
                 {getCategoryLabel(item.category)} • {format(parseISO(item.created_at), 'MMM d', { locale: dateLocale })}
               </Text>
@@ -196,7 +196,7 @@ export default function ExpensesScreen() {
               onPress={() => router.back()} 
               className="mr-4 p-2"
               accessibilityRole="button"
-              accessibilityLabel="Go back"
+              accessibilityLabel={t('go_back')}
             >
               <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
             </TouchableOpacity>

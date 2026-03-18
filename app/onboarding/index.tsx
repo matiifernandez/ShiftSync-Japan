@@ -75,7 +75,7 @@ export default function OnboardingScreen() {
             <Text className="text-brand-red font-bold">{t('log_out')}</Text>
         </TouchableOpacity>
         <Text className="text-xs text-gray-400">
-            ShiftSync Japan • Optimized for efficiency
+            {t('onboarding_footer')}
         </Text>
       </View>
     </View>

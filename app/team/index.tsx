@@ -30,7 +30,7 @@ export default function TeamManagementScreen() {
   const handleShare = async () => {
     if (!organization) return;
     try {
-      const message = `${t('join_team_instruction')} Code: ${organization.invite_code}`;
+      const message = `${t('join_team_instruction')} ${t('invite_code_label')}: ${organization.invite_code}`;
       await Share.share({
         message,
         title: t('invite_member'),
@@ -59,7 +59,7 @@ export default function TeamManagementScreen() {
               onPress={() => router.back()} 
               className="mr-4 p-2 -ml-2"
               accessibilityRole="button"
-              accessibilityLabel="Go back"
+              accessibilityLabel={t('go_back')}
             >
               <Ionicons name="arrow-back" size={24} color={Colors.brand.red} />
             </TouchableOpacity>
@@ -80,7 +80,7 @@ export default function TeamManagementScreen() {
           
           <Text className="text-gray-500 font-medium mb-1">{t('invite_code_label')}</Text>
           <Text className="text-4xl font-bold text-brand-dark tracking-widest mb-6">
-            {organization?.invite_code || "----"}
+            {organization?.invite_code || t('invite_code_placeholder')}
           </Text>
 
           <View className="flex-row gap-3 w-full">
@@ -88,7 +88,7 @@ export default function TeamManagementScreen() {
               onPress={handleCopyCode}
               className="flex-1 bg-gray-100 py-3 rounded-xl flex-row justify-center items-center"
               accessibilityRole="button"
-              accessibilityLabel="Copy invite code"
+              accessibilityLabel={t('copy_code')}
             >
               <Ionicons name="copy-outline" size={20} color="#4B5563" />
               <Text className="ml-2 font-bold text-gray-700">{t('copy_code')}</Text>
@@ -98,7 +98,7 @@ export default function TeamManagementScreen() {
               onPress={handleShare}
               className="flex-1 bg-brand-red py-3 rounded-xl flex-row justify-center items-center shadow-md shadow-red-200"
               accessibilityRole="button"
-              accessibilityLabel="Share invite link"
+              accessibilityLabel={t('share_link')}
             >
               <Ionicons name="share-outline" size={20} color="white" />
               <Text className="ml-2 font-bold text-white">{t('share_link')}</Text>
@@ -134,7 +134,7 @@ export default function TeamManagementScreen() {
               <View className="ml-4 flex-1">
                 <Text className="font-bold text-brand-dark text-base">{item.full_name}</Text>
                 <Text className="text-gray-400 text-xs capitalize">
-                  {item.role === 'admin' ? 'Administrator' : 'Staff Member'}
+                  {item.role === 'admin' ? t('role_admin') : t('role_staff')}
                 </Text>
               </View>
             </View>

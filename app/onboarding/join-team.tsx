@@ -38,7 +38,7 @@ export default function JoinTeamScreen() {
         onPress={() => router.back()} 
         className="mt-2 mb-6 w-10"
         accessibilityRole="button"
-        accessibilityLabel="Go back"
+        accessibilityLabel={t('go_back')}
       >
         <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
       </TouchableOpacity>
@@ -52,13 +52,13 @@ export default function JoinTeamScreen() {
         <Text className="text-gray-600 mb-2 font-medium">{t('invite_code_label')}</Text>
         <TextInput
             className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center text-3xl font-bold tracking-widest text-brand-dark uppercase"
-            placeholder="XYZ123"
+            placeholder={t('invite_code_placeholder')}
             value={code}
             onChangeText={setCode}
             autoCapitalize="characters"
             maxLength={6}
             autoFocus
-            accessibilityLabel="Invitation code input"
+            accessibilityLabel={t('invite_code_label')}
         />
       </View>
 
@@ -67,7 +67,7 @@ export default function JoinTeamScreen() {
         disabled={loading || code.length < 6}
         className={`w-full bg-blue-600 py-4 rounded-xl items-center mt-4 ${loading || code.length < 6 ? 'opacity-50' : ''}`}
         accessibilityRole="button"
-        accessibilityLabel="Join Team"
+        accessibilityLabel={t('join_action')}
         accessibilityState={{ disabled: loading || code.length < 6 }}
       >
         {loading ? (

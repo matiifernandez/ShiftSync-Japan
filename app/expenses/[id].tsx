@@ -130,6 +130,11 @@ export default function ExpenseDetailScreen() {
   if (!expense) return null;
 
   const isPending = expense.status === "pending";
+  const statusLabel = expense.status === "approved"
+    ? t('status_approved')
+    : expense.status === "rejected"
+      ? t('status_rejected')
+      : t('status_pending');
 
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
@@ -163,7 +168,7 @@ export default function ExpenseDetailScreen() {
                     expense.status === 'approved' ? "text-green-800" : 
                     expense.status === 'rejected' ? "text-red-800" : "text-yellow-800"
                 }`}>
-                    Status: {expense.status}
+                    {t('status_label')}: {statusLabel}
                 </Text>
             </View>
         )}
@@ -173,7 +178,7 @@ export default function ExpenseDetailScreen() {
           <Text className="text-gray-500 mb-1">{t('total_amount')}</Text>
           {isEditing ? (
              <View className="flex-row items-center border-b border-gray-300 pb-1">
-                <Text className="text-3xl font-bold text-gray-400 mr-2">¥</Text>
+                <Text className="text-3xl font-bold text-gray-400 mr-2">{t('currency_symbol')}</Text>
                 <TextInput 
                     className="text-4xl font-bold text-brand-dark min-w-[100px] text-center"
                     value={amount}
@@ -182,7 +187,7 @@ export default function ExpenseDetailScreen() {
                 />
              </View>
           ) : (
-             <Text className="text-4xl font-bold text-brand-dark">¥{expense.amount.toLocaleString()}</Text>
+             <Text className="text-4xl font-bold text-brand-dark">{t('currency_symbol')}{expense.amount.toLocaleString()}</Text>
           )}
         </View>
 
@@ -236,7 +241,7 @@ export default function ExpenseDetailScreen() {
                     </TouchableOpacity>
                 ) : (
                     <View className="w-full h-32 bg-gray-50 rounded-xl items-center justify-center border-2 border-dashed border-gray-200">
-                        <Text className="text-gray-400">No receipt attached</Text>
+                        <Text className="text-gray-400">{t('no_receipt_attached')}</Text>
                     </View>
                 )}
             </View>

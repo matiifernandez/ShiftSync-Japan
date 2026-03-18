@@ -53,7 +53,7 @@ export default function CreateChatScreen() {
         .insert({
           organization_id: organizationId,
           type: 'direct',
-          name: 'Direct Message' // Placeholder, usually hidden for DMs
+          name: t('direct_message') // Placeholder, usually hidden for DMs
         })
         .select()
         .single();
@@ -75,7 +75,7 @@ export default function CreateChatScreen() {
       // Navigate
       router.replace({
         pathname: "/chat/[id]",
-        params: { id: conv.id, name: staff.find(s => s.id === targetUserId)?.full_name || "Chat" }
+        params: { id: conv.id, name: staff.find(s => s.id === targetUserId)?.full_name || t('chat_title_fallback') }
       });
 
     } catch (error: any) {
