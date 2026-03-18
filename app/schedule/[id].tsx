@@ -6,9 +6,10 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { useSchedule } from "../../hooks/useSchedule";
 import { Colors } from "../../constants/Colors";
 import { useToast } from "../../context/ToastContext";
+import type { ScheduleItem } from "../../types";
 
 const THEME_COLOR = Colors.brand.red;
-type ShiftType = "work_shift" | "travel_day" | "off_day";
+type ShiftType = ScheduleItem["type"];
 
 const SHIFT_TYPES: { id: ShiftType; labelKey: ShiftType; icon: string }[] = [
   { id: "work_shift", labelKey: "work_shift", icon: "briefcase" },

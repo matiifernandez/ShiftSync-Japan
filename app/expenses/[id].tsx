@@ -26,6 +26,15 @@ const CATEGORIES = [
   { id: "other", icon: "receipt" },
 ] as const;
 
+const normalizeCategory = (rawCategory: string | null | undefined): Expense["category"] => {
+  if (rawCategory === "hotel") return "accommodation";
+  const validCategoryIds = CATEGORIES.map((c) => c.id);
+  if (rawCategory && validCategoryIds.includes(rawCategory as Expense["category"])) {
+    return rawCategory as Expense["category"];
+  }
+  return "transport";
+};
+
 /**
  * ExpenseDetailScreen
  * 
@@ -60,7 +69,7 @@ export default function ExpenseDetailScreen() {
   useEffect(() => {
     if (expense) {
       setAmount(String(expense.amount));
-      setCategory(expense.category);
+      setCategory(normalizeCategory(expense.category as string | null | undefined));
       setDescription(expense.description || "");
     }
   }, [expense]);
@@ -95,9 +104,9 @@ export default function ExpenseDetailScreen() {
        showToast(t('invalid_amount_msg'), 'error');
        return false;
     }
-    if (!category) {
-       showToast(t('category_error'), 'error');
-       return false;
+    if (!CATEGORIES.some((c) => c.id === category)) {
+      showToast(t('category_error'), 'error');
+      return false;
     }
     return true;
   }
@@ -131,6 +140,7 @@ export default function ExpenseDetailScreen() {
   if (!expense) return null;
 
   const isPending = expense.status === "pending";
+  const displayCategory = normalizeCategory(expense.category as string | null | undefined);
 
   return (
     <View style={{ flex: 1, backgroundColor: "white" }}>
@@ -205,8 +215,8 @@ export default function ExpenseDetailScreen() {
                     </View>
                 ) : (
                     <View className="flex-row items-center bg-gray-50 p-3 rounded-xl self-start">
-                        <FontAwesome5 name={CATEGORIES.find(c => c.id === expense.category)?.icon || 'receipt'} size={16} color="#4B5563" />
-                        <Text className="ml-2 text-brand-dark font-medium capitalize">{t(('cat_' + expense.category) as any)}</Text>
+                        <FontAwesome5 name={CATEGORIES.find(c => c.id === displayCategory)?.icon || 'receipt'} size={16} color="#4B5563" />
+                        <Text className="ml-2 text-brand-dark font-medium capitalize">{t(('cat_' + displayCategory) as any)}</Text>
                     </View>
                 )}
             </View>

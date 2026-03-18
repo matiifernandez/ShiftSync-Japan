@@ -55,7 +55,7 @@ export function useExpenses() {
     organization_id: orgId || 'offline',
     profiles: {
       full_name: 'Me (Offline)',
-      avatar_url: ""
+      avatar_url: null
     }
   }));
 
@@ -248,7 +248,7 @@ export function useExpense(id: string) {
             organization_id: orgId,
             profiles: {
                 full_name: 'Me (Offline)',
-                avatar_url: ""
+                avatar_url: null
             }
         } as Expense;
       } else {
