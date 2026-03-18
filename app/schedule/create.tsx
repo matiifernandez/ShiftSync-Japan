@@ -263,7 +263,7 @@ export default function CreateBulkShiftScreen() {
                     onChangeText={setStartTime}
                     onBlur={() => validateTime(startTime, setStartTime)}
                     keyboardType="numbers-and-punctuation"
-                    placeholder="09:00"
+                    placeholder={t('time_placeholder')}
                 />
                 </View>
                 <View className="flex-1">
@@ -274,7 +274,7 @@ export default function CreateBulkShiftScreen() {
                     onChangeText={setEndTime}
                     onBlur={() => validateTime(endTime, setEndTime)}
                     keyboardType="numbers-and-punctuation"
-                    placeholder="18:00"
+                    placeholder={t('time_placeholder')}
                 />
                 </View>
             </View>

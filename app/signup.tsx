@@ -83,7 +83,7 @@ export default function SignUpScreen() {
           <TouchableOpacity 
             onPress={() => router.back()} 
             className="absolute left-6 top-14 z-10 bg-black/20 p-2 rounded-full"
-            accessibilityLabel="Go back"
+            accessibilityLabel={t('go_back')}
             accessibilityRole="button"
           >
             <Ionicons name="arrow-back" size={24} color="white" />
@@ -105,12 +105,12 @@ export default function SignUpScreen() {
             <Text className="text-gray-600 mb-2 ml-1 font-medium">{t('email_label')}</Text>
             <FormInput
               icon="mail-outline"
-              placeholder="name@company.com"
+              placeholder={t('email_placeholder')}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
-              accessibilityLabel="Email address input"
+              accessibilityLabel={t('email_input_label')}
             />
           </View>
 
@@ -118,11 +118,11 @@ export default function SignUpScreen() {
             <Text className="text-gray-600 mb-2 ml-1 font-medium">{t('password_label')}</Text>
             <FormInput
               icon="lock-closed-outline"
-              placeholder="••••••••"
+              placeholder={t('password_placeholder')}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-              accessibilityLabel="Password input"
+              accessibilityLabel={t('password_input_label')}
             />
           </View>
 
@@ -130,11 +130,11 @@ export default function SignUpScreen() {
             <Text className="text-gray-600 mb-2 ml-1 font-medium">{t('confirm_password')}</Text>
             <FormInput
               icon="shield-checkmark-outline"
-              placeholder="••••••••"
+              placeholder={t('password_placeholder')}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry
-              accessibilityLabel="Confirm password input"
+              accessibilityLabel={t('confirm_password_input_label')}
             />
           </View>
 
@@ -143,7 +143,7 @@ export default function SignUpScreen() {
             disabled={loading}
             className={`w-full bg-brand-red py-4 rounded-2xl shadow-lg shadow-red-200 items-center mb-6 ${loading ? 'opacity-70' : ''}`}
             accessibilityRole="button"
-            accessibilityLabel="Create Account"
+            accessibilityLabel={t('create_account')}
           >
             {loading ? (
               <ActivityIndicator color="white" />

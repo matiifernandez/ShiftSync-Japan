@@ -144,7 +144,7 @@ export default function AddHotelScreen() {
           <Text className="text-brand-dark font-bold mb-2">{t('maps_url')}</Text>
           <TextInput
             className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
-            placeholder="https://maps.google.com/..."
+            placeholder={t('maps_placeholder')}
             value={mapUrl}
             onChangeText={setMapUrl}
           />

@@ -21,12 +21,16 @@ export default function ChatDetailScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const { id, name } = params;
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
 
   // Get conversation metadata from context
   const { conversations } = useChatContext();
   const conversation = conversations.find(c => c.id === id);
   const isGroup = conversation?.type === 'group';
+  const chatName = typeof name === "string" && name.trim().length > 0 ? name : t('chat_title_fallback');
+  const headerA11yLabel = isGroup
+    ? `${t('chat_group_label')}: ${chatName}`
+    : `${t('chat_with_label')}: ${chatName}`;
 
   // Use the custom hook connected to Supabase
   const {
@@ -99,7 +103,7 @@ export default function ChatDetailScreen() {
                     isMe ? "text-white/70" : "text-gray-400"
                   }`}
                 >
-                  TRANSLATED
+                  {t('translated_label')}
                 </Text>
               </View>
               <Text
@@ -144,7 +148,7 @@ export default function ChatDetailScreen() {
             onPress={() => router.back()} 
             className="mr-4 p-2"
             accessibilityRole="button"
-            accessibilityLabel="Go back"
+            accessibilityLabel={t('go_back')}
         >
           <Ionicons name="arrow-back" size={24} color="#1A1A1A" />
         </TouchableOpacity>
@@ -154,13 +158,14 @@ export default function ChatDetailScreen() {
           disabled={!isGroup}
           onPress={() => isGroup && router.push({ pathname: "/chat/details", params: { id: id as string } })}
           accessibilityRole={isGroup ? "button" : "text"}
-          accessibilityLabel={isGroup ? `Chat group ${name}, tap for details` : `Chat with ${name}`}
+          accessibilityLabel={headerA11yLabel}
+          accessibilityHint={isGroup ? t('tap_for_info') : undefined}
         >
           <Text className="text-xl font-bold text-brand-dark" numberOfLines={1}>
-            {name || "Chat"}
+            {chatName}
           </Text>
           {isGroup && (
-            <Text className="text-green-600 text-xs font-bold">Tap for info</Text>
+            <Text className="text-green-600 text-xs font-bold">{t('tap_for_info')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -185,7 +190,7 @@ export default function ChatDetailScreen() {
           <TouchableOpacity 
             className="mr-3"
             accessibilityRole="button"
-            accessibilityLabel="Add attachment"
+            accessibilityLabel={t('add_attachment')}
           >
             <Ionicons name="add-circle-outline" size={28} color="#9CA3AF" />
           </TouchableOpacity>
@@ -193,11 +198,11 @@ export default function ChatDetailScreen() {
           <View className="flex-1 bg-gray-100 rounded-2xl px-4 py-2 flex-row items-center min-h-[44px]">
             <TextInput
               className="flex-1 text-base text-brand-dark"
-              placeholder="Type a message..."
+              placeholder={t('type_message')}
               multiline
               value={inputText}
               onChangeText={setInputText}
-              accessibilityLabel="Message input field"
+              accessibilityLabel={t('message_input_label')}
               style={{ 
                 textAlignVertical: "center",
                 maxHeight: 100,
@@ -215,7 +220,7 @@ export default function ChatDetailScreen() {
             }`}
             disabled={!inputText.trim()}
             accessibilityRole="button"
-            accessibilityLabel="Send message"
+            accessibilityLabel={t('send_message')}
             accessibilityState={{ disabled: !inputText.trim() }}
           >
             <Ionicons name="send" size={20} color="white" />

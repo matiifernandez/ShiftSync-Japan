@@ -161,7 +161,7 @@ export default function EditShiftScreen() {
                 className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
                 value={date}
                 onChangeText={setDate}
-                placeholder="YYYY-MM-DD"
+                placeholder={t('date_placeholder')}
             />
         </View>
 
@@ -175,7 +175,7 @@ export default function EditShiftScreen() {
                 onChangeText={setStartTime}
                 onBlur={() => validateTime(startTime, setStartTime)}
                 keyboardType="numbers-and-punctuation"
-                placeholder="09:00"
+                placeholder={t('time_placeholder')}
             />
             </View>
             <View className="flex-1">
@@ -186,7 +186,7 @@ export default function EditShiftScreen() {
                 onChangeText={setEndTime}
                 onBlur={() => validateTime(endTime, setEndTime)}
                 keyboardType="numbers-and-punctuation"
-                placeholder="18:00"
+                placeholder={t('time_placeholder')}
             />
             </View>
         </View>
@@ -198,7 +198,7 @@ export default function EditShiftScreen() {
             className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-base"
             value={locationName}
             onChangeText={setLocationName}
-            placeholder="Location"
+            placeholder={t('location_placeholder')}
             />
         </View>
 
@@ -210,7 +210,7 @@ export default function EditShiftScreen() {
             value={notes}
             onChangeText={setNotes}
             multiline
-            placeholder="Optional notes..."
+            placeholder={t('notes_placeholder')}
             style={{ textAlignVertical: 'top' }}
             />
         </View>

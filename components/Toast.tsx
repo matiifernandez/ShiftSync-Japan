@@ -3,9 +3,11 @@ import { Text, Animated, TouchableOpacity, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useToast } from "../context/ToastContext";
+import { useTranslation } from "../hooks/useTranslation";
 
 export default function Toast() {
   const { isVisible, message, type, hideToast } = useToast();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -30,6 +32,12 @@ export default function Toast() {
     error: "alert-circle",
     info: "information-circle",
   };
+
+  const typeLabel = type === "success"
+    ? t('toast_success')
+    : type === "error"
+      ? t('toast_error')
+      : t('toast_info');
 
   return (
     <Animated.View
@@ -56,9 +64,15 @@ export default function Toast() {
         onPress={hideToast}
         className={`${bgColors[type]} rounded-2xl p-4 flex-row items-center shadow-lg shadow-black/20`}
         accessibilityRole="alert"
-        accessibilityLabel={`${type} notification: ${message}`}
+        accessibilityLabel={`${typeLabel} ${t('toast_notification')}: ${message}`}
       >
-        <Ionicons name={icons[type]} size={24} color="white" />
+        <Ionicons
+          name={icons[type]}
+          size={24}
+          color="white"
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no"
+        />
         <Text className="text-white font-medium ml-3 flex-1 text-base">
           {message}
         </Text>
