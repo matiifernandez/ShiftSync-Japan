@@ -205,7 +205,7 @@ export default function TravelScreen() {
         {/* HOTEL SECTION */}
         <View className="flex-row justify-between items-center mb-4 mt-2">
           <Text className="text-gray-500 font-bold uppercase tracking-wider text-xs">
-            {t('cat_hotel')}
+            {t('cat_accommodation')}
           </Text>
           {userRole === 'admin' && trip && (
             <TouchableOpacity 
@@ -228,7 +228,7 @@ export default function TravelScreen() {
               </View>
               <View className="flex-1">
                 <Text className="text-base font-bold text-brand-dark mb-1">
-                  {t('cat_hotel')}: {hotel.name}
+                  {t('cat_accommodation')}: {hotel.name}
                 </Text>
               </View>
             </View>
