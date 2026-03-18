@@ -122,6 +122,7 @@ export function useExpenses() {
 
         const { error } = await supabase.from("expenses").insert({
           ...data,
+          category: normalizeExpenseCategory(data.category),
           user_id: user.id,
           organization_id: orgId,
           receipt_url: receiptUrl,
@@ -135,7 +136,11 @@ export function useExpenses() {
         
         await addToQueue({
           id: `temp-${Date.now()}`,
-          expenseData: { ...data, organization_id: orgId },
+          expenseData: { 
+            ...data, 
+            category: normalizeExpenseCategory(data.category),
+            organization_id: orgId 
+          },
           imageUri: imageUri || '',
           createdAt: Date.now()
         });
@@ -159,9 +164,14 @@ export function useExpenses() {
     mutationFn: async ({ id, data }: { id: string; data: Partial<Expense> }) => {
       if (!orgId) throw new Error("No organization assigned");
       
+      const updateData = { ...data };
+      if (updateData.category) {
+        updateData.category = normalizeExpenseCategory(updateData.category);
+      }
+
       const { error } = await supabase
         .from("expenses")
-        .update({ ...data, status: 'pending' }) // Reset to pending if edited
+        .update({ ...updateData, status: 'pending' }) // Reset to pending if edited
         .eq("id", id)
         .eq("organization_id", orgId);
       if (error) throw error;
