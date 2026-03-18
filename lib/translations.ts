@@ -82,7 +82,6 @@ export const translations = {
     no_history: "No history yet",
     // Categories
     cat_transport: "Transport",
-    cat_hotel: "Hotel",
     cat_accommodation: "Hotel",
     cat_fuel: "Fuel",
     cat_parking: "Parking",
@@ -419,7 +418,6 @@ export const translations = {
     no_history: "履歴はありません",
     // Categories
     cat_transport: "交通費",
-    cat_hotel: "宿泊費",
     cat_accommodation: "宿泊費",
     cat_fuel: "ガソリン代",
     cat_parking: "駐車場代",

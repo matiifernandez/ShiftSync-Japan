@@ -58,7 +58,6 @@ export default function ExpensesScreen() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case "transport": return "train";
-      case "hotel":
       case "accommodation": return "hotel";
       case "fuel": return "gas-pump";
       case "parking": return "parking";
@@ -72,8 +71,7 @@ export default function ExpensesScreen() {
     
     switch (category) {
       case "transport": key = "cat_transport"; break;
-      case "hotel":
-      case "accommodation": key = "cat_hotel"; break;
+      case "accommodation": key = "cat_accommodation"; break;
       case "fuel": key = "cat_fuel"; break;
       case "parking": key = "cat_parking"; break;
       case "meals": key = "cat_meals"; break;

@@ -6,6 +6,35 @@ import { useToast } from '../context/ToastContext';
 import { useTranslation } from './useTranslation';
 import { useCurrentUser } from './useCurrentUser';
 
+export const EXPENSE_CATEGORY_VALUES: Expense["category"][] = [
+  "transport",
+  "accommodation",
+  "fuel",
+  "parking",
+  "meals",
+  "other"
+];
+const warnedExpenseCategories = new Set<string>();
+
+export const normalizeExpenseCategory = (rawCategory: string | null | undefined): Expense["category"] => {
+  if (!rawCategory) return "other";
+
+  const normalized = rawCategory.trim().toLowerCase();
+  if (normalized === "hotel") return "accommodation";
+  if (EXPENSE_CATEGORY_VALUES.includes(normalized as Expense["category"])) {
+    return normalized as Expense["category"];
+  }
+
+  if (!warnedExpenseCategories.has(normalized)) {
+    console.warn(
+      `[useExpenses] Unknown expense category "${rawCategory}", defaulting to "other".`
+    );
+    warnedExpenseCategories.add(normalized);
+  }
+
+  return "other";
+};
+
 /**
  * useExpenses hook
  * Manages the list of expenses, creation, and status updates.
@@ -34,7 +63,11 @@ export function useExpenses() {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Expense[];
+      const normalized = (data || []).map((expense) => ({
+        ...expense,
+        category: normalizeExpenseCategory(expense.category as string | null | undefined)
+      }));
+      return normalized as Expense[];
     },
     enabled: !!orgId,
     staleTime: 1000 * 60 * 5 // 5 minutes
@@ -46,7 +79,7 @@ export function useExpenses() {
     user_id: 'me',
     created_at: new Date(task.createdAt).toISOString(),
     amount: task.expenseData.amount,
-    category: task.expenseData.category,
+    category: normalizeExpenseCategory(task.expenseData.category),
     currency: task.expenseData.currency || 'JPY',
     description: task.expenseData.description,
     paid_by: task.expenseData.paid_by || 'employee',
@@ -239,7 +272,7 @@ export function useExpense(id: string) {
             user_id: 'me',
             created_at: new Date(offlineTask.createdAt).toISOString(),
             amount: offlineTask.expenseData.amount,
-            category: offlineTask.expenseData.category,
+            category: normalizeExpenseCategory(offlineTask.expenseData.category),
             currency: offlineTask.expenseData.currency || 'JPY',
             description: offlineTask.expenseData.description,
             paid_by: offlineTask.expenseData.paid_by || 'employee',
@@ -261,7 +294,10 @@ export function useExpense(id: string) {
           .single();
 
         if (error) throw error;
-        expense = data as Expense;
+        expense = {
+          ...(data as Expense),
+          category: normalizeExpenseCategory(data.category as string | null | undefined)
+        };
       }
 
       // 3. Resolve Receipt URL (Internal Helper Logic)
