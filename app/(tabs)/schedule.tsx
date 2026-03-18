@@ -92,16 +92,16 @@ export default function ScheduleScreen() {
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     Alert.alert(
-      "Manage Shift",
-      "Choose an action",
+      t('manage_shift_title'),
+      t('manage_shift_msg'),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t('cancel'), style: "cancel" },
         { 
-          text: "Edit", 
+          text: t('edit'), 
           onPress: () => router.push({ pathname: "/schedule/[id]", params: { id: item.id } }) 
         },
         { 
-          text: "Delete", 
+          text: t('delete_confirm'), 
           style: "destructive", 
           onPress: () => handleDelete(item.id)
         },
@@ -119,7 +119,7 @@ export default function ScheduleScreen() {
       case "off_day":
         return t('off_day');
       default:
-        return "Event";
+        return t('event_fallback');
     }
   };
 

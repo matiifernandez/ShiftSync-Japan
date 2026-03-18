@@ -104,12 +104,12 @@ export default function CreateExpenseScreen() {
       <ScrollView className="flex-1 px-6 pt-6" showsVerticalScrollIndicator={false}>
         {/* AMOUNT INPUT */}
         <View className="mb-8 items-center">
-          <Text className="text-gray-500 mb-2 font-medium">{t('total_amount')} (¥)</Text>
+          <Text className="text-gray-500 mb-2 font-medium">{t('total_amount')} ({t('currency_symbol')})</Text>
           <View className="flex-row items-center">
-            <Text className="text-4xl font-bold text-brand-dark mr-2">¥</Text>
+            <Text className="text-4xl font-bold text-brand-dark mr-2">{t('currency_symbol')}</Text>
             <TextInput
               className="text-4xl font-bold text-brand-dark min-w-[100px]"
-              placeholder="0"
+              placeholder={t('amount_placeholder')}
               keyboardType="numeric"
               value={amount}
               onChangeText={setAmount}

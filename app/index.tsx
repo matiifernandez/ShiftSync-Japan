@@ -72,8 +72,8 @@ export default function LoginScreen() {
             <View className="bg-white p-2 rounded-[32px] shadow-2xl mb-4">
                <Logo size={80} />
             </View>
-            <Text className="text-white text-4xl font-bold">ShiftSync</Text>
-            <Text className="text-white/80 mt-2 font-medium tracking-widest text-sm">JAPAN</Text>
+            <Text className="text-white text-4xl font-bold">{t('brand_name')}</Text>
+            <Text className="text-white/80 mt-2 font-medium tracking-widest text-sm">{t('brand_region')}</Text>
           </View>
         </View>
 
@@ -86,12 +86,12 @@ export default function LoginScreen() {
             <Text className="text-gray-600 mb-2 ml-1 font-medium">{t('email_label')}</Text>
             <FormInput
               icon="mail-outline"
-              placeholder="name@company.com"
+              placeholder={t('email_placeholder')}
               value={email}
               onChangeText={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
-              accessibilityLabel="Email address input"
+              accessibilityLabel={t('email_input_label')}
             />
           </View>
 
@@ -99,11 +99,11 @@ export default function LoginScreen() {
             <Text className="text-gray-600 mb-2 ml-1 font-medium">{t('password_label')}</Text>
             <FormInput
               icon="lock-closed-outline"
-              placeholder="••••••••"
+              placeholder={t('password_placeholder')}
               value={password}
               onChangeText={setPassword}
               secureTextEntry
-              accessibilityLabel="Password input"
+              accessibilityLabel={t('password_input_label')}
             />
           </View>
 
@@ -130,7 +130,7 @@ export default function LoginScreen() {
           </View>
 
           <View className="flex-row justify-center mt-auto mb-10">
-            <Text className="text-xs text-gray-400">ShiftSync Japan v1.0</Text>
+            <Text className="text-xs text-gray-400">{t('app_version_label')}</Text>
           </View>
         </View>
       </ScrollView>
