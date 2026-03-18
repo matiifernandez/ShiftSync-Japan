@@ -6,10 +6,12 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { useSchedule } from "../../hooks/useSchedule";
 import { Colors } from "../../constants/Colors";
 import { useToast } from "../../context/ToastContext";
+import type { ScheduleItem } from "../../types";
 
 const THEME_COLOR = Colors.brand.red;
+type ShiftType = ScheduleItem["type"];
 
-const SHIFT_TYPES = [
+const SHIFT_TYPES: { id: ShiftType; labelKey: ShiftType; icon: string }[] = [
   { id: "work_shift", labelKey: "work_shift", icon: "briefcase" },
   { id: "travel_day", labelKey: "travel_day", icon: "train" },
   { id: "off_day", labelKey: "off_day", icon: "coffee" },
@@ -30,7 +32,7 @@ export default function EditShiftScreen() {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [locationName, setLocationName] = useState("");
-  const [shiftType, setShiftType] = useState("work_shift");
+  const [shiftType, setShiftType] = useState<ShiftType>("work_shift");
   const [notes, setNotes] = useState("");
   const [staffName, setStaffName] = useState("");
 

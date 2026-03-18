@@ -101,5 +101,5 @@ export interface Expense {
   paid_by: "employee" | "company";
   status: "pending" | "approved" | "rejected";
   created_at: string;
-  profiles?: { full_name: string; avatar_url: string }; // For joins
+  profiles?: { full_name: string; avatar_url: string | null }; // For joins
 }

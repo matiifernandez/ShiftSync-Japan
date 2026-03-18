@@ -47,13 +47,15 @@ export function useExpenses() {
     created_at: new Date(task.createdAt).toISOString(),
     amount: task.expenseData.amount,
     category: task.expenseData.category,
+    currency: task.expenseData.currency || 'JPY',
     description: task.expenseData.description,
+    paid_by: task.expenseData.paid_by || 'employee',
     status: 'pending',
     receipt_url: task.imageUri, // Local URI
     organization_id: orgId || 'offline',
     profiles: {
       full_name: 'Me (Offline)',
-      avatar_url: undefined
+      avatar_url: null
     }
   }));
 
@@ -238,13 +240,15 @@ export function useExpense(id: string) {
             created_at: new Date(offlineTask.createdAt).toISOString(),
             amount: offlineTask.expenseData.amount,
             category: offlineTask.expenseData.category,
+            currency: offlineTask.expenseData.currency || 'JPY',
             description: offlineTask.expenseData.description,
+            paid_by: offlineTask.expenseData.paid_by || 'employee',
             status: 'pending',
             receipt_url: offlineTask.imageUri,
             organization_id: orgId,
             profiles: {
                 full_name: 'Me (Offline)',
-                avatar_url: undefined
+                avatar_url: null
             }
         } as Expense;
       } else {

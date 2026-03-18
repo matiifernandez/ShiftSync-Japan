@@ -23,7 +23,6 @@ import { Colors } from "../constants/Colors";
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN || "https://examplePublicKey@o0.ingest.sentry.io/0",
   debug: false,
-  enableSpotlight: __DEV__,
 });
 
 const queryClient = new QueryClient({

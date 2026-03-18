@@ -83,6 +83,7 @@ export const translations = {
     // Categories
     cat_transport: "Transport",
     cat_hotel: "Hotel",
+    cat_accommodation: "Hotel",
     cat_fuel: "Fuel",
     cat_parking: "Parking",
     cat_meals: "Meals",
@@ -327,6 +328,7 @@ export const translations = {
     edit: "Edit",
     delete_expense_msg: "Are you sure? This cannot be undone.",
     expense_updated: "Expense updated!",
+    expense_deleted: "Expense deleted!",
     category_error: "Please select a category.",
     add_ticket_btn: "ADD TICKET",
     add_hotel_btn: "ADD HOTEL",
@@ -418,6 +420,7 @@ export const translations = {
     // Categories
     cat_transport: "交通費",
     cat_hotel: "宿泊費",
+    cat_accommodation: "宿泊費",
     cat_fuel: "ガソリン代",
     cat_parking: "駐車場代",
     cat_meals: "食事代",
@@ -662,6 +665,7 @@ export const translations = {
     edit: "編集",
     delete_expense_msg: "本当に削除しますか？この操作は取り消せません。",
     expense_updated: "経費が更新されました！",
+    expense_deleted: "経費を削除しました！",
     category_error: "カテゴリーを選択してください。",
     add_ticket_btn: "チケット追加",
     add_hotel_btn: "ホテル追加",
