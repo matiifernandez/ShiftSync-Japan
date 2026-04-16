@@ -24,9 +24,14 @@ export function useChat(conversationId: string, locale: string = 'en') {
 
   // 0. Initialize User Ref
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      userRef.current = user?.id || null;
-    });
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        userRef.current = user?.id || null;
+      } catch (error) {
+        userRef.current = null;
+      }
+    })();
   }, []);
 
   // 1. Fetch Messages (Query)

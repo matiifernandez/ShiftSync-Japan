@@ -8,7 +8,7 @@ const QUEUE_KEY = 'offline_upload_queue';
 export interface UploadTask {
   id: string; // Unique ID for the task
   expenseData: any;
-  imageUri: string;
+  imageUri?: string;
   createdAt: number;
 }
 
@@ -65,24 +65,37 @@ export function useOfflineQueue() {
 
     for (const task of currentQueue) {
       try {
-        console.log(`Uploading offline receipt for task: ${task.id}`);
-        
-        // 1. Upload Image
-        const response = await fetch(task.imageUri);
-        const blob = await response.arrayBuffer();
-        const fileName = `${user.id}/${task.createdAt}.jpg`; 
+        let receiptPath: string | null = null;
+        const imageUri = task.imageUri?.trim();
+        const hasSupportedScheme = !!imageUri && /^(file|content|https?):\/\//i.test(imageUri);
 
-        const { error: uploadError } = await supabase.storage
-          .from("receipts")
-          .upload(fileName, blob, { contentType: "image/jpeg" });
+        // Upload receipt only when a local/remote URI is present.
+        if (hasSupportedScheme) {
+          try {
+            console.log(`Uploading offline receipt for task: ${task.id}`);
+            const response = await fetch(imageUri);
+            const blob = await response.arrayBuffer();
+            const fileName = `${user.id}/${task.createdAt}.jpg`;
 
-        if (uploadError) throw uploadError;
+            const { error: uploadError } = await supabase.storage
+              .from("receipts")
+              .upload(fileName, blob, { contentType: "image/jpeg" });
+
+            if (uploadError) throw uploadError;
+            receiptPath = fileName;
+          } catch (uploadError) {
+            // Do not block expense sync because of a broken local image URI.
+            console.warn(`Receipt upload failed for task ${task.id}. Saving expense without receipt.`);
+          }
+        } else if (imageUri) {
+          console.warn(`Skipping receipt upload for task ${task.id}: unsupported image URI.`);
+        }
 
         // 2. Insert Expense — store the file path, not a signed URL
         const { error: insertError } = await supabase.from("expenses").insert({
           ...task.expenseData,
           user_id: user.id,
-          receipt_url: fileName,
+          receipt_url: receiptPath,
           status: "pending"
         });
 

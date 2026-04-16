@@ -84,7 +84,7 @@ export function useExpenses() {
     description: task.expenseData.description,
     paid_by: task.expenseData.paid_by || 'employee',
     status: 'pending',
-    receipt_url: task.imageUri, // Local URI
+    receipt_url: task.imageUri || undefined, // Local URI if available
     organization_id: orgId || 'offline',
     profiles: {
       full_name: 'Me (Offline)',
@@ -141,7 +141,7 @@ export function useExpenses() {
             category: normalizeExpenseCategory(data.category),
             organization_id: orgId 
           },
-          imageUri: imageUri || '',
+          imageUri: imageUri || undefined,
           createdAt: Date.now()
         });
 
@@ -287,7 +287,7 @@ export function useExpense(id: string) {
             description: offlineTask.expenseData.description,
             paid_by: offlineTask.expenseData.paid_by || 'employee',
             status: 'pending',
-            receipt_url: offlineTask.imageUri,
+            receipt_url: offlineTask.imageUri || undefined,
             organization_id: orgId,
             profiles: {
                 full_name: 'Me (Offline)',
