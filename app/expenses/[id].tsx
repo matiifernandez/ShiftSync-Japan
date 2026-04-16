@@ -14,7 +14,7 @@ import { useRouter, Stack, useLocalSearchParams } from "expo-router";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useToast } from "../../context/ToastContext";
 import { Colors } from "../../constants/Colors";
-import { useExpenses, useExpense } from "../../hooks/useExpenses";
+import { useExpenses, useExpense, normalizeExpenseCategory } from "../../hooks/useExpenses";
 import { Expense } from "../../types";
 
 const CATEGORIES = [
@@ -25,15 +25,6 @@ const CATEGORIES = [
   { id: "meals", icon: "utensils" },
   { id: "other", icon: "receipt" },
 ] as const;
-
-const normalizeCategory = (rawCategory: string | null | undefined): Expense["category"] => {
-  if (rawCategory === "hotel") return "accommodation";
-  const validCategoryIds = CATEGORIES.map((c) => c.id);
-  if (rawCategory && validCategoryIds.includes(rawCategory as Expense["category"])) {
-    return rawCategory as Expense["category"];
-  }
-  return "transport";
-};
 
 /**
  * ExpenseDetailScreen
@@ -69,7 +60,7 @@ export default function ExpenseDetailScreen() {
   useEffect(() => {
     if (expense) {
       setAmount(String(expense.amount));
-      setCategory(normalizeCategory(expense.category as string | null | undefined));
+      setCategory(normalizeExpenseCategory(expense.category as string | null | undefined));
       setDescription(expense.description || "");
     }
   }, [expense]);
@@ -140,7 +131,7 @@ export default function ExpenseDetailScreen() {
   if (!expense) return null;
 
   const isPending = expense.status === "pending";
-  const displayCategory = normalizeCategory(expense.category as string | null | undefined);
+  const displayCategory = normalizeExpenseCategory(expense.category as string | null | undefined);
   const statusLabel = expense.status === "approved"
     ? t('status_approved')
     : expense.status === "rejected"
