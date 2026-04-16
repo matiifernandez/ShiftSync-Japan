@@ -17,7 +17,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export function useNotifications() {
+export function useNotifications(enabled = true) {
   const router = useRouter();
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>(
     undefined
@@ -40,6 +40,13 @@ export function useNotifications() {
         vibrationPattern: [0, 250, 250, 250],
         lightColor: "#FF231F7C",
       });
+    }
+
+    if (!enabled) return;
+
+    if (Constants.appOwnership === "expo") {
+      console.log("Skipping push token registration in Expo Go.");
+      return;
     }
 
     if (Device.isDevice) {
@@ -114,6 +121,10 @@ export function useNotifications() {
   };
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     registerForPushNotificationsAsync();
 
     notificationListener.current =
@@ -142,7 +153,7 @@ export function useNotifications() {
         responseListener.current.remove();
       }
     };
-  }, []);
+  }, [enabled]);
 
   return {
     expoPushToken,

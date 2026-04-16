@@ -20,10 +20,12 @@ import Toast from "../components/Toast";
 import { Colors } from "../constants/Colors";
 
 // Initialize Sentry
-Sentry.init({
-  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN || "https://examplePublicKey@o0.ingest.sentry.io/0",
-  debug: false,
-});
+if (!__DEV__) {
+  Sentry.init({
+    dsn: process.env.EXPO_PUBLIC_SENTRY_DSN || "https://examplePublicKey@o0.ingest.sentry.io/0",
+    debug: false,
+  });
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,8 +48,8 @@ function Layout() {
   const params = useLocalSearchParams();
 
   // Activate global listeners for notifications
-  const { scheduleNotification } = useNotifications();
-  useGlobalRealtime(scheduleNotification);
+  const { scheduleNotification } = useNotifications(!!session);
+  useGlobalRealtime(scheduleNotification, !!session);
 
   // Capture pending orgId from deep links
   useEffect(() => {
@@ -63,9 +65,13 @@ function Layout() {
         try {
             const { data, error } = await supabase.auth.getSession();
             if (error) {
-                if (error.message.includes("Refresh Token")) {
-                    console.warn("Session expired or invalid, signing out...");
-                    await supabase.auth.signOut();
+                if (
+                  error.message.includes("Refresh Token") ||
+                  error.message.includes("Network request failed") ||
+                  error.message.includes("session missing")
+                ) {
+                    console.warn("Session refresh failed, clearing local session...");
+                    await supabase.auth.signOut({ scope: "local" });
                     setSession(null);
                 } else {
                     console.error("Session check error:", error);
@@ -75,6 +81,8 @@ function Layout() {
             }
         } catch (e) {
             console.error("Unexpected session error:", e);
+            await supabase.auth.signOut({ scope: "local" });
+            setSession(null);
         } finally {
             setInitialized(true);
         }
@@ -148,31 +156,42 @@ function Layout() {
     );
   }
 
+  const appStack = (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: "#FFFFFF" },
+      }}
+    >
+      <Stack.Screen name="index" />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="complete-profile" options={{ presentation: 'modal' }} />
+      <Stack.Screen name="chat-create" options={{ presentation: 'modal', headerShown: false }} />
+    </Stack>
+  );
+
   return (
     <PersistQueryClientProvider
       client={queryClient}
       persistOptions={{ persister: asyncStoragePersister }}
     >
       <ToastProvider>
-        <TravelProvider>
-          <ChatProvider>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: "#FFFFFF" },
-              }}
-            >
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="complete-profile" options={{ presentation: 'modal' }} />
-              <Stack.Screen name="chat-create" options={{ presentation: 'modal', headerShown: false }} />
-            </Stack>
+        {session ? (
+          <TravelProvider>
+            <ChatProvider>
+              {appStack}
+              <Toast />
+            </ChatProvider>
+          </TravelProvider>
+        ) : (
+          <>
+            {appStack}
             <Toast />
-          </ChatProvider>
-        </TravelProvider>
+          </>
+        )}
       </ToastProvider>
     </PersistQueryClientProvider>
   );
 }
 
-export default Sentry.wrap(Layout);
+export default __DEV__ ? Layout : Sentry.wrap(Layout);

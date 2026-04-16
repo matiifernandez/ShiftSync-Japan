@@ -31,27 +31,48 @@ export default function LoginScreen() {
 
   useEffect(() => {
     // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        router.replace("/(tabs)");
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          router.replace("/(tabs)");
+        }
+      } catch (error) {
+        console.warn("Session bootstrap skipped due network/auth error.");
+      } finally {
+        setInitialized(true);
       }
-      setInitialized(true);
-    });
+    })();
   }, []);
 
   // Handle Sign In
   const handleLogin = async () => {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    if (!email || !password) {
+      showToast(t("missing_info"), "error");
+      return;
+    }
 
-    if (error) {
-      showToast(error.message, "error");
-      setLoading(false);
-    } else {
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        showToast(error.message, "error");
+        return;
+      }
+
       router.replace("/(tabs)");
+    } catch (error: any) {
+      const message =
+        error?.message === "Network request failed"
+          ? "Unable to reach Supabase. Check your internet connection and Supabase project status."
+          : error?.message || "Login failed. Please try again.";
+      showToast(message, "error");
+    } finally {
+      setLoading(false);
     }
   };
 
