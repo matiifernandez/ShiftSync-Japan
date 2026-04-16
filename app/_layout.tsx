@@ -60,29 +60,39 @@ function Layout() {
   }, [params.orgId]);
 
   useEffect(() => {
+    const shouldClearLocalSession = (error: unknown) => {
+      const message = String((error as { message?: string } | null)?.message || "");
+      const lowerMessage = message.toLowerCase();
+      return (
+        message.includes("Refresh Token") ||
+        lowerMessage.includes("session missing") ||
+        lowerMessage.includes("invalid grant")
+      );
+    };
+
     // 1. Check initial session with robust error handling
     const initSession = async () => {
         try {
             const { data, error } = await supabase.auth.getSession();
             if (error) {
-                if (
-                  error.message.includes("Refresh Token") ||
-                  error.message.includes("Network request failed") ||
-                  error.message.includes("session missing")
-                ) {
+                if (shouldClearLocalSession(error)) {
                     console.warn("Session refresh failed, clearing local session...");
                     await supabase.auth.signOut({ scope: "local" });
                     setSession(null);
                 } else {
-                    console.error("Session check error:", error);
+                    console.warn("Session check skipped due to a transient auth/network issue.");
                 }
             } else {
                 setSession(data.session);
             }
         } catch (e) {
-            console.error("Unexpected session error:", e);
-            await supabase.auth.signOut({ scope: "local" });
-            setSession(null);
+            if (shouldClearLocalSession(e)) {
+              console.warn("Session bootstrap detected an invalid local session. Clearing local auth state.");
+              await supabase.auth.signOut({ scope: "local" });
+              setSession(null);
+            } else {
+              console.warn("Session bootstrap skipped due to a transient auth/network issue.");
+            }
         } finally {
             setInitialized(true);
         }

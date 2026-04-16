@@ -38,7 +38,7 @@ export default function LoginScreen() {
           router.replace("/(tabs)");
         }
       } catch (error) {
-        console.warn("Session bootstrap skipped due network/auth error.");
+        console.warn("Session bootstrap skipped due to a network/auth error.");
       } finally {
         setInitialized(true);
       }
@@ -68,8 +68,8 @@ export default function LoginScreen() {
     } catch (error: any) {
       const message =
         error?.message === "Network request failed"
-          ? "Unable to reach Supabase. Check your internet connection and Supabase project status."
-          : error?.message || "Login failed. Please try again.";
+          ? t("login_network_error")
+          : error?.message || t("login_failed_generic");
       showToast(message, "error");
     } finally {
       setLoading(false);

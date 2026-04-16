@@ -6,9 +6,6 @@ import { createClient } from "@supabase/supabase-js";
 // We use the variables defined in the .env file
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
-const supabaseHost = new URL(supabaseUrl).hostname;
-const projectRef = supabaseHost.split(".")[0] || "";
-const authStorageKey = projectRef ? `sb-${projectRef}-auth-token` : null;
 let didWarnRefreshNetworkFailure = false;
 
 // Simple validation to avoid confusion if you forget the .env
@@ -18,11 +15,29 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
+try {
+  // Validate URL format early to provide a clear setup error.
+  new URL(supabaseUrl);
+} catch {
+  throw new Error("Invalid EXPO_PUBLIC_SUPABASE_URL in .env");
+}
+
+const getRequestUrl = (input: RequestInfo | URL): string => {
+  if (typeof input === "string") return input;
+  if (input instanceof URL) return input.toString();
+  if (typeof Request !== "undefined" && input instanceof Request) return input.url;
+
+  const maybeInput = input as { url?: string; href?: string } | null;
+  if (maybeInput?.url) return maybeInput.url;
+  if (maybeInput?.href) return maybeInput.href;
+  return "";
+};
+
 const supabaseFetch: typeof fetch = async (input, init) => {
-  const requestUrl =
-    typeof input === "string" ? input : (input as Request).url;
+  const requestUrl = getRequestUrl(input);
   const method = init?.method || "GET";
   const isRefreshTokenRequest =
+    requestUrl.length > 0 &&
     requestUrl.includes("/auth/v1/token") &&
     requestUrl.includes("grant_type=refresh_token");
 
@@ -34,27 +49,16 @@ const supabaseFetch: typeof fetch = async (input, init) => {
     }
 
     // Avoid unhandled TypeError noise when refresh token calls fail at transport level.
-    // Treat refresh-network failures as a missing/invalid session to stop retry loops.
+    // Keep local auth state and return a retryable response for transient network issues.
     if (isRefreshTokenRequest) {
       didWarnRefreshNetworkFailure = true;
-      try {
-        if (authStorageKey) {
-          await AsyncStorage.removeItem(authStorageKey);
-        }
-        // Legacy key fallback used by older setups.
-        await AsyncStorage.removeItem("supabase.auth.token");
-      } catch {
-        // Best-effort cleanup only.
-      }
-
       return new Response(
         JSON.stringify({
-          error: "invalid_grant",
-          error_description: "Session not found",
-          error_code: "session_not_found",
+          error: "network_request_failed",
+          message: "Network request failed while refreshing session token.",
         }),
         {
-          status: 401,
+          status: 503,
           headers: { "Content-Type": "application/json" },
         }
       );

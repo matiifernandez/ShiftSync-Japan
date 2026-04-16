@@ -60,7 +60,7 @@ export function useGlobalRealtime(scheduleNotification: ScheduleNotificationFn, 
                         1
                     );
                 } catch (error) {
-                    console.warn("Realtime message notification skipped due network error.");
+                    console.warn("Realtime message notification skipped due to a network error.");
                 }
             }
         );
@@ -81,7 +81,7 @@ export function useGlobalRealtime(scheduleNotification: ScheduleNotificationFn, 
                          await scheduleRef.current('Schedule Change', 'Your schedule has been updated.', 1);
                     }
                 } catch (error) {
-                    console.warn("Realtime schedule notification skipped due network error.");
+                    console.warn("Realtime schedule notification skipped due to a network error.");
                 }
             }
         );

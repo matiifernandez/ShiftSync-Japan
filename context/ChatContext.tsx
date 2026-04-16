@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import { supabase } from "../lib/supabase";
+import { useTranslation } from "../hooks/useTranslation";
 
 export interface Conversation {
   id: string;
@@ -29,7 +30,7 @@ const normalizeConversationType = (rawType: string | null | undefined): Conversa
 const isRpcMissing = (error: any): boolean =>
   error?.code === "PGRST202" || String(error?.message || "").includes("get_my_conversations");
 
-async function fetchConversationsFallback(): Promise<Conversation[]> {
+async function fetchConversationsFallback(labels: { direct: string; group: string }): Promise<Conversation[]> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -104,8 +105,8 @@ async function fetchConversationsFallback(): Promise<Conversation[]> {
       const otherProfile = otherParticipantMap.get(conversationId);
 
       const baseName = String(conversation?.name || "").trim();
-      const directFallbackName = otherProfile?.full_name || "Direct chat";
-      const name = baseName || (type === "direct" ? directFallbackName : "Group chat");
+      const directFallbackName = otherProfile?.full_name || labels.direct;
+      const name = baseName || (type === "direct" ? directFallbackName : labels.group);
 
       const lastReadAt = row.last_read_at ? new Date(row.last_read_at).getTime() : 0;
       const unreadCount = conversationMessages.reduce((count, message) => {
@@ -139,6 +140,7 @@ async function fetchConversationsFallback(): Promise<Conversation[]> {
 }
 
 export function ChatProvider({ children }: { children: ReactNode }) {
+  const { t } = useTranslation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const warnedMissingRpcRef = useRef(false);
@@ -160,7 +162,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           warnedMissingRpcRef.current = true;
         }
 
-        const fallbackData = await fetchConversationsFallback();
+        const fallbackData = await fetchConversationsFallback({
+          direct: t("chat_direct_fallback_name"),
+          group: t("chat_group_fallback_name"),
+        });
         setConversations(fallbackData);
         return;
       }
@@ -179,7 +184,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     } finally {
       if (!isBackground) setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   // Initial load
   useEffect(() => {
