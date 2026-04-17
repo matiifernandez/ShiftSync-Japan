@@ -30,114 +30,43 @@ const normalizeConversationType = (rawType: string | null | undefined): Conversa
 const isRpcMissing = (error: any): boolean =>
   error?.code === "PGRST202" || String(error?.message || "").includes("get_my_conversations");
 
-async function fetchConversationsFallback(labels: { direct: string; group: string }): Promise<Conversation[]> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return [];
+type ConversationRpcRow = {
+  id: string;
+  name: string | null;
+  type: string | null;
+  last_message: string | null;
+  last_message_time: string | null;
+  avatar_url: string | null;
+  unread_count: number | string | null;
+  is_pinned: boolean | null;
+};
 
-  const { data: participantRows, error: participantsError } = await supabase
-    .from("conversation_participants")
-    .select("conversation_id,is_pinned,last_read_at,conversations(id,name,type)")
-    .eq("user_id", user.id);
+const normalizeUnreadCount = (rawValue: number | string | null | undefined): number => {
+  if (typeof rawValue === "number") return Number.isFinite(rawValue) ? rawValue : 0;
+  const parsed = Number(rawValue ?? 0);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
 
-  if (participantsError) throw participantsError;
+const mapRpcConversation = (
+  row: ConversationRpcRow,
+  labels: { direct: string; group: string }
+): Conversation | null => {
+  if (!row?.id) return null;
 
-  const rows = (participantRows || []) as any[];
-  if (rows.length === 0) return [];
+  const type = normalizeConversationType(row.type);
+  const name = String(row.name || "").trim() || (type === "direct" ? labels.direct : labels.group);
 
-  const conversationIds = rows.map((row) => row.conversation_id).filter(Boolean);
-  if (conversationIds.length === 0) return [];
-
-  const [messagesRes, othersRes] = await Promise.all([
-    supabase
-      .from("messages")
-      .select("conversation_id,sender_id,content_original,created_at")
-      .in("conversation_id", conversationIds)
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("conversation_participants")
-      .select("conversation_id,user_id,profiles:user_id(full_name,avatar_url)")
-      .in("conversation_id", conversationIds)
-      .neq("user_id", user.id),
-  ]);
-
-  if (messagesRes.error) throw messagesRes.error;
-  if (othersRes.error) throw othersRes.error;
-
-  const messages = (messagesRes.data || []) as any[];
-  const otherParticipants = (othersRes.data || []) as any[];
-
-  const latestMessageMap = new Map<string, any>();
-  const messagesByConversation = new Map<string, any[]>();
-
-  for (const message of messages) {
-    const conversationId = message.conversation_id as string;
-    if (!latestMessageMap.has(conversationId)) {
-      latestMessageMap.set(conversationId, message);
-    }
-    const existing = messagesByConversation.get(conversationId);
-    if (existing) {
-      existing.push(message);
-    } else {
-      messagesByConversation.set(conversationId, [message]);
-    }
-  }
-
-  const otherParticipantMap = new Map<string, any>();
-  for (const participant of otherParticipants) {
-    const conversationId = participant.conversation_id as string;
-    if (!otherParticipantMap.has(conversationId)) {
-      const profile = Array.isArray(participant.profiles)
-        ? participant.profiles[0]
-        : participant.profiles;
-      otherParticipantMap.set(conversationId, profile);
-    }
-  }
-
-  const fallbackConversations = rows
-    .map((row) => {
-      const conversationId = row.conversation_id as string;
-      const conversation = Array.isArray(row.conversations) ? row.conversations[0] : row.conversations;
-      const type = normalizeConversationType(conversation?.type);
-      const latestMessage = latestMessageMap.get(conversationId);
-      const conversationMessages = messagesByConversation.get(conversationId) || [];
-      const otherProfile = otherParticipantMap.get(conversationId);
-
-      const baseName = String(conversation?.name || "").trim();
-      const directFallbackName = otherProfile?.full_name || labels.direct;
-      const name = baseName || (type === "direct" ? directFallbackName : labels.group);
-
-      const lastReadAt = row.last_read_at ? new Date(row.last_read_at).getTime() : 0;
-      const unreadCount = conversationMessages.reduce((count, message) => {
-        const createdAt = Date.parse(message.created_at);
-        if (!Number.isNaN(createdAt) && message.sender_id !== user.id && createdAt > lastReadAt) {
-          return count + 1;
-        }
-        return count;
-      }, 0);
-
-      return {
-        id: conversationId,
-        name,
-        type,
-        last_message: latestMessage?.content_original || "",
-        last_message_time: latestMessage?.created_at || undefined,
-        avatar_url: type === "direct" ? otherProfile?.avatar_url || undefined : undefined,
-        unread_count: unreadCount,
-        is_pinned: !!row.is_pinned,
-      } as Conversation;
-    })
-    .filter((conversation) => !!conversation.id);
-
-  fallbackConversations.sort((a, b) => {
-    const aTime = a.last_message_time ? Date.parse(a.last_message_time) : 0;
-    const bTime = b.last_message_time ? Date.parse(b.last_message_time) : 0;
-    return bTime - aTime;
-  });
-
-  return fallbackConversations;
-}
+  return {
+    id: row.id,
+    name,
+    type,
+    last_message: row.last_message || "",
+    last_message_time: row.last_message_time || undefined,
+    avatar_url: row.avatar_url || undefined,
+    unread_count: normalizeUnreadCount(row.unread_count),
+    is_pinned: !!row.is_pinned,
+  };
+};
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
@@ -153,26 +82,30 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.rpc("get_my_conversations");
 
       if (error) {
-        if (!isRpcMissing(error)) {
-          throw error;
+        if (isRpcMissing(error)) {
+          if (!warnedMissingRpcRef.current) {
+            console.warn("RPC get_my_conversations is missing. Chat list depends on migration 20260417_get_my_conversations_rpc.sql.");
+            warnedMissingRpcRef.current = true;
+          }
+          if (!isBackground) {
+            setConversations([]);
+          }
+          return;
         }
-
-        if (!warnedMissingRpcRef.current) {
-          console.warn("RPC get_my_conversations not found. Falling back to table queries.");
-          warnedMissingRpcRef.current = true;
-        }
-
-        const fallbackData = await fetchConversationsFallback({
-          direct: t("chat_direct_fallback_name"),
-          group: t("chat_group_fallback_name"),
-        });
-        setConversations(fallbackData);
-        return;
+        throw error;
       }
 
-      if (data) {
-        setConversations(data as Conversation[]);
-      }
+      const rows = (Array.isArray(data) ? data : []) as ConversationRpcRow[];
+      const labels = {
+        direct: t("chat_direct_fallback_name"),
+        group: t("chat_group_fallback_name"),
+      };
+
+      const mapped = rows
+        .map((row) => mapRpcConversation(row, labels))
+        .filter((conversation): conversation is Conversation => !!conversation);
+
+      setConversations(mapped);
     } catch (error) {
       if (!warnedFetchRef.current) {
         console.warn("Unable to fetch conversations. Showing cached/empty state.");
