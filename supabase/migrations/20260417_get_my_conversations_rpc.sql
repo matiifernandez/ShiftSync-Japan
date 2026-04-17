@@ -36,7 +36,7 @@ as $$
       m.created_at
     from public.messages m
     join my_participation mp on mp.conversation_id = m.conversation_id
-    order by m.conversation_id, m.created_at desc
+    order by m.conversation_id, m.created_at desc, m.id desc
   ),
   unread_messages as (
     select
@@ -52,10 +52,10 @@ as $$
   select
     c.id,
     coalesce(
-      nullif(c.name, ''),
+      nullif(btrim(c.name), ''),
       case
-        when c.type::text = 'direct' then coalesce(other_user.full_name, 'Direct chat')
-        else 'Group chat'
+        when c.type::text = 'direct' then nullif(btrim(other_user.full_name), '')
+        else null
       end
     ) as name,
     c.type::text as type,
