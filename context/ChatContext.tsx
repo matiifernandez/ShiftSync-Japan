@@ -27,9 +27,20 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 const normalizeConversationType = (rawType: string | null | undefined): Conversation["type"] =>
   rawType === "direct" ? "direct" : "group";
 
-const isRpcMissing = (error: any): boolean =>
-  error?.code === "PGRST202" || String(error?.message || "").includes("get_my_conversations");
+const isRpcMissing = (error: any): boolean => {
+  if (error?.code === "PGRST202") return true;
 
+  const message = String(error?.message || "").toLowerCase();
+  const details = String(error?.details || "").toLowerCase();
+  const combined = `${message} ${details}`;
+
+  const mentionsTargetFunction = combined.includes("get_my_conversations");
+  const isMissingFunctionMessage =
+    combined.includes("could not find the function") ||
+    combined.includes("tries to select a function");
+
+  return mentionsTargetFunction && isMissingFunctionMessage;
+};
 type ConversationRpcRow = {
   id: string;
   name: string | null;
