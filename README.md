@@ -42,6 +42,8 @@ A comprehensive logistics and team management application designed for travel te
     - **Crucial Tables:**
         - `project_members`: For assigning staff to trips.
         - `profiles`: Needs `expo_push_token` column for notifications.
+    - **Crucial RPC:**
+        - `public.get_my_conversations()`: Required by chat list loading (`supabase/migrations/20260417_get_my_conversations_rpc.sql`).
 
 3.  **Environment Variables:**
     - Create `.env` file with `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
@@ -50,6 +52,12 @@ A comprehensive logistics and team management application designed for travel te
     ```bash
     npx expo start
     ```
+
+## 🧰 Chat Troubleshooting
+
+- If chat list is empty and you see a warning about `get_my_conversations`:
+  - Confirm migration `20260417_get_my_conversations_rpc.sql` was applied to the active Supabase project.
+  - Confirm the app points to the same project in `.env` (`EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY`).
 
 ## 📱 Notifications
 
